@@ -9,7 +9,7 @@ CONF="$ROOT/src-tauri/tauri.conf.json"
 echo "==> Generating updater key pair at: $KEY_PATH"
 mkdir -p "$(dirname "$KEY_PATH")"
 cd "$ROOT/src-tauri"
-npx tauri signer generate -w "$KEY_PATH"
+npx tauri signer generate -w "$KEY_PATH" --ci --force
 
 PUBKEY_FILE="${KEY_PATH}.pub"
 if [[ ! -f "$PUBKEY_FILE" ]]; then

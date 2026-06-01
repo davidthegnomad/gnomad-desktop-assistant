@@ -91,7 +91,7 @@
     "updater": {
       "active": true,
       "dialog": false,
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IHRhdXJpLXVwZGF0ZXIgcHVibGljIGtleSByZXBsYWNlIG1lIHRvIGdlbmVyYXRlIHlvdXIgb3duIGtleSBwYWlyLi4u",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDg3MzFGQ0JCQzI4ODIzRDcKUldUWEk0akN1L3d4aDEzaThRaWl2SVAyOTd4SGF3WE9TQlIwdy9KR3JEV1k2UTVCcjkzQXpYck8K",
       "endpoints": [
         "https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/latest/download/latest.json"
       ]
