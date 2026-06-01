@@ -76,6 +76,8 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: ${{ steps.tag.outputs.name }}
           releaseName: "Gnomad ${{ steps.tag.outputs.name }}"
@@ -92,6 +94,6 @@ jobs:
 
             See [Linux install guide](https://github.com/davidthegnomad/gnomad-desktop-assistant/blob/main/docs/LINUX_PACKAGES.md).
           prerelease: true
-          includeUpdaterJson: false
+          includeUpdaterJson: true
           assetNamePattern: "gnomad-[name]-[version]-[platform][ext]"
           args: ${{ matrix.args }}

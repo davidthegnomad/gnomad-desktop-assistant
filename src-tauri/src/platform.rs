@@ -19,6 +19,28 @@ pub struct PlatformInfo {
     pub supports_clipboard_context: bool,
     /// macOS Accessibility permission flow in settings.
     pub supports_accessibility_settings: bool,
+    /// Linux session type: wayland, x11, or unknown.
+    pub linux_session_type: Option<String>,
+    /// When true, left-click on tray opens menu (Wayland-friendly).
+    pub tray_left_click_opens_menu: bool,
+}
+
+#[cfg(target_os = "linux")]
+pub fn linux_session_type() -> &'static str {
+    match std::env::var("XDG_SESSION_TYPE") {
+        Ok(v) if v.eq_ignore_ascii_case("wayland") => "wayland",
+        Ok(v) if v.eq_ignore_ascii_case("x11") => "x11",
+        Ok(v) if !v.is_empty() => "unknown",
+        _ => {
+            if std::env::var("WAYLAND_DISPLAY").is_ok() {
+                "wayland"
+            } else if std::env::var("DISPLAY").is_ok() {
+                "x11"
+            } else {
+                "unknown"
+            }
+        }
+    }
 }
 
 #[tauri::command]
@@ -36,6 +58,8 @@ pub fn get_platform_info() -> PlatformInfo {
             supports_active_window_context: true,
             supports_clipboard_context: true,
             supports_accessibility_settings: true,
+            linux_session_type: None,
+            tray_left_click_opens_menu: false,
         };
     }
 
@@ -52,22 +76,32 @@ pub fn get_platform_info() -> PlatformInfo {
             supports_active_window_context: true,
             supports_clipboard_context: true,
             supports_accessibility_settings: false,
+            linux_session_type: None,
+            tray_left_click_opens_menu: false,
         };
     }
 
     #[cfg(target_os = "linux")]
     {
+        let session = linux_session_type().to_string();
+        let wayland = session == "wayland";
         return PlatformInfo {
             os: "linux",
             tray_region_label: "System tray".into(),
             panel_mode_menu_label: "System Tray Panel".into(),
             hide_to_tray_label: "Hide to System Tray".into(),
-            tray_tooltip: "Gnomad — click to open from the system tray".into(),
+            tray_tooltip: if wayland {
+                "Gnomad — left-click tray icon for menu (Wayland)".into()
+            } else {
+                "Gnomad — click to open from the system tray".into()
+            },
             uses_overlay_titlebar: false,
             hide_in_app_titlebar_when_windowed: true,
             supports_active_window_context: true,
             supports_clipboard_context: true,
             supports_accessibility_settings: false,
+            linux_session_type: Some(session),
+            tray_left_click_opens_menu: wayland,
         };
     }
 
@@ -84,6 +118,8 @@ pub fn get_platform_info() -> PlatformInfo {
             supports_active_window_context: false,
             supports_clipboard_context: false,
             supports_accessibility_settings: false,
+            linux_session_type: None,
+            tray_left_click_opens_menu: false,
         }
     }
 }

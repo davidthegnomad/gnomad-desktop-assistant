@@ -1,4 +1,6 @@
 import { getEnvLlmConfig } from "./envConfig";
+import { getAgentSettings } from "./agentSettings";
+import { getEmbeddedLlmStatus } from "./embeddedLlm";
 import { hasCredential, loadCredential } from "./preferences";
 
 export interface ModelOption {
@@ -19,6 +21,11 @@ export const OLLAMA_MODELS: ModelOption[] = [
   { value: "mistral", label: "mistral" },
   { value: "qwen2.5-coder", label: "qwen2.5-coder" },
 ];
+
+export const EMBEDDED_GGUF_MODEL: ModelOption = {
+  value: "embedded-gguf",
+  label: "Embedded GGUF (local file)",
+};
 
 export interface LlmAvailability {
   cloudConfigured: boolean;
@@ -53,12 +60,33 @@ export async function resolveLlmAvailability(options?: {
 
   const keychainOllama = await loadCredential("ollama_url");
   const ollamaUrl = (options?.ollamaUrl ?? keychainOllama).trim();
-  const localConfigured = ollamaUrl.length > 0;
+  const ollamaConfigured = ollamaUrl.length > 0;
+
+  let ggufConfigured = false;
+  try {
+    const agent = await getAgentSettings();
+    const ggufPath = agent.commandPlannerGgufPath?.trim() ?? "";
+    if (agent.useGgufForLocalChat && ggufPath.length > 0) {
+      const embedded = await getEmbeddedLlmStatus();
+      ggufConfigured = embedded.available;
+    }
+  } catch {
+    ggufConfigured = false;
+  }
+
+  const localConfigured = ollamaConfigured || ggufConfigured;
+  const localModels: ModelOption[] = [];
+  if (ggufConfigured) {
+    localModels.push(EMBEDDED_GGUF_MODEL);
+  }
+  if (ollamaConfigured) {
+    localModels.push(...OLLAMA_MODELS);
+  }
 
   return {
     cloudConfigured,
     localConfigured,
     cloudModels: cloudConfigured ? [...DEEPSEEK_MODELS] : [],
-    localModels: localConfigured ? [...OLLAMA_MODELS] : [],
+    localModels,
   };
 }

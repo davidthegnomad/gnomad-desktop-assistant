@@ -113,7 +113,7 @@ Test on **each OS** you have access to; at minimum run CI and spot-check one non
 
 ### Linux
 
-- [ ] System tray (AppIndicator); panel placement sane on X11 and Wayland if possible
+- [ ] System tray (AppIndicator); **Wayland:** left-click tray opens menu (shipped)
 - [ ] `Ctrl+Shift+Space` toggles window
 - [ ] Optional: `xdotool` / `wl-paste` / `xclip` for context pills ([`LINUX_PACKAGES.md`](LINUX_PACKAGES.md))
 - [ ] `pkexec` argv-only elevation (injection patterns rejected with structured error)
@@ -128,6 +128,7 @@ Test on **each OS** you have access to; at minimum run CI and spot-check one non
 | `shell_run` / PTY executes simple command (`command -v brew` or `echo hi`) | ☐ | ☐ | ☐ |
 | `cd` updates cwd in follow-up command | ☐ | ☐ | ☐ |
 | Path Gate for file outside workspace (Standard mode) | ☐ | ☐ | ☐ |
+| Path Gate mints signed token on approve (not boolean bypass) | ☐ | ☐ | ☐ |
 | YOLO mode reduces path prompts (if enabled) | ☐ | ☐ | ☐ |
 | Command planner (Ollama) converts prose → CLI when enabled | ☐ | ☐ | ☐ |
 | Audit log written under app data (`agent-audit.jsonl`) | ☐ | ☐ | ☐ |

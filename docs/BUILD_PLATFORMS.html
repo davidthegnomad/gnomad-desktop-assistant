@@ -229,6 +229,7 @@ body {
           <a href="#prerequisites-all-platforms" class="toc-h2">Prerequisites (all platforms)</a>
 <a href="#macos" class="toc-h2">macOS</a>
 <a href="#cross-platform-parity-macos-windows-linux" class="toc-h2">Cross-platform parity (macOS, Windows, Linux)</a>
+<a href="#cross-platform-verification-features-amp-ui-tweaks" class="toc-h3">Cross-platform verification (features &amp; UI tweaks)</a>
 <a href="#linux" class="toc-h2">Linux</a>
 <a href="#windows" class="toc-h2">Windows</a>
 <a href="#development" class="toc-h2">Development</a>
@@ -315,6 +316,13 @@ npm run build
 </tbody></table>
 <p><strong>Optional Linux packages</strong> for full context pills: <code>xdotool</code> (X11), <code>wl-paste</code> (Wayland) or <code>xclip</code>.</p>
 <p>CI (<code>.github/workflows/build.yml</code>) builds all three platforms on every push to <code>main</code> / <code>master</code>.</p>
+<h3 id="cross-platform-verification-features-amp-ui-tweaks">Cross-platform verification (features &amp; UI tweaks)</h3><p>Whenever you add or change UI, settings, or OS-facing behavior, use <strong><a href="CROSS_PLATFORM_CHECKLIST.md"><code>CROSS_PLATFORM_CHECKLIST.md</code></a></strong> so work on macOS translates—or is explicitly handled—for Windows and Linux.</p>
+<p>Quick rules:</p>
+<ol>
+<li><strong>Shared React</strong> (<code>src/</code>) — same bundle everywhere; smoke <strong>panel</strong> and <strong>windowed</strong> on Win/Linux (toolbar may be hidden in windowed).</li>
+<li><strong>Platform shell</strong> (title bar, tray, shortcuts) — update <a href="../src-tauri/src/platform.rs"><code>platform.rs</code></a>, <a href="../src-tauri/src/window_manager.rs"><code>window_manager.rs</code></a>, and <code>.platform-*</code> CSS in <a href="../src/index.css"><code>index.css</code></a>.</li>
+<li><strong>Before merge</strong> — <code>npm run build</code>, <code>cargo test</code>, CI green on all three OS jobs.</li>
+</ol>
 <h2 id="linux">Linux</h2><p>Build on a Linux host (Ubuntu/Debian recommended):</p>
 <pre><code class="language-bash">npm run tauri:build:linux
 </code></pre>

@@ -19,6 +19,7 @@ Gnomad is a **desktop-native AI assistant** that combines a WebView UI with a Ru
 │                     Tauri 2 Runtime (Rust)                       │
 │  lib.rs · window_manager · platform · context · keychain         │
 │  shell_session · agent_runtime · agent_fs · privilege · audit    │
+│  hitl_token · path_token · local_inference · shell_sandbox       │
 └────────────────────────────┬─────────────────────────────────────┘
                              │ invoke / events
 ┌────────────────────────────▼─────────────────────────────────────┐
@@ -40,7 +41,7 @@ Gnomad is a **desktop-native AI assistant** that combines a WebView UI with a Ru
 |-------|------|----------------|
 | **React UI** | Layout, chat UX, modals (Sudo/Path Gate), onboarding | Direct shell spawn, raw secret storage |
 | **Tauri IPC** | Serialization, command dispatch, events | Business copy in Rust-only paths where UI suffices |
-| **Rust backend** | PTY, FS sandbox, safety checks, keychain, audit | LLM prompt styling (mostly frontend) |
+| **Rust backend** | PTY, FS sandbox, safety checks, keychain, audit, signed tokens | LLM prompt styling (mostly frontend) |
 | **External LLM** | Inference | Local file paths without agent layer |
 
 ---
@@ -141,6 +142,8 @@ agent_audit.jsonl + chat thread update
 
 - [`TECH_STACK.md`](TECH_STACK.md) — technology choices  
 - [`SECURITY_MODEL.md`](SECURITY_MODEL.md) — trust and gates  
+- [`WAVE_B_ROADMAP.md`](WAVE_B_ROADMAP.md) — advanced systems (shipped)  
+- [`UPDATER.md`](UPDATER.md) — in-app updates  
 - [`BUILD.md`](BUILD.md) — delivery phases  
 
 Built with ❤️ by [Gnomad Studio](https://gnomadstudio.org) 🦙

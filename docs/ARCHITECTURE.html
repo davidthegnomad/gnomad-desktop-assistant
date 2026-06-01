@@ -254,6 +254,7 @@ body {
 │                     Tauri 2 Runtime (Rust)                       │
 │  lib.rs · window_manager · platform · context · keychain         │
 │  shell_session · agent_runtime · agent_fs · privilege · audit    │
+│  hitl_token · path_token · local_inference · shell_sandbox       │
 └────────────────────────────┬─────────────────────────────────────┘
                              │ invoke / events
 ┌────────────────────────────▼─────────────────────────────────────┐
@@ -287,7 +288,7 @@ body {
 </tr>
 <tr>
 <td><strong>Rust backend</strong></td>
-<td>PTY, FS sandbox, safety checks, keychain, audit</td>
+<td>PTY, FS sandbox, safety checks, keychain, audit, signed tokens</td>
 <td>LLM prompt styling (mostly frontend)</td>
 </tr>
 <tr>
@@ -475,6 +476,8 @@ agent_audit.jsonl + chat thread update
 <h2 id="related-documents">Related documents</h2><ul>
 <li><a href="TECH_STACK.md"><code>TECH_STACK.md</code></a> — technology choices  </li>
 <li><a href="SECURITY_MODEL.md"><code>SECURITY_MODEL.md</code></a> — trust and gates  </li>
+<li><a href="WAVE_B_ROADMAP.md"><code>WAVE_B_ROADMAP.md</code></a> — advanced systems (shipped)  </li>
+<li><a href="UPDATER.md"><code>UPDATER.md</code></a> — in-app updates  </li>
 <li><a href="BUILD.md"><code>BUILD.md</code></a> — delivery phases</li>
 </ul>
 <p>Built with ❤️ by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>

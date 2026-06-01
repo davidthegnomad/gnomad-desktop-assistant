@@ -13,21 +13,23 @@ Status: Core portfolio set complete (see DOCS_INDEX.md). All docs available as .
 SHIPPED IN THIS REPOSITORY
 --------------------------
 
-  Document              |  Purpose                     
-  DOCS_INDEX.md         |  Master index — all formats  
-  USER_GUIDE.md         |  End-user manual             
-  TECH_STACK.md         |  Stack rationale             
-  BUILD.md              |  Phased delivery narrative   
-  ARCHITECTURE.md       |  System diagram + IPC        
-  SECURITY_MODEL.md     |  Trust, gates, threats       
-  PRIVACY.md            |  Data handling policy (alpha)
-  ROADMAP.md            |  v0.2 → v1.0 plan            
-  DEMO_SCRIPT.md        |  5–7 min live demo           
-  QA_CHECKLIST.md       |  Per-OS release QA           
-  BUILD_PLATFORMS.md    |  Build commands              
-  LINUX_PACKAGES.md     |  Distro install matrix       
-  MACOS_PERMISSIONS.md  |  macOS privacy matrix        
-  KNOWLEDGE.md          |  Knowledge base layout       
+  Document                     |  Purpose                                     
+  DOCS_INDEX.md                |  Master index — all formats                  
+  USER_GUIDE.md                |  End-user manual                             
+  TECH_STACK.md                |  Stack rationale                             
+  BUILD.md                     |  Phased delivery narrative                   
+  ARCHITECTURE.md              |  System diagram + IPC                        
+  SECURITY_MODEL.md            |  Trust, gates, threats                       
+  PRIVACY.md                   |  Data handling policy (alpha)                
+  ROADMAP.md                   |  v0.2 → v1.0 plan                            
+  DEMO_SCRIPT.md               |  5–7 min live demo                           
+  QA_CHECKLIST.md              |  Per-OS release QA                           
+  BUILD_PLATFORMS.md           |  Build commands                              
+  WAVE_B_ROADMAP.md            |  HITL, GGUF, xterm, sandbox (shipped on main)
+  UPDATER.md                   |  Auto-update keys and channels               
+  CROSS_PLATFORM_CHECKLIST.md  |  Per-OS dev verification                     
+  MACOS_PERMISSIONS.md         |  macOS privacy matrix                        
+  KNOWLEDGE.md                 |  Knowledge base layout                       
 
 ────────────────────────────────────────
 

@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { ApiKeysSettings } from "./ApiKeysSettings";
 import { AgentAccessSettings } from "./AgentAccessSettings";
+import { UpdateSettings } from "./UpdateSettings";
 import { StudioLink } from "./StudioLink";
 import { APP_NAME, MUSHROOM, VERSION } from "../lib/brand";
 import { resetShellSession } from "../lib/shellSession";
@@ -30,6 +31,7 @@ interface SettingsPanelProps {
   onModelChange: (model: string) => void;
   onOllamaUrlChange: (url: string) => void;
   onKeysChanged: () => void;
+  onAgentSettingsChanged?: () => void;
   platformInfo: PlatformInfo | null;
   accessibilityGranted: boolean;
   onRequestPermissions: () => void;
@@ -54,6 +56,7 @@ export function SettingsPanel({
   onModelChange,
   onOllamaUrlChange,
   onKeysChanged,
+  onAgentSettingsChanged,
   platformInfo,
   accessibilityGranted,
   onRequestPermissions,
@@ -142,7 +145,8 @@ export function SettingsPanel({
         </div>
 
         <ApiKeysSettings onKeysChanged={onKeysChanged} />
-        <AgentAccessSettings />
+        <AgentAccessSettings onSettingsChanged={onAgentSettingsChanged} />
+        <UpdateSettings />
 
         <div className="settings-section">
           <h4 className="section-title">
@@ -187,6 +191,11 @@ export function SettingsPanel({
             <ShieldAlert size={16} style={{ color: "var(--color-purple)" }} />
             Permissions
           </h4>
+          {platformInfo?.linuxSessionType === "wayland" && (
+            <p className="knowledge-muted platform-wayland-hint">
+              Wayland detected — use <strong>left-click</strong> on the tray icon to open the menu.
+            </p>
+          )}
           {platformInfo?.supportsAccessibilitySettings ? (
             <div className="settings-row">
               <span className="settings-label">Accessibility</span>

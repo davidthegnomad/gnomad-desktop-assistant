@@ -1,12 +1,14 @@
 # Documentation Index (all formats) — Gnomad Desktop Assistant
 
-Every document is available in **three formats**:
+Every document is available in **three formats** (where exported):
 
 | Format | Best for |
 |--------|----------|
 | **`.md`** | GitHub, editing, version control |
 | **`.html`** | Browser reading (styled, TOC sidebar) |
 | **`.txt`** | Notepad, Word, email, print |
+
+**Live site:** [davidthegnomad.github.io/gnomad-desktop-assistant](https://davidthegnomad.github.io/gnomad-desktop-assistant/) (landing page + links below)
 
 Regenerate HTML/TXT after editing Markdown:
 
@@ -20,6 +22,7 @@ npm run docs:export
 
 | Document | MD | HTML | TXT |
 |----------|----|------|-----|
+| **Project landing** | — | [index.html](index.html) | — |
 | README (project overview) | [../README.md](../README.md) | [../README.html](../README.html) | [../README.txt](../README.txt) |
 | **User Guide** | [USER_GUIDE.md](USER_GUIDE.md) | [USER_GUIDE.html](USER_GUIDE.html) | [USER_GUIDE.txt](USER_GUIDE.txt) |
 | Changelog | [../CHANGELOG.md](../CHANGELOG.md) | [../CHANGELOG.html](../CHANGELOG.html) | [../CHANGELOG.txt](../CHANGELOG.txt) |
@@ -36,9 +39,11 @@ npm run docs:export
 | Security Model | [SECURITY_MODEL.md](SECURITY_MODEL.md) | [SECURITY_MODEL.html](SECURITY_MODEL.html) | [SECURITY_MODEL.txt](SECURITY_MODEL.txt) |
 | Privacy | [PRIVACY.md](PRIVACY.md) | [PRIVACY.html](PRIVACY.html) | [PRIVACY.txt](PRIVACY.txt) |
 | Roadmap | [ROADMAP.md](ROADMAP.md) | [ROADMAP.html](ROADMAP.html) | [ROADMAP.txt](ROADMAP.txt) |
-| Wave B (HITL tokens, embedded LLM, xterm, sandbox) | [WAVE_B_ROADMAP.md](WAVE_B_ROADMAP.md) | — | — |
+| Wave B (HITL, GGUF, xterm, sandbox) | [WAVE_B_ROADMAP.md](WAVE_B_ROADMAP.md) | [WAVE_B_ROADMAP.html](WAVE_B_ROADMAP.html) | [WAVE_B_ROADMAP.txt](WAVE_B_ROADMAP.txt) |
+| Auto-updater setup | [UPDATER.md](UPDATER.md) | [UPDATER.html](UPDATER.html) | [UPDATER.txt](UPDATER.txt) |
 | Demo Script | [DEMO_SCRIPT.md](DEMO_SCRIPT.md) | [DEMO_SCRIPT.html](DEMO_SCRIPT.html) | [DEMO_SCRIPT.txt](DEMO_SCRIPT.txt) |
 | QA Checklists | [QA_CHECKLIST.md](QA_CHECKLIST.md) | [QA_CHECKLIST.html](QA_CHECKLIST.html) | [QA_CHECKLIST.txt](QA_CHECKLIST.txt) |
+| Cross-platform dev checklist | [CROSS_PLATFORM_CHECKLIST.md](CROSS_PLATFORM_CHECKLIST.md) | [CROSS_PLATFORM_CHECKLIST.html](CROSS_PLATFORM_CHECKLIST.html) | [CROSS_PLATFORM_CHECKLIST.txt](CROSS_PLATFORM_CHECKLIST.txt) |
 
 ---
 

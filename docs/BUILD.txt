@@ -165,16 +165,40 @@ ARCHITECTURE DECISIONS (RATIONALE)
 
 ────────────────────────────────────────
 
+WAVE B — ADVANCED SYSTEMS (2026)
+--------------------------------
+
+See WAVE_B_ROADMAP.md for full design.
+
+  Item                              |  Status   |  Notes                                                             
+  B1 Cryptographic HITL tokens      |  Shipped  |  hitl_token.rs; boolean IPC bypass rejected                        
+  B2a In-process GGUF (planner)     |  Shipped  |  local_inference.rs + llama-cpp-2 optional feature                 
+  B2b In-process GGUF (local chat)  |  Shipped  |  Settings → Experimental → Use GGUF for local chat                 
+  B3 xterm.js terminal              |  Shipped  |  LiveTerminal — live stream while thinking; replay on command cards
+  B4 YOLO micro-sandbox             |  Shipped  |  macOS sandbox-exec / Linux bwrap when YOLO + experimental flag    
+
+Embedded GGUF builds (command planner, no Ollama daemon required for planner path):
+
+  [bash]
+    npm run tauri:dev:embedded
+    # or: cd src-tauri && cargo build --features embedded-llm
+
+Set Settings → Agent access → GGUF path to a small coding model (e.g. Qwen2.5-Coder 1.5B Q4). CI builds omit embedded-llm by default to keep matrix fast.
+
+────────────────────────────────────────
+
 KNOWN ALPHA LIMITATIONS
 -----------------------
 
 Documented explicitly for portfolio honesty:
 
-  • Manual API key / Ollama setup required (no bundled models)
+  • Manual API key / Ollama setup for main chat (optional in-process GGUF for command planner and local chat when built with embedded-llm)
+  • Cryptographic HITL and Path Gate tokens on main; tagged v0.1.0-alpha predates some hardening
+  • Auto-updater requires minisign keys — see UPDATER.md
   • macOS automation permissions may need re-grant after binary path changes
-  • Linux CI targets x86_64; ARM requires local build
+  • Linux CI targets x86_64; ARM requires local build; Wayland tray uses left-click menu
   • Snap / Flatpak not published
-  • Automated test suite not yet established (see QA_CHECKLIST.md)
+  • Automated tests: cargo test (13) + Vitest (7); no E2E yet
   • CSP relaxed for asset protocol during alpha
 
 ────────────────────────────────────────

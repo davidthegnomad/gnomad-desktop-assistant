@@ -26,6 +26,7 @@ Gnomad is a desktop-native AI assistant that combines a WebView UI with a Rust s
     │                     Tauri 2 Runtime (Rust)                       │
     │  lib.rs · window_manager · platform · context · keychain         │
     │  shell_session · agent_runtime · agent_fs · privilege · audit    │
+    │  hitl_token · path_token · local_inference · shell_sandbox       │
     └────────────────────────────┬─────────────────────────────────────┘
                                  │ invoke / events
     ┌────────────────────────────▼─────────────────────────────────────┐
@@ -43,11 +44,11 @@ Gnomad is a desktop-native AI assistant that combines a WebView UI with a Rust s
 LAYER RESPONSIBILITIES
 ----------------------
 
-  Layer         |  Owns                                                  |  Must not own                                      
-  React UI      |  Layout, chat UX, modals (Sudo/Path Gate), onboarding  |  Direct shell spawn, raw secret storage            
-  Tauri IPC     |  Serialization, command dispatch, events               |  Business copy in Rust-only paths where UI suffices
-  Rust backend  |  PTY, FS sandbox, safety checks, keychain, audit       |  LLM prompt styling (mostly frontend)              
-  External LLM  |  Inference                                             |  Local file paths without agent layer              
+  Layer         |  Owns                                                            |  Must not own                                      
+  React UI      |  Layout, chat UX, modals (Sudo/Path Gate), onboarding            |  Direct shell spawn, raw secret storage            
+  Tauri IPC     |  Serialization, command dispatch, events                         |  Business copy in Rust-only paths where UI suffices
+  Rust backend  |  PTY, FS sandbox, safety checks, keychain, audit, signed tokens  |  LLM prompt styling (mostly frontend)              
+  External LLM  |  Inference                                                       |  Local file paths without agent layer              
 
 ────────────────────────────────────────
 
@@ -148,6 +149,8 @@ RELATED DOCUMENTS
 
   • TECH_STACK.md — technology choices
   • SECURITY_MODEL.md — trust and gates
+  • WAVE_B_ROADMAP.md — advanced systems (shipped)
+  • UPDATER.md — in-app updates
   • BUILD.md — delivery phases
 
 Built with ❤️ by Gnomad Studio 🦙

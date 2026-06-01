@@ -11,6 +11,8 @@ export interface AgentSettings {
   commandPlannerModel: string;
   commandPlannerUseChatLocalModel: boolean;
   commandPlannerGgufPath: string;
+  useGgufForLocalChat: boolean;
+  sandboxShellInYolo: boolean;
 }
 
 export interface CommandPlannerPatch {
@@ -40,6 +42,16 @@ export async function setCommandPlanner(
     model: patch.model,
     useChatLocalModel: patch.useChatLocalModel,
     ggufPath: patch.ggufPath,
+  });
+}
+
+export async function setAgentExperimentalFlags(flags: {
+  useGgufForLocalChat: boolean;
+  sandboxShellInYolo: boolean;
+}): Promise<AgentSettings> {
+  return invoke<AgentSettings>("set_agent_experimental_flags", {
+    useGgufForLocalChat: flags.useGgufForLocalChat,
+    sandboxShellInYolo: flags.sandboxShellInYolo,
   });
 }
 

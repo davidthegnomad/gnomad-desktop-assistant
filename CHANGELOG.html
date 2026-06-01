@@ -226,16 +226,46 @@ body {
     <nav class="sidebar" aria-label="Table of contents">
           <div class="brand"><span class="brand-icon">🍄</span><h1>Gnomad</h1></div>
           <p class="doc-path">CHANGELOG.md</p>
-          <a href="#010-alpha-2026-05-31" class="toc-h2">[0.1.0-alpha] — 2026-05-31</a>
+          <a href="#unreleased-main-branch" class="toc-h2">[Unreleased] — main branch</a>
 <a href="#added" class="toc-h3">Added</a>
-<a href="#known-limitations-alpha" class="toc-h3">Known limitations (alpha)</a>
+<a href="#changed" class="toc-h3">Changed</a>
+<a href="#known-limitations" class="toc-h3">Known limitations</a>
+<a href="#010-alpha-2026-05-31" class="toc-h2">[0.1.0-alpha] — 2026-05-31</a>
+<a href="#added" class="toc-h3">Added</a>
+<a href="#known-limitations-alpha-tag" class="toc-h3">Known limitations (alpha tag)</a>
         </nav>
     <main class="content doc-body">
       <header class="hero">
         <h2>Changelog</h2>
         <p class="formats">Also available: <a href="CHANGELOG.md">Markdown</a> · <a href="CHANGELOG.txt">Plain text</a></p>
       </header>
-      <h1 id="changelog">Changelog</h1><h2 id="010-alpha-2026-05-31">[0.1.0-alpha] — 2026-05-31</h2><p>First public alpha.</p>
+      <h1 id="changelog">Changelog</h1><h2 id="unreleased-main-branch">[Unreleased] — main branch</h2><p>Post–v0.1.0-alpha hardening: Wave B systems, v0.2 beta readiness, and documentation refresh.</p>
+<h3 id="added">Added</h3><ul>
+<li><strong>Wave B1 — Cryptographic HITL tokens</strong> (<code>hitl_token.rs</code>): signed approval for risky shell; rejects bare <code>hitl_approved: true</code></li>
+<li><strong>Wave B2 — In-process GGUF</strong> (<code>local_inference.rs</code>, optional <code>embedded-llm</code> feature): command planner + optional local chat without Ollama</li>
+<li><strong>Wave B3 — xterm.js terminal</strong> (<code>LiveTerminal.tsx</code>): live PTY stream while thinking; replay on command cards</li>
+<li><strong>Wave B4 — YOLO micro-sandbox</strong> (<code>shell_sandbox.rs</code>): macOS <code>sandbox-exec</code> / Linux <code>bwrap</code> when YOLO + experimental flag</li>
+<li><strong>Path Gate tokens</strong> (<code>path_token.rs</code>): signed approval for out-of-workspace filesystem access</li>
+<li><strong>Structured errors</strong> (<code>error.rs</code>): JSON <code>GnomadError</code> payloads on LLM, planner, chat history, and agent paths</li>
+<li><strong>Tauri auto-updater</strong> (Settings → Updates): stable/beta channels; see <a href="docs/UPDATER.md"><code>docs/UPDATER.md</code></a></li>
+<li><strong>Linux Wayland tray</strong> improvements: left-click menu on Wayland; session hint in Settings</li>
+<li><strong>Vitest</strong> (<code>npm run test</code>): unit tests for <code>parseInvokeError</code>; runs in CI</li>
+<li><strong>App decomposition</strong>: hooks (<code>useAgentExecution</code>, <code>useChatSubmit</code>, …), <code>ChatView</code>, gate modals</li>
+<li>Docs: <a href="docs/WAVE_B_ROADMAP.md"><code>WAVE_B_ROADMAP.md</code></a>, <a href="docs/UPDATER.md"><code>UPDATER.md</code></a>, expanded <a href="docs/DOCS_INDEX.md"><code>DOCS_INDEX.md</code></a></li>
+</ul>
+<h3 id="changed">Changed</h3><ul>
+<li><code>App.tsx</code> slimmed; agent orchestration moved to hooks</li>
+<li>Local provider availability includes embedded GGUF when built with <code>embedded-llm</code></li>
+<li>Release workflow uploads <code>latest.json</code> for in-app updates (requires signing keys in CI)</li>
+</ul>
+<h3 id="known-limitations">Known limitations</h3><ul>
+<li>Updater requires generated minisign keys (placeholder pubkey in <code>tauri.conf.json</code> until replaced)</li>
+<li>Embedded GGUF not in default CI builds (<code>--features embedded-llm</code> for local dev)</li>
+<li>Windows sandbox not implemented (YOLO FS only on Windows)</li>
+<li>Bundled GGUF model not shipped (user supplies <code>.gguf</code> path)</li>
+</ul>
+<hr>
+<h2 id="010-alpha-2026-05-31">[0.1.0-alpha] — 2026-05-31</h2><p>First public alpha.</p>
 <h3 id="added">Added</h3><ul>
 <li>macOS menu-bar accessory with mushroom tray icon</li>
 <li>Linux <code>.deb</code>, <code>.rpm</code>, and AppImage packages</li>
@@ -247,7 +277,7 @@ body {
 <li>GitHub Actions multi-platform builds</li>
 <li><a href="https://davidthegnomad.github.io/gnomad-desktop-assistant/">Project site</a></li>
 </ul>
-<h3 id="known-limitations-alpha">Known limitations (alpha)</h3><ul>
+<h3 id="known-limitations-alpha-tag">Known limitations (alpha tag)</h3><ul>
 <li>Requires manual API key / Ollama setup</li>
 <li>macOS permissions for automation may need re-grant after updates</li>
 <li>Linux builds target x86_64 in CI; ARM requires local build</li>

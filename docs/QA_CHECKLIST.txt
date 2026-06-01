@@ -14,6 +14,8 @@ Environment: Production-like (release build preferred; note if tauri dev)
 
 Use one checklist section per OS. Mark PASS, FAIL, or N/A and add notes for failures. Block release on any P0 failure.
 
+During development (before a formal QA pass), use CROSS_PLATFORM_CHECKLIST.md when adding features or UI so macOS work is verified—or explicitly scoped—on Windows and Linux.
+
 Severity key
 
   Level  |  Definition                                                 

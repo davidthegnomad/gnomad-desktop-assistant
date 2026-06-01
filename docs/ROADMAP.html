@@ -229,6 +229,7 @@ body {
           <a href="#vision" class="toc-h2">Vision</a>
 <a href="#released-v010-alpha" class="toc-h2">Released — v0.1.0-alpha ✓</a>
 <a href="#v02-beta-readiness" class="toc-h2">v0.2 — Beta readiness</a>
+<a href="#wave-b-state-of-the-art-v03" class="toc-h2">Wave B — State-of-the-art (v0.3+)</a>
 <a href="#v03-broader-reach" class="toc-h2">v0.3 — Broader reach</a>
 <a href="#v10-general-availability" class="toc-h2">v1.0 — General availability</a>
 <a href="#non-goals-current" class="toc-h2">Non-goals (current)</a>
@@ -295,29 +296,34 @@ body {
 <td>Close IPC bypass class</td>
 </tr>
 <tr>
-<td>HITL token validated in Rust</td>
+<td><strong>Cryptographic HITL tokens (Wave B1)</strong></td>
 <td>P0</td>
-<td>Approve/deny bound to execution</td>
+<td>✓ Shipped — <a href="../src-tauri/src/hitl_token.rs">hitl_token.rs</a></td>
 </tr>
 <tr>
-<td>Rust unit tests (<code>privilege</code>, parsers)</td>
+<td>Wave B error migration (<code>llm</code>, planner, chat history)</td>
+<td>P1</td>
+<td>✓ Shipped — JSON <code>GnomadError</code> on LLM + chat store paths</td>
+</tr>
+<tr>
+<td>Rust unit tests (<code>privilege</code>, parsers, <code>error</code>)</td>
 <td>P0</td>
-<td>CI gate</td>
+<td>CI gate ✓ (<code>cargo test</code> in build workflow)</td>
 </tr>
 <tr>
 <td>Refresh CODE_REVIEW / TEST_NOTES</td>
 <td>P1</td>
-<td>Match shipped agent</td>
+<td>Match shipped agent ✓</td>
 </tr>
 <tr>
 <td>Auto-update channel (Tauri updater)</td>
 <td>P1</td>
-<td>Optional beta opt-in</td>
+<td>✓ Shipped — Settings → Updates; see <a href="UPDATER.md">UPDATER.md</a></td>
 </tr>
 <tr>
 <td>Improved Linux Wayland tray</td>
 <td>P1</td>
-<td>KDE/GNOME QA</td>
+<td>✓ Left-click menu on Wayland; session hint in Settings</td>
 </tr>
 <tr>
 <td>Error telemetry (opt-in, local-first)</td>
@@ -325,6 +331,9 @@ body {
 <td>Crash logs only</td>
 </tr>
 </tbody></table>
+<hr>
+<h2 id="wave-b-state-of-the-art-v03">Wave B — State-of-the-art (v0.3+)</h2><p>Detailed design for four evaluation follow-ups: <strong>HITL tokens</strong>, <strong>in-process LLM</strong>, <strong>Xterm.js PTY</strong>, <strong>YOLO micro-sandboxing</strong>.</p>
+<p>→ <strong><a href="WAVE_B_ROADMAP.md">WAVE_B_ROADMAP.md</a></strong> (phasing, acceptance criteria, risks)</p>
 <hr>
 <h2 id="v03-broader-reach">v0.3 — Broader reach</h2><table>
 <thead>

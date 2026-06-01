@@ -1,0 +1,45 @@
+════════════════════════════════════════════════════════════════════════
+  AUTO-UPDATER SIGNING KEYS
+  Gnomad Desktop Assistant · docs/UPDATER.md
+════════════════════════════════════════════════════════════════════════
+
+AUTO-UPDATER SIGNING KEYS
+=========================
+
+Gnomad uses the Tauri updater plugin with minisign-signed release artifacts.
+
+ONE-TIME SETUP
+--------------
+
+  1. Generate a key pair (keep the private key secret):
+
+  [bash]
+    cd src-tauri
+    npx tauri signer generate -w ~/.tauri/gnomad-updater.key
+
+  2. Copy the public key contents into src-tauri/tauri.conf.json → plugins.updater.pubkey (full string, not a file path).
+
+  3. Add GitHub Actions secrets for release builds:
+
+  Secret                              |  Value                              
+  TAURI_SIGNING_PRIVATE_KEY           |  Contents of the private key file   
+  TAURI_SIGNING_PRIVATE_KEY_PASSWORD  |  Key password (empty string if none)
+
+CHANNELS
+--------
+
+  Channel  |  Endpoint                                                   
+  Stable   |  …/releases/latest/download/latest.json                     
+  Beta     |  …/releases/download/v0.1.0-alpha/latest.json (pre-releases)
+
+Users choose the channel in Settings → Updates. The release workflow uploads latest.json when includeUpdaterJson: true.
+
+VERIFY LOCALLY
+--------------
+
+After a tagged release, install the previous version and use Check for updates in Settings. Updates only install when the artifact signature matches the embedded public key.
+
+════════════════════════════════════════════════════════════════════════
+Built with ❤️ by Gnomad Studio 🦙
+https://gnomadstudio.org
+════════════════════════════════════════════════════════════════════════

@@ -1,4 +1,5 @@
-use crate::agent_settings::{resolve_agent_path, read_settings, TrustMode, AgentSettingsState};
+use crate::agent_settings::{read_settings, AgentSettingsState};
+use crate::path_token::{PathScope, PathTokenState};
 use serde::Serialize;
 use std::fs;
 use std::path::Path;
@@ -52,28 +53,59 @@ pub struct FsSearchResult {
     pub matches: Vec<FsSearchMatch>,
 }
 
-fn settings_ctx(state: &AgentSettingsState) -> (std::path::PathBuf, TrustMode) {
+fn settings_ctx(state: &AgentSettingsState) -> (std::path::PathBuf, crate::agent_settings::TrustMode) {
     let s = read_settings(state);
     (s.workspace_root, s.trust_mode)
 }
 
-pub fn fs_list_inner(
-    state: &AgentSettingsState,
-    path: Option<String>,
-    path_approved: bool,
-) -> Result<FsListResult, String> {
-    let (workspace, trust) = settings_ctx(state);
-    let resolved = resolve_agent_path(
-        path.as_deref().unwrap_or("."),
+fn resolve_fs_path(
+    path_state: &PathTokenState,
+    settings_state: &AgentSettingsState,
+    input: &str,
+    scope: PathScope,
+    path_approval_token: Option<&str>,
+    path_approved: Option<bool>,
+) -> Result<std::path::PathBuf, String> {
+    let (workspace, trust) = settings_ctx(settings_state);
+    crate::agent_settings::resolve_agent_path_with_token(
+        input,
         &workspace,
         trust,
+        path_state,
+        scope,
+        path_approval_token,
+        path_approved,
+    )
+}
+
+pub fn fs_list_inner(
+    path_state: &PathTokenState,
+    state: &AgentSettingsState,
+    path: Option<String>,
+    path_approval_token: Option<&str>,
+    path_approved: Option<bool>,
+) -> Result<FsListResult, String> {
+    let resolved = resolve_fs_path(
+        path_state,
+        state,
+        path.as_deref().unwrap_or("."),
+        PathScope::Read,
+        path_approval_token,
         path_approved,
     )?;
     if !resolved.is_dir() {
-        return Err(format!("Not a directory: {}", resolved.display()));
+        return Err(crate::error::into_invoke_err(crate::error::GnomadError::Fs {
+            message: format!("Not a directory: {}", resolved.display()),
+            detail: None,
+        }));
     }
     let mut entries = Vec::new();
-    for entry in fs::read_dir(&resolved).map_err(|e| e.to_string())? {
+    for entry in fs::read_dir(&resolved).map_err(|e| {
+        crate::error::into_invoke_err(crate::error::GnomadError::Fs {
+            message: "Failed to read directory.".into(),
+            detail: Some(e.to_string()),
+        })
+    })? {
         let entry = entry.map_err(|e| e.to_string())?;
         let meta = entry.metadata().map_err(|e| e.to_string())?;
         entries.push(FsEntry {
@@ -91,24 +123,48 @@ pub fn fs_list_inner(
 
 #[tauri::command]
 pub fn agent_fs_list(
+    path_state: tauri::State<'_, PathTokenState>,
     state: tauri::State<'_, AgentSettingsState>,
     path: Option<String>,
+    path_approval_token: Option<String>,
     path_approved: Option<bool>,
 ) -> Result<FsListResult, String> {
-    fs_list_inner(state.inner(), path, path_approved.unwrap_or(false))
+    fs_list_inner(
+        path_state.inner(),
+        state.inner(),
+        path,
+        path_approval_token.as_deref(),
+        path_approved,
+    )
 }
 
 pub fn fs_read_inner(
+    path_state: &PathTokenState,
     state: &AgentSettingsState,
     path: String,
-    path_approved: bool,
+    path_approval_token: Option<&str>,
+    path_approved: Option<bool>,
 ) -> Result<FsReadResult, String> {
-    let (workspace, trust) = settings_ctx(state);
-    let resolved = resolve_agent_path(&path, &workspace, trust, path_approved)?;
+    let resolved = resolve_fs_path(
+        path_state,
+        state,
+        &path,
+        PathScope::Read,
+        path_approval_token,
+        path_approved,
+    )?;
     if resolved.is_dir() {
-        return Err("Path is a directory; use fs_list.".into());
+        return Err(crate::error::into_invoke_err(crate::error::GnomadError::Fs {
+            message: "Path is a directory; use fs_list.".into(),
+            detail: None,
+        }));
     }
-    let data = fs::read(&resolved).map_err(|e| e.to_string())?;
+    let data = fs::read(&resolved).map_err(|e| {
+        crate::error::into_invoke_err(crate::error::GnomadError::Fs {
+            message: "Failed to read file.".into(),
+            detail: Some(e.to_string()),
+        })
+    })?;
     if data.iter().take(8192).any(|b| *b == 0) {
         return Ok(FsReadResult {
             path: resolved.to_string_lossy().to_string(),
@@ -134,28 +190,44 @@ pub fn fs_read_inner(
 
 #[tauri::command]
 pub fn agent_fs_read(
+    path_state: tauri::State<'_, PathTokenState>,
     state: tauri::State<'_, AgentSettingsState>,
     path: String,
+    path_approval_token: Option<String>,
     path_approved: Option<bool>,
 ) -> Result<FsReadResult, String> {
-    fs_read_inner(state.inner(), path, path_approved.unwrap_or(false))
+    fs_read_inner(
+        path_state.inner(),
+        state.inner(),
+        path,
+        path_approval_token.as_deref(),
+        path_approved,
+    )
 }
 
 pub fn fs_write_inner(
     app: &tauri::AppHandle,
+    path_state: &PathTokenState,
     state: &AgentSettingsState,
     path: String,
     content: String,
-    path_approved: bool,
+    path_approval_token: Option<&str>,
+    path_approved: Option<bool>,
 ) -> Result<FsWriteResult, String> {
-    let (workspace, trust) = settings_ctx(state);
-    let resolved = resolve_agent_path(&path, &workspace, trust, path_approved)?;
+    let resolved = resolve_fs_path(
+        path_state,
+        state,
+        &path,
+        PathScope::Write,
+        path_approval_token,
+        path_approved,
+    )?;
     if let Some(parent) = resolved.parent() {
         fs::create_dir_all(parent).map_err(|e| e.to_string())?;
     }
     fs::write(&resolved, &content).map_err(|e| e.to_string())?;
     crate::agent_audit::log_action(
-        &app,
+        app,
         "fs_write",
         &format!("{} ({} bytes)", resolved.display(), content.len()),
     );
@@ -168,36 +240,46 @@ pub fn fs_write_inner(
 #[tauri::command]
 pub fn agent_fs_write(
     app: tauri::AppHandle,
+    path_state: tauri::State<'_, PathTokenState>,
     state: tauri::State<'_, AgentSettingsState>,
     path: String,
     content: String,
+    path_approval_token: Option<String>,
     path_approved: Option<bool>,
 ) -> Result<FsWriteResult, String> {
     fs_write_inner(
         &app,
+        path_state.inner(),
         state.inner(),
         path,
         content,
-        path_approved.unwrap_or(false),
+        path_approval_token.as_deref(),
+        path_approved,
     )
 }
 
 pub fn fs_search_inner(
+    path_state: &PathTokenState,
     state: &AgentSettingsState,
     query: String,
     path: Option<String>,
-    path_approved: bool,
+    path_approval_token: Option<&str>,
+    path_approved: Option<bool>,
 ) -> Result<FsSearchResult, String> {
-    let (workspace, trust) = settings_ctx(state);
-    let root = resolve_agent_path(
+    let root = resolve_fs_path(
+        path_state,
+        state,
         path.as_deref().unwrap_or("."),
-        &workspace,
-        trust,
+        PathScope::Read,
+        path_approval_token,
         path_approved,
     )?;
     let q = query.trim();
     if q.is_empty() {
-        return Err("Search query cannot be empty.".into());
+        return Err(crate::error::into_invoke_err(crate::error::GnomadError::Fs {
+            message: "Search query cannot be empty.".into(),
+            detail: None,
+        }));
     }
     let mut matches = Vec::new();
     search_dir(&root, q, &mut matches)?;
@@ -209,16 +291,20 @@ pub fn fs_search_inner(
 
 #[tauri::command]
 pub fn agent_fs_search(
+    path_state: tauri::State<'_, PathTokenState>,
     state: tauri::State<'_, AgentSettingsState>,
     query: String,
     path: Option<String>,
+    path_approval_token: Option<String>,
     path_approved: Option<bool>,
 ) -> Result<FsSearchResult, String> {
     fs_search_inner(
+        path_state.inner(),
         state.inner(),
         query,
         path,
-        path_approved.unwrap_or(false),
+        path_approval_token.as_deref(),
+        path_approved,
     )
 }
 

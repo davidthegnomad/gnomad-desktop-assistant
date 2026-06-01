@@ -240,6 +240,9 @@ body {
 <a href="#changing-models-and-api-keys" class="toc-h2">Changing models and API keys</a>
 <a href="#agent-shell-amp-filesystem" class="toc-h2">Agent: shell &amp; filesystem</a>
 <a href="#safety-sudo-gate-amp-path-gate" class="toc-h2">Safety: Sudo Gate &amp; Path Gate</a>
+<a href="#embedded-gguf-optional-build" class="toc-h2">Embedded GGUF (optional build)</a>
+<a href="#terminal-view-xtermjs" class="toc-h2">Terminal view (xterm.js)</a>
+<a href="#updates" class="toc-h2">Updates</a>
 <a href="#knowledge-amp-skills-library" class="toc-h2">Knowledge &amp; skills library</a>
 <a href="#chat-history-amp-sidebar" class="toc-h2">Chat history &amp; sidebar</a>
 <a href="#settings-reference" class="toc-h2">Settings reference</a>
@@ -400,8 +403,20 @@ body {
 <li><strong>Audit:</strong> <code>{app_data}/gnomad/agent-audit.jsonl</code></li>
 </ul>
 <hr>
-<h2 id="safety-sudo-gate-amp-path-gate">Safety: Sudo Gate &amp; Path Gate</h2><p><strong>Sudo Gate</strong> — Risky shell (sudo, rm -rf, etc.): read reason, Approve or Deny.</p>
-<p><strong>Path Gate</strong> — Standard mode: files outside workspace need approval.</p>
+<h2 id="safety-sudo-gate-amp-path-gate">Safety: Sudo Gate &amp; Path Gate</h2><p><strong>Sudo Gate</strong> — Risky shell (sudo, rm -rf, etc.): read reason, Approve or Deny. Approval mints a <strong>signed HITL token</strong> bound to the exact command (single-use, ~2 min TTL). Passing approval without a token is rejected.</p>
+<p><strong>Path Gate</strong> — Standard mode: files outside workspace need approval. <strong>Allow once</strong> mints a <strong>signed path token</strong> bound to the canonical path and scope (read/write).</p>
+<hr>
+<h2 id="embedded-gguf-optional-build">Embedded GGUF (optional build)</h2><p>When built with <code>embedded-llm</code> (<code>npm run tauri:dev:embedded</code>):</p>
+<ol>
+<li><strong>Settings → Agent access → GGUF path</strong> — point to a small <code>.gguf</code> (e.g. Qwen2.5-Coder 1.5B Q4)</li>
+<li><strong>Command planner</strong> uses GGUF in-process (no Ollama required for planner)</li>
+<li><strong>Experimental → Use GGUF for local chat</strong> — full local chat without Ollama</li>
+<li><strong>Experimental → Sandbox shell in YOLO</strong> — wrap shell in OS sandbox (macOS/Linux)</li>
+</ol>
+<hr>
+<h2 id="terminal-view-xtermjs">Terminal view (xterm.js)</h2><p>While the agent runs commands, live PTY output streams in the thinking panel. On command cards, click <strong>Terminal view</strong> to replay ANSI-colored output in an embedded terminal.</p>
+<hr>
+<h2 id="updates">Updates</h2><p><strong>Settings → Updates</strong> — choose <strong>Stable</strong> or <strong>Beta</strong> channel, then <strong>Check for updates</strong>. Requires signed release artifacts; see <a href="UPDATER.md"><code>UPDATER.md</code></a>.</p>
 <hr>
 <h2 id="knowledge-amp-skills-library">Knowledge &amp; skills library</h2><p>Open via book icon or sidebar. Folders under <code>gnomad/knowledge/</code>:</p>
 <ul>
@@ -436,7 +451,11 @@ body {
 </tr>
 <tr>
 <td>Agent access</td>
-<td>Workspace, trust, planner</td>
+<td>Workspace, trust, planner, GGUF, experimental flags</td>
+</tr>
+<tr>
+<td>Updates</td>
+<td>Stable/beta channel, check/install</td>
 </tr>
 <tr>
 <td>Agent shell</td>
@@ -448,7 +467,7 @@ body {
 </tr>
 <tr>
 <td>Permissions</td>
-<td>Accessibility, elevation test</td>
+<td>Accessibility, elevation test; Wayland tray hint</td>
 </tr>
 </tbody></table>
 <p><strong>Theme:</strong> Sun/moon/monitor icon cycles Light → Dark → System.</p>
@@ -480,7 +499,7 @@ body {
 <hr>
 <h2 id="platform-specific-notes">Platform-specific notes</h2><p><strong>macOS:</strong> Accessibility for automation; admin auth for elevation.</p>
 <p><strong>Windows:</strong> Tray near notification area; elevated cmds in admin terminal.</p>
-<p><strong>Linux:</strong> WebKitGTK + AppIndicator; optional <code>xdotool</code>, <code>wl-paste</code>, <code>xclip</code>.</p>
+<p><strong>Linux:</strong> WebKitGTK + AppIndicator; optional <code>xdotool</code>, <code>wl-paste</code>, <code>xclip</code>. On <strong>Wayland</strong>, left-click the tray icon to open the menu (Settings shows a hint when Wayland is detected).</p>
 <hr>
 <h2 id="troubleshooting">Troubleshooting</h2><table>
 <thead>

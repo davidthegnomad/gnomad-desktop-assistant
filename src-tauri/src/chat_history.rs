@@ -6,6 +6,22 @@ use std::{
 };
 use tauri::Manager;
 
+use crate::error::{into_invoke_err, GnomadError};
+
+fn chat_fs_err(message: impl Into<String>, detail: Option<String>) -> String {
+    into_invoke_err(GnomadError::Fs {
+        message: message.into(),
+        detail,
+    })
+}
+
+fn chat_internal_err(message: impl Into<String>, detail: Option<String>) -> String {
+    into_invoke_err(GnomadError::Internal {
+        message: message.into(),
+        detail,
+    })
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StoredCommandResult {
     pub success: bool,
@@ -67,7 +83,7 @@ fn chats_dir(app: &tauri::AppHandle) -> Result<PathBuf, String> {
     let base = app
         .path()
         .app_data_dir()
-        .map_err(|e| format!("app data dir: {e}"))?;
+        .map_err(|e| chat_fs_err("Could not resolve app data directory.", Some(e.to_string())))?;
     Ok(base.join("gnomad").join("chats"))
 }
 
@@ -128,7 +144,7 @@ fn preview_from_messages(messages: &[StoredChatMessage]) -> String {
 }
 
 fn load_store(dir: &Path) -> Result<ChatStore, String> {
-    fs::create_dir_all(dir).map_err(|e| e.to_string())?;
+    fs::create_dir_all(dir).map_err(|e| chat_fs_err("Could not create chat storage directory.", Some(e.to_string())))?;
     let path = store_path(dir);
     if !path.exists() {
         return Ok(ChatStore {
@@ -137,14 +153,16 @@ fn load_store(dir: &Path) -> Result<ChatStore, String> {
             sessions: vec![],
         });
     }
-    let raw = fs::read_to_string(&path).map_err(|e| e.to_string())?;
-    serde_json::from_str(&raw).map_err(|e| e.to_string())
+    let raw = fs::read_to_string(&path)
+        .map_err(|e| chat_fs_err("Could not read chat store.", Some(e.to_string())))?;
+    serde_json::from_str(&raw).map_err(|e| chat_fs_err("Chat store file is corrupted.", Some(e.to_string())))
 }
 
 fn save_store(dir: &Path, store: &ChatStore) -> Result<(), String> {
-    fs::create_dir_all(dir).map_err(|e| e.to_string())?;
-    let raw = serde_json::to_string_pretty(store).map_err(|e| e.to_string())?;
-    fs::write(store_path(dir), raw).map_err(|e| e.to_string())
+    fs::create_dir_all(dir).map_err(|e| chat_fs_err("Could not create chat storage directory.", Some(e.to_string())))?;
+    let raw = serde_json::to_string_pretty(store)
+        .map_err(|e| chat_internal_err("Could not serialize chat store.", Some(e.to_string())))?;
+    fs::write(store_path(dir), raw).map_err(|e| chat_fs_err("Could not save chat store.", Some(e.to_string())))
 }
 
 fn to_summary(session: &ChatSession) -> ChatSessionSummary {
@@ -200,7 +218,7 @@ pub fn load_chat_session(app: tauri::AppHandle, id: String) -> Result<ChatSessio
         .sessions
         .into_iter()
         .find(|s| s.id == id)
-        .ok_or_else(|| format!("Chat session not found: {id}"))
+        .ok_or_else(|| chat_internal_err(format!("Chat session not found: {id}"), None))
 }
 
 #[tauri::command]
@@ -237,7 +255,7 @@ pub fn save_chat_session(
         .sessions
         .iter_mut()
         .find(|s| s.id == id)
-        .ok_or_else(|| format!("Chat session not found: {id}"))?;
+        .ok_or_else(|| chat_internal_err(format!("Chat session not found: {id}"), None))?;
 
     session.messages = messages;
     session.title = title;
@@ -256,7 +274,7 @@ pub fn delete_chat_session(app: tauri::AppHandle, id: String) -> Result<ChatSess
         .sessions
         .iter()
         .position(|s| s.id == id)
-        .ok_or_else(|| format!("Chat session not found: {id}"))?;
+        .ok_or_else(|| chat_internal_err(format!("Chat session not found: {id}"), None))?;
     store.sessions.remove(idx);
 
     if store.sessions.is_empty() {
@@ -270,13 +288,13 @@ pub fn delete_chat_session(app: tauri::AppHandle, id: String) -> Result<ChatSess
     let active_id = store
         .active_id
         .clone()
-        .ok_or_else(|| "No active session".to_string())?;
+        .ok_or_else(|| chat_internal_err("No active chat session.", None))?;
     let active = store
         .sessions
         .iter()
         .find(|s| s.id == active_id)
         .cloned()
-        .ok_or_else(|| "Active session missing".to_string())?;
+        .ok_or_else(|| chat_internal_err("Active chat session is missing from store.", None))?;
 
     save_store(&dir, &store)?;
     Ok(active)
@@ -287,7 +305,7 @@ pub fn set_active_chat_session(app: tauri::AppHandle, id: String) -> Result<(), 
     let dir = chats_dir(&app)?;
     let mut store = load_store(&dir)?;
     if !store.sessions.iter().any(|s| s.id == id) {
-        return Err(format!("Chat session not found: {id}"));
+        return Err(chat_internal_err(format!("Chat session not found: {id}"), None));
     }
     store.active_id = Some(id);
     save_store(&dir, &store)?;

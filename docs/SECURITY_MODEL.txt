@@ -60,7 +60,20 @@ Triggered when check_command_safety marks a command as requiring HITL (e.g. sudo
 
 Path Gate
 
-In Standard mode, filesystem tool calls targeting paths outside the workspace require explicit approval.
+In Standard mode, filesystem tool calls targeting paths outside the workspace require explicit approval. After Allow once, the app issues a signed path gate token (same HMAC pattern as HITL) bound to the canonical path hash, scope (read / write), nonce, and expiry (~300s). Passing path_approved: true without a token is rejected.
+
+Implementation: src-tauri/src/path_token.rs, frontend src/lib/pathToken.ts.
+
+Cryptographic approval tokens (Wave B1 — shipped)
+
+When check_command_safety requires HITL:
+
+  1. After Sudo Gate Approve, the app calls issue_hitl_approval_token (Rust). The backend returns a short-lived HMAC-SHA256 token bound to SHA-256(normalized command), nonce, expiry (~120s), and scope (shell_run or elevated).
+  2. Signing secret is stored in the OS keychain (hitl-hmac-secret); not exposed to the webview.
+  3. shell_session_run, agent_execute_tool (shell_run), and execute_elevated_command require a valid token. Passing hitl_approved: true without a token returns safety_blocked (“Unsigned HITL approval is not accepted”).
+  4. Tokens are single-use (nonce burned in memory after verification).
+
+Implementation: src-tauri/src/hitl_token.rs, frontend src/lib/hitlToken.ts.
 
 ────────────────────────────────────────
 

@@ -17,6 +17,7 @@ import {
 import {
   normalizeCloudModel,
   resolveLlmAvailability,
+  EMBEDDED_GGUF_MODEL,
   type LlmAvailability,
 } from "../lib/models";
 
@@ -61,6 +62,14 @@ export function useLlmSettings() {
         }
         return current;
       });
+
+      if (
+        availability.localModels.some((m) => m.value === EMBEDDED_GGUF_MODEL.value) &&
+        !availability.localModels.some((m) => m.value === getStoredLocalModel())
+      ) {
+        setLocalModel(EMBEDDED_GGUF_MODEL.value);
+        setStoredLocalModel(EMBEDDED_GGUF_MODEL.value);
+      }
 
       return availability;
     },

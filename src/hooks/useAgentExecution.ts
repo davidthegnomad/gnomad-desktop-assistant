@@ -4,6 +4,7 @@ import type { AgentSettings } from "../lib/agentSettings";
 import { tryPlanInvalidCommand } from "../lib/commandPlanner";
 import { executionFailedLabel, parseInvokeError } from "../lib/errors";
 import { issueHitlApprovalToken, type HitlScope } from "../lib/hitlToken";
+import { issuePathGateToken, type PathScope } from "../lib/pathToken";
 import { isValidShellCommand } from "../lib/agentShell";
 import { runShellSessionCommand, type ShellRunState } from "../lib/shellSession";
 import type { Message, SafetyCheck } from "../types/chat";
@@ -22,6 +23,7 @@ export function useAgentExecution(options: {
   const [pathGateOpen, setPathGateOpen] = useState(false);
   const [pathGateTarget, setPathGateTarget] = useState("");
   const [pathGateReason, setPathGateReason] = useState("");
+  const [pathGateScope, setPathGateScope] = useState<PathScope>("read");
 
   const sudoResolveRef = useRef<((approved: boolean) => void) | null>(null);
 
@@ -32,7 +34,7 @@ export function useAgentExecution(options: {
     },
     []
   );
-  const pathResolveRef = useRef<((approved: boolean) => void) | null>(null);
+  const pathResolveRef = useRef<((token: string | null) => void) | null>(null);
 
   const resolveSudoGate = useCallback((approved: boolean) => {
     sudoResolveRef.current?.(approved);
@@ -41,10 +43,22 @@ export function useAgentExecution(options: {
   }, []);
 
   const resolvePathGate = useCallback((approved: boolean) => {
-    pathResolveRef.current?.(approved);
-    pathResolveRef.current = null;
-    setPathGateOpen(false);
-  }, []);
+    if (!approved) {
+      pathResolveRef.current?.(null);
+      pathResolveRef.current = null;
+      setPathGateOpen(false);
+      return;
+    }
+    const path = pathGateTarget;
+    const scope: PathScope = pathGateScope;
+    void issuePathGateToken(path, scope)
+      .then((token) => pathResolveRef.current?.(token))
+      .catch(() => pathResolveRef.current?.(null))
+      .finally(() => {
+        pathResolveRef.current = null;
+        setPathGateOpen(false);
+      });
+  }, [pathGateTarget, pathGateScope]);
 
   const requestHitlApproval = useCallback((command: string, reason: string) => {
     return new Promise<string | null>((resolve) => {
@@ -67,11 +81,12 @@ export function useAgentExecution(options: {
     });
   }, [mintApprovalToken]);
 
-  const requestPathApproval = useCallback((path: string, reason: string) => {
-    return new Promise<boolean>((resolve) => {
+  const requestPathApproval = useCallback((path: string, reason: string, scope: PathScope = "read") => {
+    return new Promise<string | null>((resolve) => {
       pathResolveRef.current = resolve;
       setPathGateTarget(path);
       setPathGateReason(reason);
+      setPathGateScope(scope);
       setPathGateOpen(true);
     });
   }, []);

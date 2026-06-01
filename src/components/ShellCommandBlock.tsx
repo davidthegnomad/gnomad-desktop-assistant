@@ -1,4 +1,6 @@
-import { AlertTriangle, CheckCircle2, Clock, Terminal, XCircle } from "lucide-react";
+import { useState } from "react";
+import { AlertTriangle, CheckCircle2, Clock, Monitor, Terminal, XCircle } from "lucide-react";
+import { LiveTerminal } from "./LiveTerminal";
 import type { ShellRunState } from "../lib/shellSession";
 
 interface ShellCommandBlockProps {
@@ -41,6 +43,7 @@ export function ShellCommandBlock({
   message,
   durationMs,
 }: ShellCommandBlockProps) {
+  const [showLive, setShowLive] = useState(false);
   const output = (stderr?.trim() ? stderr : stdout).trim() || "(no output)";
   const blockClass =
     state === "completed" || (success && !state)
@@ -87,7 +90,27 @@ export function ShellCommandBlock({
           cwd: {cwd}
         </div>
       )}
-      <pre className="shell-command-output">{output}</pre>
+      <div className="shell-command-output-row">
+        <button
+          type="button"
+          className="btn-secondary btn-sm shell-live-toggle"
+          onClick={() => setShowLive((v) => !v)}
+          title="Toggle ANSI terminal view (replay uses summary text)"
+        >
+          <Monitor size={12} />
+          {showLive ? "Hide terminal" : "Terminal view"}
+        </button>
+      </div>
+      {showLive ? (
+        <LiveTerminal
+          active
+          stream={false}
+          initialText={output}
+          className="shell-command-live"
+        />
+      ) : (
+        <pre className="shell-command-output">{output}</pre>
+      )}
     </div>
   );
 }

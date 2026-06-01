@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cross-platform checklist — Gnomad Desktop Assistant</title>
+  <meta name="description" content="Cross-platform checklist documentation for Gnomad Desktop Assistant." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>:root {
+  --bg-base: #0a0a0a;
+  --bg-panel: rgba(18, 18, 20, 0.92);
+  --bg-elevated: rgba(30, 30, 35, 0.95);
+  --border: rgba(255, 255, 255, 0.1);
+  --text: #f3f4f6;
+  --muted: #9ca3af;
+  --accent: #8ab4f8;
+  --accent-secondary: #c58af9;
+  --success: #34a853;
+  --warning: #f9ab00;
+  --danger: #ea4335;
+  --pill-radius: 999px;
+  --radius: 16px;
+  --mesh:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(66, 133, 244, 0.2), transparent 65%),
+    radial-gradient(ellipse 60% 40% at 10% 30%, rgba(168, 85, 247, 0.12), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 95% 40%, rgba(242, 139, 130, 0.1), transparent 50%);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: "Google Sans Flex", "Roboto", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--bg-base);
+  min-height: 100vh;
+}
+
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: var(--mesh);
+  z-index: 0;
+}
+
+.layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 1.5rem 1.25rem;
+  background: var(--bg-panel);
+  backdrop-filter: blur(24px);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.brand-icon { font-size: 1.5rem; }
+.brand h1 { font-size: 1rem; font-weight: 600; }
+
+.doc-path {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  word-break: break-all;
+}
+
+.sidebar a {
+  display: block;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar a.toc-h3 { padding-left: 1.1rem; font-size: 0.78rem; }
+.sidebar a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.sidebar a.active { color: var(--accent); background: rgba(138,180,248,0.12); }
+
+.content {
+  padding: 2rem 2.5rem 3rem;
+  max-width: 760px;
+}
+
+.hero { margin-bottom: 1.5rem; }
+.hero h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.formats { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+.formats a { color: var(--accent); }
+
+.doc-body h1 { font-size: 1.5rem; margin: 1.5rem 0 0.75rem; }
+.doc-body h2 {
+  font-size: 1.25rem;
+  margin: 2rem 0 0.65rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.doc-body h3 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; color: var(--accent); }
+.doc-body h4 { font-size: 0.95rem; margin: 1rem 0 0.4rem; }
+
+.doc-body p { margin-bottom: 0.85rem; }
+.doc-body ul, .doc-body ol { margin: 0 0 1rem 1.25rem; color: var(--muted); }
+.doc-body li { margin-bottom: 0.35rem; }
+.doc-body li strong { color: var(--text); }
+
+.doc-body a { color: var(--accent); }
+.doc-body code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85em;
+  background: rgba(255,255,255,0.08);
+  padding: 0.12em 0.35em;
+  border-radius: 6px;
+  color: var(--accent-secondary);
+}
+
+.doc-body pre {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.doc-body pre code {
+  background: none;
+  padding: 0;
+  color: var(--text);
+}
+
+.doc-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1rem 0;
+}
+
+.doc-body th, .doc-body td {
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-body th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.doc-body blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 0.6rem 1rem;
+  margin: 1rem 0;
+  background: rgba(138,180,248,0.08);
+  border-radius: 0 12px 12px 0;
+  color: var(--muted);
+}
+
+.doc-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+.doc-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.doc-footer a { color: var(--accent); text-decoration: none; }
+.doc-footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="mesh-bg" aria-hidden="true"></div>
+  <div class="layout">
+    <nav class="sidebar" aria-label="Table of contents">
+          <div class="brand"><span class="brand-icon">🍄</span><h1>Gnomad</h1></div>
+          <p class="doc-path">docs/CROSS_PLATFORM_CHECKLIST.md</p>
+          <a href="#quick-decision-does-my-change-need-per-os-work" class="toc-h2">Quick decision: does my change need per-OS work?</a>
+<a href="#before-you-merge-all-platforms" class="toc-h2">Before you merge (all platforms)</a>
+<a href="#ui-amp-settings-shared-react" class="toc-h2">UI &amp; settings (shared React)</a>
+<a href="#all-window-modes" class="toc-h3">All window modes</a>
+<a href="#chat-amp-composer" class="toc-h3">Chat &amp; composer</a>
+<a href="#settings-panels-new-work-tick-your-feature" class="toc-h3">Settings panels (new work: tick your feature)</a>
+<a href="#platform-specific-expectations" class="toc-h2">Platform-specific expectations</a>
+<a href="#macos" class="toc-h3">macOS</a>
+<a href="#windows" class="toc-h3">Windows</a>
+<a href="#linux" class="toc-h3">Linux</a>
+<a href="#agent-amp-shell-features" class="toc-h2">Agent &amp; shell features</a>
+<a href="#when-you-add-a-new-feature-template" class="toc-h2">When you add a new feature (template)</a>
+<a href="#implementing-platform-aware-ui-do-dont" class="toc-h2">Implementing platform-aware UI (do / don’t)</a>
+<a href="#ci-amp-release" class="toc-h2">CI &amp; release</a>
+<a href="#related-docs" class="toc-h2">Related docs</a>
+        </nav>
+    <main class="content doc-body">
+      <header class="hero">
+        <h2>Cross-platform checklist</h2>
+        <p class="formats">Also available: <a href="CROSS_PLATFORM_CHECKLIST.md">Markdown</a> · <a href="CROSS_PLATFORM_CHECKLIST.txt">Plain text</a></p>
+      </header>
+      <h1 id="cross-platform-checklist">Cross-platform checklist</h1><p>Use this whenever you add a feature, change UI, or tweak behavior. Gnomad ships <strong>one React app</strong> (<code>src/</code>) on macOS, Windows, and Linux—but <strong>shell chrome</strong>, <strong>OS integrations</strong>, and <strong>some menus</strong> differ by design.</p>
+<p><strong>Goal:</strong> Shared UI works everywhere; platform-specific behavior is <strong>explicit</strong>, <strong>documented</strong>, and <strong>tested</strong>—not accidental Mac-only behavior.</p>
+<hr>
+<h2 id="quick-decision-does-my-change-need-per-os-work">Quick decision: does my change need per-OS work?</h2><pre><code class="language-mermaid">flowchart TD
+  Start[Change landed] --&gt; Q1{Only React/CSS in src/?}
+  Q1 --&gt;|Yes| Q2{Uses platformInfo or OS-specific CSS?}
+  Q1 --&gt;|No| Q3{Rust in src-tauri?}
+  Q2 --&gt;|No| Low[Usually OK on all OSes — run smoke checklist]
+  Q2 --&gt;|Yes| Med[Verify each branch + Win/Linux windowed]
+  Q3 --&gt;|Yes| High[Add cfg blocks + test on target OS or CI]
+  Q3 --&gt;|shell/context/window| High
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>If you changed…</th>
+<th>Typical scope</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Chat, settings, knowledge, agent cards, composer</td>
+<td><strong>Shared</strong></td>
+<td>Smoke all OSes (panel + <strong>windowed</strong> on Win/Linux)</td>
+</tr>
+<tr>
+<td><code>index.css</code> layout / spacing</td>
+<td><strong>Shared</strong></td>
+<td>Check narrow width + windowed (toolbar may be hidden)</td>
+</tr>
+<tr>
+<td>Title bar, traffic lights, toolbar, fullscreen</td>
+<td><strong>Per-OS</strong></td>
+<td>Update <code>TitleBarLeading</code>, <code>AppToolbar</code>, <code>platform-*.css</code></td>
+</tr>
+<tr>
+<td>Tray, panel position, global shortcut</td>
+<td><strong>Per-OS</strong></td>
+<td><code>window_manager.rs</code>, <code>platform.rs</code>, <code>lib.rs</code> setup</td>
+</tr>
+<tr>
+<td>Shell, elevation, credentials, context</td>
+<td><strong>Per-OS backend</strong></td>
+<td><code>privilege.rs</code>, <code>context.rs</code>, <code>keychain</code> — UI can stay shared</td>
+</tr>
+<tr>
+<td>New Tauri command</td>
+<td><strong>Shared invoke</strong></td>
+<td>Register in <code>lib.rs</code>; gate risky OS APIs with <code>#[cfg]</code></td>
+</tr>
+</tbody></table>
+<p><strong>Code map</strong></p>
+<table>
+<thead>
+<tr>
+<th>Concern</th>
+<th>Primary files</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Platform flags &amp; labels</td>
+<td><a href="../src-tauri/src/platform.rs"><code>src-tauri/src/platform.rs</code></a> → <a href="../src/lib/platform.ts"><code>src/lib/platform.ts</code></a></td>
+</tr>
+<tr>
+<td>Frontend branching</td>
+<td><a href="../src/App.tsx"><code>src/App.tsx</code></a>, hooks (<code>useOsContext</code>, …), <code>platformInfo</code>, <code>data-platform</code> on <code>&lt;html&gt;</code></td>
+</tr>
+<tr>
+<td>Title bar / toolbar</td>
+<td><a href="../src/components/TitleBarLeading.tsx"><code>src/components/TitleBarLeading.tsx</code></a>, <a href="../src/components/AppToolbar.tsx"><code>src/components/AppToolbar.tsx</code></a></td>
+</tr>
+<tr>
+<td>Win/Linux panel CSS</td>
+<td><a href="../src/index.css"><code>src/index.css</code></a> (<code>.platform-windows</code>, <code>.platform-linux</code>)</td>
+</tr>
+<tr>
+<td>Window modes &amp; tray</td>
+<td><a href="../src-tauri/src/window_manager.rs"><code>src-tauri/src/window_manager.rs</code></a>, <a href="../src-tauri/src/menu_shell.rs"><code>src-tauri/src/menu_shell.rs</code></a></td>
+</tr>
+<tr>
+<td>OS context &amp; clipboard</td>
+<td><a href="../src-tauri/src/context.rs"><code>src-tauri/src/context.rs</code></a></td>
+</tr>
+<tr>
+<td>Safety / elevation</td>
+<td><a href="../src-tauri/src/privilege.rs"><code>src-tauri/src/privilege.rs</code></a></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="before-you-merge-all-platforms">Before you merge (all platforms)</h2><ul>
+<li><input disabled="" type="checkbox"> <code>npm run build</code> passes (TypeScript + Vite)</li>
+<li><input disabled="" type="checkbox"> <code>cd src-tauri &amp;&amp; cargo test</code> passes</li>
+<li><input disabled="" type="checkbox"> No Mac-only paths in shared React (avoid hardcoding <code>/Users/…</code>, <code>osascript</code>, <code>pbcopy</code> in <code>src/</code>)</li>
+<li><input disabled="" type="checkbox"> New settings/UI visible in <strong>Settings</strong> without requiring macOS-only permissions</li>
+<li><input disabled="" type="checkbox"> Strings use <code>platformInfo</code> for tray/menu labels when user-facing (e.g. “menu bar” vs “system tray”)</li>
+<li><input disabled="" type="checkbox"> CI green on macOS, Windows, Linux (see <a href="../.github/workflows/build.yml"><code>.github/workflows/build.yml</code></a>)</li>
+</ul>
+<hr>
+<h2 id="ui-amp-settings-shared-react">UI &amp; settings (shared React)</h2><p>Test on <strong>each OS</strong> you have access to; at minimum run CI and spot-check one non-Mac OS before release.</p>
+<h3 id="all-window-modes">All window modes</h3><table>
+<thead>
+<tr>
+<th>Check</th>
+<th align="center">macOS</th>
+<th align="center">Windows</th>
+<th align="center">Linux</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Panel</strong> (tray drop-down) opens, closes, global shortcut</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+</tr>
+<tr>
+<td><strong>Pop out</strong> / floating window usable</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+</tr>
+<tr>
+<td><strong>Windowed</strong> — content not clipped; settings reachable</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+</tr>
+<tr>
+<td><strong>Fullscreen</strong> enter/exit (if touched)</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+</tr>
+<tr>
+<td>Close hides to tray (not quit)</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+</tr>
+<tr>
+<td>Quit from tray menu exits app</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+</tr>
+</tbody></table>
+<h3 id="chat-amp-composer">Chat &amp; composer</h3><table>
+<thead>
+<tr>
+<th>Check</th>
+<th align="center">macOS</th>
+<th align="center">Windows</th>
+<th align="center">Linux</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Send message (cloud + local if applicable)</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+</tr>
+<tr>
+<td>Attachments pick + show chips</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+</tr>
+<tr>
+<td>Shell command cards show output</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+</tr>
+<tr>
+<td>Sudo Gate appears for risky command; approve/deny works</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+</tr>
+<tr>
+<td>Failed shell/elevation shows <strong>Agent error banner</strong> (code, hint, expandable detail)</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+</tr>
+<tr>
+<td>Stop cancels in-flight work</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+</tr>
+</tbody></table>
+<h3 id="settings-panels-new-work-tick-your-feature">Settings panels (new work: tick your feature)</h3><table>
+<thead>
+<tr>
+<th>Check</th>
+<th align="center">macOS</th>
+<th align="center">Windows</th>
+<th align="center">Linux</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>API keys — save/status (no secret in UI)</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+</tr>
+<tr>
+<td>Agent access — workspace, trust mode, planner</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+</tr>
+<tr>
+<td>Model / provider / Ollama URL</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+</tr>
+<tr>
+<td>Accessibility block <strong>only on macOS</strong> (hidden elsewhere)</td>
+<td align="center">☐</td>
+<td align="center">N/A</td>
+<td align="center">N/A</td>
+</tr>
+<tr>
+<td>Knowledge import (file dialog)</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+</tr>
+</tbody></table>
+<p><strong>Windowed mode on Windows/Linux:</strong> in-app toolbar is often <strong>hidden</strong>; use <strong>View</strong> menu (OS menu bar) for mode switches—confirm your feature isn’t toolbar-only.</p>
+<hr>
+<h2 id="platform-specific-expectations">Platform-specific expectations</h2><h3 id="macos">macOS</h3><ul>
+<li><input disabled="" type="checkbox"> Menu bar tray icon visible (not template-only broken)</li>
+<li><input disabled="" type="checkbox"> Traffic-light spacer in panel/pop-out (<code>titlebar-leading-macos</code>)</li>
+<li><input disabled="" type="checkbox"> Accessibility settings flow if context features changed</li>
+<li><input disabled="" type="checkbox"> <code>npm run tauri:build:mac</code> produces <code>.app</code> / <code>.dmg</code></li>
+</ul>
+<h3 id="windows">Windows</h3><ul>
+<li><input disabled="" type="checkbox"> System tray icon and tooltip</li>
+<li><input disabled="" type="checkbox"> <code>Ctrl+Shift+Space</code> toggles window</li>
+<li><input disabled="" type="checkbox"> Panel opens near tray; no duplicate titlebar in <strong>windowed</strong></li>
+<li><input disabled="" type="checkbox"> Active window / clipboard pills populate (PowerShell available)</li>
+<li><input disabled="" type="checkbox"> Elevated commands show structured <strong>elevation_unsupported</strong> (use admin terminal / <code>agent_fs</code> for writes)</li>
+<li><input disabled="" type="checkbox"> <code>npm run tauri:build:win</code> on <code>windows-latest</code> or local VM</li>
+</ul>
+<h3 id="linux">Linux</h3><ul>
+<li><input disabled="" type="checkbox"> System tray (AppIndicator); <strong>Wayland:</strong> left-click tray opens menu (shipped)</li>
+<li><input disabled="" type="checkbox"> <code>Ctrl+Shift+Space</code> toggles window</li>
+<li><input disabled="" type="checkbox"> Optional: <code>xdotool</code> / <code>wl-paste</code> / <code>xclip</code> for context pills (<a href="LINUX_PACKAGES.md"><code>LINUX_PACKAGES.md</code></a>)</li>
+<li><input disabled="" type="checkbox"> <code>pkexec</code> argv-only elevation (injection patterns rejected with structured error)</li>
+<li><input disabled="" type="checkbox"> <code>npm run tauri:build:linux</code> (deb or AppImage)</li>
+</ul>
+<hr>
+<h2 id="agent-amp-shell-features">Agent &amp; shell features</h2><table>
+<thead>
+<tr>
+<th>Check</th>
+<th align="center">macOS</th>
+<th align="center">Windows</th>
+<th align="center">Linux</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>shell_run</code> / PTY executes simple command (<code>command -v brew</code> or <code>echo hi</code>)</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+</tr>
+<tr>
+<td><code>cd</code> updates cwd in follow-up command</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+</tr>
+<tr>
+<td>Path Gate for file outside workspace (Standard mode)</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+</tr>
+<tr>
+<td>Path Gate mints signed token on approve (not boolean bypass)</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+</tr>
+<tr>
+<td>YOLO mode reduces path prompts (if enabled)</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+</tr>
+<tr>
+<td>Command planner (Ollama) converts prose → CLI when enabled</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+</tr>
+<tr>
+<td>Audit log written under app data (<code>agent-audit.jsonl</code>)</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+</tr>
+<tr>
+<td>Injection-like elevation (<code>$(</code>, <code>;</code>, pipes) rejected with <strong>safety_blocked</strong> payload</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+<td align="center">☐</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="when-you-add-a-new-feature-template">When you add a <strong>new</strong> feature (template)</h2><p>Copy into your PR description or task notes:</p>
+<pre><code class="language-markdown">### Cross-platform: [feature name]
+
+**Layer:** ☐ Shared React  ☐ CSS  ☐ Rust (all OS)  ☐ Rust `#[cfg(...)]` per OS
+
+**UI entry points:** ☐ Panel  ☐ Pop-out  ☐ Windowed  ☐ Settings  ☐ Tray menu  ☐ OS app menu
+
+**Backend:** ☐ Tauri command  ☐ Shell  ☐ FS  ☐ Keychain/credentials  ☐ OS context
+
+**Tested:**
+- [ ] macOS — panel + windowed
+- [ ] Windows — panel + windowed (or CI artifact)
+- [ ] Linux — panel + windowed (or CI artifact)
+
+**Platform notes:** _e.g. “Elevation on Windows still manual”; “Linux needs wl-paste”_
+</code></pre>
+<hr>
+<h2 id="implementing-platform-aware-ui-do-dont">Implementing platform-aware UI (do / don’t)</h2><p><strong>Do</strong></p>
+<ul>
+<li>Use <code>getPlatformInfo()</code> / <code>platformInfo</code> in React for labels and conditional sections.</li>
+<li>Add Win/Linux rules next to macOS in <code>index.css</code> when layout differs (<code>.platform-windows.mode-windowed</code>, etc.).</li>
+<li>Put OS-specific logic in Rust with <code>#[cfg(target_os = &quot;macos&quot;)]</code> and keep the invoke API stable for the frontend.</li>
+<li>Document gaps in this file or <a href="BUILD_PLATFORMS.md"><code>BUILD_PLATFORMS.md</code></a>.</li>
+</ul>
+<p><strong>Don’t</strong></p>
+<ul>
+<li>Assume the in-app toolbar is visible on Windows/Linux windowed mode.</li>
+<li>Use macOS-only shortcuts in user-visible copy (prefer “global shortcut” or list both).</li>
+<li>Test only menu-bar panel mode on Mac and ship.</li>
+<li>Fork React into <code>App.macos.tsx</code> unless absolutely necessary—prefer flags and small components.</li>
+</ul>
+<hr>
+<h2 id="ci-amp-release">CI &amp; release</h2><p>On push to <code>main</code> / <code>master</code>:</p>
+<ol>
+<li>GitHub Actions builds <strong>macOS</strong>, <strong>Windows</strong>, <strong>Linux</strong> (<a href="../.github/workflows/build.yml"><code>build.yml</code></a>).</li>
+<li>Download artifacts and smoke-test installers when changing shell/window/tray code.</li>
+<li>Before tagging a release: run the <strong>Before you merge</strong> section on at least one build per OS (or delegate to CI + manual spot-check).</li>
+</ol>
+<hr>
+<h2 id="related-docs">Related docs</h2><ul>
+<li><a href="BUILD_PLATFORMS.md">BUILD_PLATFORMS.md</a> — build commands and parity table  </li>
+<li><a href="QA_CHECKLIST.md">QA_CHECKLIST.md</a> — formal release QA with P0/P1 IDs (use before shipping a version)  </li>
+<li><a href="LINUX_PACKAGES.md">LINUX_PACKAGES.md</a> — optional Linux dependencies  </li>
+<li><a href="MACOS_PERMISSIONS.md">MACOS_PERMISSIONS.md</a> — Accessibility / automation on macOS  </li>
+<li><a href="AGENT_CAPABILITIES_PROPOSAL.md">AGENT_CAPABILITIES_PROPOSAL.md</a> — agent architecture</li>
+</ul>
+
+      <footer class="doc-footer">
+        <p>Built with <span aria-label="love">❤️</span> by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+      </footer>
+    </main>
+  </div>
+  <script>
+    const links = document.querySelectorAll(".sidebar a[href^='#']");
+    const sections = [...links].map((a) => document.querySelector(a.getAttribute("href")));
+    const onScroll = () => {
+      let cur = 0;
+      sections.forEach((s, i) => { if (s && s.getBoundingClientRect().top <= 120) cur = i; });
+      links.forEach((l, i) => l.classList.toggle("active", i === cur));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  </script>
+</body>
+</html>

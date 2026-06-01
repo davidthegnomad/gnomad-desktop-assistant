@@ -30,6 +30,10 @@ pub struct AgentSettingsDto {
     pub command_planner_model: String,
     pub command_planner_use_chat_local_model: bool,
     pub command_planner_gguf_path: String,
+    #[serde(default)]
+    pub use_gguf_for_local_chat: bool,
+    #[serde(default)]
+    pub sandbox_shell_in_yolo: bool,
 }
 
 pub struct AgentSettingsState {
@@ -44,6 +48,8 @@ pub(crate) struct AgentSettings {
     pub command_planner_model: String,
     pub command_planner_use_chat_local_model: bool,
     pub command_planner_gguf_path: String,
+    pub use_gguf_for_local_chat: bool,
+    pub sandbox_shell_in_yolo: bool,
 }
 
 impl Default for AgentSettingsState {
@@ -56,6 +62,8 @@ impl Default for AgentSettingsState {
                 command_planner_model: "llama3.2:1b".into(),
                 command_planner_use_chat_local_model: false,
                 command_planner_gguf_path: String::new(),
+                use_gguf_for_local_chat: false,
+                sandbox_shell_in_yolo: false,
             }),
         }
     }
@@ -100,6 +108,8 @@ fn load_persisted(app: &tauri::AppHandle) -> AgentSettings {
                 },
                 command_planner_use_chat_local_model: dto.command_planner_use_chat_local_model,
                 command_planner_gguf_path: dto.command_planner_gguf_path,
+                use_gguf_for_local_chat: dto.use_gguf_for_local_chat,
+                sandbox_shell_in_yolo: dto.sandbox_shell_in_yolo,
             };
         }
     }
@@ -114,6 +124,8 @@ fn default_agent_settings() -> AgentSettings {
         command_planner_model: "llama3.2:1b".into(),
         command_planner_use_chat_local_model: false,
         command_planner_gguf_path: String::new(),
+        use_gguf_for_local_chat: false,
+        sandbox_shell_in_yolo: false,
     }
 }
 
@@ -129,7 +141,32 @@ fn settings_to_dto(s: &AgentSettings) -> AgentSettingsDto {
         command_planner_model: s.command_planner_model.clone(),
         command_planner_use_chat_local_model: s.command_planner_use_chat_local_model,
         command_planner_gguf_path: s.command_planner_gguf_path.clone(),
+        use_gguf_for_local_chat: s.use_gguf_for_local_chat,
+        sandbox_shell_in_yolo: s.sandbox_shell_in_yolo,
     }
+}
+
+/// GGUF path for embedded local chat when enabled.
+pub fn local_gguf_chat_path(settings: &AgentSettings) -> Option<PathBuf> {
+    if !settings.use_gguf_for_local_chat {
+        return None;
+    }
+    let p = settings.command_planner_gguf_path.trim();
+    if p.is_empty() {
+        return None;
+    }
+    let path = PathBuf::from(p);
+    if path.is_file() {
+        Some(path)
+    } else {
+        None
+    }
+}
+
+pub fn should_sandbox_shell(settings: &AgentSettings) -> bool {
+    settings.trust_mode == TrustMode::Yolo
+        && settings.sandbox_shell_in_yolo
+        && crate::shell_sandbox::sandbox_shell_available()
 }
 
 fn save_persisted(app: &tauri::AppHandle, settings: &AgentSettings) -> Result<(), String> {
@@ -227,13 +264,24 @@ pub fn set_trust_mode(
     get_agent_settings(app, state)
 }
 
-/// Resolve a user/model path against workspace and trust policy.
-pub fn resolve_agent_path(
-    input: &str,
-    workspace: &Path,
-    trust: TrustMode,
-    path_approved: bool,
-) -> Result<PathBuf, String> {
+#[tauri::command]
+pub fn set_agent_experimental_flags(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, AgentSettingsState>,
+    use_gguf_for_local_chat: bool,
+    sandbox_shell_in_yolo: bool,
+) -> Result<AgentSettingsDto, String> {
+    {
+        let mut guard = state.inner.lock().map_err(|e| e.to_string())?;
+        guard.use_gguf_for_local_chat = use_gguf_for_local_chat;
+        guard.sandbox_shell_in_yolo = sandbox_shell_in_yolo;
+        save_persisted(&app, &guard)?;
+    }
+    get_agent_settings(app, state)
+}
+
+/// Resolve a user/model path against workspace (no policy check).
+pub fn resolve_path_input(input: &str, workspace: &Path) -> PathBuf {
     let trimmed = input.trim();
     let path = if trimmed.is_empty() || trimmed == "." {
         workspace.to_path_buf()
@@ -242,26 +290,26 @@ pub fn resolve_agent_path(
     } else {
         workspace.join(trimmed)
     };
+    path.canonicalize().unwrap_or(path)
+}
 
-    let canonical = path
-        .canonicalize()
-        .unwrap_or_else(|_| path.clone());
-
-    if trust == TrustMode::Yolo || path_approved {
-        return Ok(canonical);
-    }
-
-    let workspace_canon = workspace
-        .canonicalize()
-        .unwrap_or_else(|_| workspace.to_path_buf());
-
-    if canonical.starts_with(&workspace_canon) {
-        return Ok(canonical);
-    }
-
-    Err(crate::error::into_invoke_err(crate::error::GnomadError::PathPolicy {
-        message: "Path is outside workspace.".into(),
-        detail: Some(canonical.display().to_string()),
-        hint: Some("Approve access once or enable YOLO! in Settings.".into()),
-    }))
+/// Resolve path and enforce workspace policy (delegates to path_token).
+pub fn resolve_agent_path_with_token(
+    input: &str,
+    workspace: &Path,
+    trust: TrustMode,
+    path_state: &crate::path_token::PathTokenState,
+    scope: crate::path_token::PathScope,
+    path_approval_token: Option<&str>,
+    path_approved: Option<bool>,
+) -> Result<PathBuf, String> {
+    crate::path_token::resolve_agent_path(
+        input,
+        workspace,
+        trust,
+        path_state,
+        scope,
+        path_approval_token,
+        path_approved,
+    )
 }

@@ -237,6 +237,7 @@ body {
 <a href="#phase-5-release-engineering-amp-distribution" class="toc-h3">Phase 5 — Release engineering &amp; distribution</a>
 <a href="#feature-inventory-alpha" class="toc-h2">Feature inventory (alpha)</a>
 <a href="#architecture-decisions-rationale" class="toc-h2">Architecture decisions (rationale)</a>
+<a href="#wave-b-advanced-systems-2026" class="toc-h2">Wave B — Advanced systems (2026)</a>
 <a href="#known-alpha-limitations" class="toc-h2">Known alpha limitations</a>
 <a href="#repository-map-engineering" class="toc-h2">Repository map (engineering)</a>
 <a href="#how-to-verify-a-build" class="toc-h2">How to verify a build</a>
@@ -408,13 +409,56 @@ body {
 </tr>
 </tbody></table>
 <hr>
+<h2 id="wave-b-advanced-systems-2026">Wave B — Advanced systems (2026)</h2><p>See <a href="WAVE_B_ROADMAP.md"><code>WAVE_B_ROADMAP.md</code></a> for full design.</p>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Status</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>B1</strong> Cryptographic HITL tokens</td>
+<td>Shipped</td>
+<td><code>hitl_token.rs</code>; boolean IPC bypass rejected</td>
+</tr>
+<tr>
+<td><strong>B2a</strong> In-process GGUF (planner)</td>
+<td>Shipped</td>
+<td><code>local_inference.rs</code> + <code>llama-cpp-2</code> optional feature</td>
+</tr>
+<tr>
+<td><strong>B2b</strong> In-process GGUF (local chat)</td>
+<td>Shipped</td>
+<td>Settings → Experimental → Use GGUF for local chat</td>
+</tr>
+<tr>
+<td><strong>B3</strong> xterm.js terminal</td>
+<td>Shipped</td>
+<td><code>LiveTerminal</code> — live stream while thinking; replay on command cards</td>
+</tr>
+<tr>
+<td><strong>B4</strong> YOLO micro-sandbox</td>
+<td>Shipped</td>
+<td>macOS <code>sandbox-exec</code> / Linux <code>bwrap</code> when YOLO + experimental flag</td>
+</tr>
+</tbody></table>
+<p><strong>Embedded GGUF builds</strong> (command planner, no Ollama daemon required for planner path):</p>
+<pre><code class="language-bash">npm run tauri:dev:embedded
+# or: cd src-tauri &amp;&amp; cargo build --features embedded-llm
+</code></pre>
+<p>Set <strong>Settings → Agent access → GGUF path</strong> to a small coding model (e.g. Qwen2.5-Coder 1.5B Q4). CI builds omit <code>embedded-llm</code> by default to keep matrix fast.</p>
+<hr>
 <h2 id="known-alpha-limitations">Known alpha limitations</h2><p>Documented explicitly for portfolio honesty:</p>
 <ul>
-<li>Manual API key / Ollama setup required (no bundled models)</li>
+<li>Manual API key / Ollama setup for main chat (optional in-process GGUF for <strong>command planner and local chat</strong> when built with <code>embedded-llm</code>)</li>
+<li>Cryptographic HITL and Path Gate tokens on main; tagged v0.1.0-alpha predates some hardening</li>
+<li>Auto-updater requires minisign keys — see <a href="UPDATER.md"><code>UPDATER.md</code></a></li>
 <li>macOS automation permissions may need re-grant after binary path changes</li>
-<li>Linux CI targets <strong>x86_64</strong>; ARM requires local build</li>
+<li>Linux CI targets <strong>x86_64</strong>; ARM requires local build; Wayland tray uses left-click menu</li>
 <li>Snap / Flatpak not published</li>
-<li>Automated test suite not yet established (see <code>QA_CHECKLIST.md</code>)</li>
+<li>Automated tests: <code>cargo test</code> (13) + Vitest (7); no E2E yet</li>
 <li>CSP relaxed for asset protocol during alpha</li>
 </ul>
 <hr>

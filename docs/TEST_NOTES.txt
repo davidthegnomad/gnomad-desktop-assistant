@@ -3,8 +3,8 @@
   Gnomad Desktop Assistant · docs/TEST_NOTES.md
 ════════════════════════════════════════════════════════════════════════
 
-TEST NOTES — OMNI TASKBAR AI
-============================
+TEST NOTES — GNOMAD DESKTOP ASSISTANT
+=====================================
 
 Run date: 2026-05-31  
 Environment: macOS (darwin), project path with spaces
@@ -12,29 +12,36 @@ Environment: macOS (darwin), project path with spaces
 AUTOMATED RUNS
 --------------
 
-  Command                   |  Result          |  Notes                                                                                                                                                                   
-  npm run build             |  PASS            |  tsc + Vite 7; output ~210 KB JS bundle                                                                                                                                  
-  cargo test (src-tauri)    |  PASS (0 tests)  |  No #[test] functions in crate                                                                                                                                           
-  cargo build (src-tauri)   |  PASS            |  Debug profile                                                                                                                                                           
-  cargo clippy -D warnings  |  FAIL            |  Build script error: stale permissions path under Desktop AI Project Folder/src-tauri/target/... (wrong parent folder). Not a source defect; try cargo clean if it recurs
+  Command                  |  Result           |  Notes                                                                 
+  npm run build            |  PASS             |  tsc + Vite 7                                                          
+  npm run test             |  PASS             |  Vitest — 7 tests (parseInvokeError, error formatting)                 
+  cargo test (src-tauri)   |  PASS (13 tests)  |  error, hitl_token, path_token, privilege, shell_session, shell_sandbox
+  cargo build (src-tauri)  |  PASS             |  Debug profile; default features (no embedded-llm)                     
+  CI (build.yml)           |  PASS             |  macOS, Ubuntu, Windows matrix on push to main                         
+
+Embedded LLM (optional)
+
+  [bash]
+    npm run tauri:dev:embedded
+    # or: cd src-tauri && cargo test --features embedded-llm
+
+Not run in default CI to keep matrix fast.
 
 NOT RUN IN THIS SESSION (GUI / OS)
 ----------------------------------
 
-These require an interactive Mac session and are manual:
+These require an interactive session and are manual:
 
-  Test                     |  How                                                                                
-  App launch               |  npm run tauri dev                                                                  
-  Overlay toggle           |  ⌘⇧Space — window should show/hide                                                  
-  Tray menu                |  Show Overlay / Quit                                                                
-  Context strip            |  Active app, window title, clipboard update every ~2.5s                             
-  Cloud chat               |  Submit prompt → demo reply + git --version in thread                               
-  Local mode               |  Switch to Local → Run CLI with safe command (e.g. echo hello)                      
-  Sudo Gate                |  Local: sudo ls or rm -rf test → modal → approve/deny                               
-  Settings keychain        |  Save API key, restart app, confirm reload                                          
-  Elevation test           |  Settings → Trigger Touch ID prompt (echo 'Success')                                
-  Accessibility            |  Deny/revoke permission → banner → Open Preferences                                 
-  Screenshot / automation  |  Invoke via devtools or future UI; needs Accessibility (+ possibly Screen Recording)
+  Test                    |  How                                                      
+  App launch              |  npm run tauri dev                                        
+  Overlay toggle          |  ⌘⇧Space / Ctrl+Shift+Space                               
+  Tray menu               |  Show Gnomad / Settings / Quit                            
+  Wayland tray (Linux)    |  Left-click tray icon → menu                              
+  Sudo Gate + HITL token  |  Approve risky cmd → signed token path                    
+  Path Gate + path token  |  fs_read outside workspace → Allow once                   
+  xterm replay            |  Expand command card → Terminal view                      
+  Updates                 |  Settings → Updates → Check for updates                   
+  YOLO sandbox            |  YOLO + experimental sandbox; verify blocked network reads
 
 MANUAL CHECKLIST (COPY FOR QA)
 ------------------------------
@@ -42,22 +49,21 @@ MANUAL CHECKLIST (COPY FOR QA)
   [code]
     [ ] tauri dev starts without panic
     [ ] Overlay hidden on launch; shortcut shows it
-    [ ] Tray icon visible (Accessory — no dock icon)
-    [ ] Context: app name matches frontmost app
-    [ ] Context: clipboard snippet updates after copy
-    [ ] Cloud mode: assistant responds (demo, not real LLM)
-    [ ] Local mode: echo hello → stdout in chat
-    [ ] Dangerous cmd: Sudo Gate appears before run
-    [ ] Deny on Sudo Gate: error message in chat
-    [ ] Approve admin cmd: verify stdout (watch for shape bug — see CODE_REVIEW.md)
-    [ ] API key persists across restart
+    [ ] Cloud agent: tool loop runs shell + fs tools
+    [ ] Sudo Gate: unsigned bypass rejected; approve mints token
+    [ ] Path Gate: unsigned bypass rejected; approve mints token
+    [ ] Standard mode: workspace fs works; outside path gated
+    [ ] Settings → Updates: check returns message (even if no new release)
+    [ ] npm run test && cargo test pass locally
 
 KNOWN TEST GAPS
 ---------------
 
-  • No CI workflow in repo.
-  • No headless E2E (Tauri WebDriver not configured).
-  • Safety logic untested — add Rust unit tests before relying on HITL in production.
+  • No headless E2E (Tauri WebDriver not configured)
+  • No mocked cloud agent integration test in CI yet
+  • Updater install path requires signed release artifacts + real pubkey
+
+See also QA_CHECKLIST.md and CODE_REVIEW.md.
 
 ════════════════════════════════════════════════════════════════════════
 Built with ❤️ by Gnomad Studio 🦙

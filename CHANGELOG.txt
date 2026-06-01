@@ -6,6 +6,40 @@
 CHANGELOG
 =========
 
+[UNRELEASED] — MAIN BRANCH
+--------------------------
+
+Post–v0.1.0-alpha hardening: Wave B systems, v0.2 beta readiness, and documentation refresh.
+
+Added
+
+  • Wave B1 — Cryptographic HITL tokens (hitl_token.rs): signed approval for risky shell; rejects bare hitl_approved: true
+  • Wave B2 — In-process GGUF (local_inference.rs, optional embedded-llm feature): command planner + optional local chat without Ollama
+  • Wave B3 — xterm.js terminal (LiveTerminal.tsx): live PTY stream while thinking; replay on command cards
+  • Wave B4 — YOLO micro-sandbox (shell_sandbox.rs): macOS sandbox-exec / Linux bwrap when YOLO + experimental flag
+  • Path Gate tokens (path_token.rs): signed approval for out-of-workspace filesystem access
+  • Structured errors (error.rs): JSON GnomadError payloads on LLM, planner, chat history, and agent paths
+  • Tauri auto-updater (Settings → Updates): stable/beta channels; see docs/UPDATER.md
+  • Linux Wayland tray improvements: left-click menu on Wayland; session hint in Settings
+  • Vitest (npm run test): unit tests for parseInvokeError; runs in CI
+  • App decomposition: hooks (useAgentExecution, useChatSubmit, …), ChatView, gate modals
+  • Docs: WAVE_B_ROADMAP.md, UPDATER.md, expanded DOCS_INDEX.md
+
+Changed
+
+  • App.tsx slimmed; agent orchestration moved to hooks
+  • Local provider availability includes embedded GGUF when built with embedded-llm
+  • Release workflow uploads latest.json for in-app updates (requires signing keys in CI)
+
+Known limitations
+
+  • Updater requires generated minisign keys (placeholder pubkey in tauri.conf.json until replaced)
+  • Embedded GGUF not in default CI builds (--features embedded-llm for local dev)
+  • Windows sandbox not implemented (YOLO FS only on Windows)
+  • Bundled GGUF model not shipped (user supplies .gguf path)
+
+────────────────────────────────────────
+
 [0.1.0-ALPHA] — 2026-05-31
 --------------------------
 
@@ -23,7 +57,7 @@ Added
   • GitHub Actions multi-platform builds
   • Project site
 
-Known limitations (alpha)
+Known limitations (alpha tag)
 
   • Requires manual API key / Ollama setup
   • macOS permissions for automation may need re-grant after updates

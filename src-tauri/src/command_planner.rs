@@ -1,6 +1,8 @@
+use crate::error::{into_invoke_err, GnomadError};
+use crate::local_inference;
 use crate::shell_session::looks_like_shell_command;
 use serde::Serialize;
-use std::path::Path;
+use std::path::PathBuf;
 
 const PLANNER_SYSTEM: &str = r#"You convert user intent into exactly ONE executable shell command for macOS/Linux.
 Rules:
@@ -20,6 +22,13 @@ pub struct CommandPlannerSettings {
     pub model: String,
     pub use_chat_local_model: bool,
     pub gguf_path: String,
+}
+
+fn planner_err(message: impl Into<String>, detail: Option<String>) -> String {
+    into_invoke_err(GnomadError::Llm {
+        message: message.into(),
+        detail,
+    })
 }
 
 fn ollama_base(url: Option<String>) -> String {
@@ -65,7 +74,12 @@ async fn ollama_plan(
     let client = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(60))
         .build()
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| {
+            into_invoke_err(GnomadError::Internal {
+                message: "Failed to create HTTP client for planner.".into(),
+                detail: Some(e.to_string()),
+            })
+        })?;
 
     let url = format!("{base_url}/api/chat");
     let body = serde_json::json!({
@@ -83,25 +97,42 @@ async fn ollama_plan(
         .json(&body)
         .send()
         .await
-        .map_err(|e| format!("Planner Ollama request failed: {e}"))?;
+        .map_err(|e| {
+            planner_err(
+                "Planner Ollama request failed. Is `ollama serve` running?",
+                Some(format!("{url}: {e}")),
+            )
+        })?;
 
     let status = response.status();
     let text = response
         .text()
         .await
-        .map_err(|e| format!("Failed to read planner response: {e}"))?;
+        .map_err(|e| planner_err("Failed to read planner response.", Some(e.to_string())))?;
 
     if !status.is_success() {
-        return Err(format!("Planner Ollama error ({status}): {text}"));
+        return Err(planner_err(
+            format!("Planner Ollama error ({status})."),
+            Some(text.chars().take(300).collect()),
+        ));
     }
 
-    let parsed: serde_json::Value =
-        serde_json::from_str(&text).map_err(|e| format!("Invalid planner JSON: {e}"))?;
+    let parsed: serde_json::Value = serde_json::from_str(&text).map_err(|e| {
+        planner_err(
+            "Invalid planner JSON.",
+            Some(format!("{e}; body: {}", text.chars().take(200).collect::<String>())),
+        )
+    })?;
 
     parsed["message"]["content"]
         .as_str()
         .map(|s| s.to_string())
-        .ok_or_else(|| format!("Unexpected planner response: {text}"))
+        .ok_or_else(|| {
+            planner_err(
+                "Unexpected planner response shape.",
+                Some(text.chars().take(200).collect()),
+            )
+        })
 }
 
 /// Turn natural-language intent into one shell command via a small local model (Ollama).
@@ -114,22 +145,42 @@ pub async fn plan_shell_command(
 ) -> Result<String, String> {
     let trimmed_intent = intent.trim();
     if trimmed_intent.is_empty() {
-        return Err("Intent cannot be empty.".into());
+        return Err(planner_err("Intent cannot be empty.", None));
     }
 
     if let Some(path) = gguf_path.as_ref().map(|s| s.trim()).filter(|s| !s.is_empty()) {
-        let p = Path::new(path);
-        if p.extension().and_then(|e| e.to_str()) == Some("gguf") || p.exists() {
-            return Err(
-                "Direct GGUF inference is not enabled yet. Use an Ollama model name in Settings, or run `ollama create` from your GGUF file."
-                    .into(),
+        let p = PathBuf::from(path);
+        if p.extension().and_then(|e| e.to_str()) == Some("gguf") || p.is_file() {
+            let prompt = format!(
+                "{PLANNER_SYSTEM}\n\nUser intent:\n{trimmed_intent}\n\nShell command:"
             );
+            let raw = local_inference::complete_with_gguf(&p, &prompt, 96)?;
+            let command = extract_command_line(&raw);
+            if command.is_empty() {
+                return Err(into_invoke_err(GnomadError::Llm {
+                    message: "Embedded planner returned an empty command.".into(),
+                    detail: Some(raw.chars().take(200).collect()),
+                }));
+            }
+            if !looks_like_shell_command(&command) {
+                return Err(into_invoke_err(GnomadError::Llm {
+                    message: format!(
+                        "Embedded planner produced invalid shell syntax: \"{}\". Try a small coding GGUF (e.g. Qwen2.5-Coder 1.5B).",
+                        command.chars().take(120).collect::<String>()
+                    ),
+                    detail: None,
+                }));
+            }
+            return Ok(command);
         }
     }
 
     let model = model.trim();
     if model.is_empty() {
-        return Err("Planner model name is not configured.".into());
+        return Err(planner_err(
+            "Planner model name is not configured.",
+            Some("Set a planner model in Settings → Agent access.".into()),
+        ));
     }
 
     let base = ollama_base(ollama_url);
@@ -137,12 +188,15 @@ pub async fn plan_shell_command(
     let command = extract_command_line(&raw);
 
     if command.is_empty() {
-        return Err("Planner returned an empty command.".into());
+        return Err(planner_err("Planner returned an empty command.", None));
     }
     if !looks_like_shell_command(&command) {
-        return Err(format!(
-            "Planner produced invalid shell syntax: \"{}\"",
-            command.chars().take(120).collect::<String>()
+        return Err(planner_err(
+            format!(
+                "Planner produced invalid shell syntax: \"{}\"",
+                command.chars().take(120).collect::<String>()
+            ),
+            None,
         ));
     }
 

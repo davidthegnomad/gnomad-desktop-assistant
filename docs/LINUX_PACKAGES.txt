@@ -17,6 +17,10 @@ Official downloads: GitHub Release v0.1.0-alpha (.deb, .rpm, AppImage) or the pr
 
 CI also builds on every push to main — backup artifacts under Actions → Build.
 
+Wayland vs X11
+
+Gnomad detects XDG_SESSION_TYPE at runtime. On Wayland, use left-click on the tray icon to open the menu. Settings shows a hint when Wayland is detected. Optional context tools: wl-paste (Wayland), xdotool/xclip (X11).
+
 Local build (on Ubuntu 22.04+ or Debian 12+):
 
   [bash]

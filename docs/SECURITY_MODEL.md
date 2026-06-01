@@ -52,7 +52,9 @@ Triggered when `check_command_safety` marks a command as requiring HITL (e.g. `s
 
 ### Path Gate
 
-In **Standard** mode, filesystem tool calls targeting paths outside the workspace require explicit approval.
+In **Standard** mode, filesystem tool calls targeting paths outside the workspace require explicit approval. After **Allow once**, the app issues a signed **path gate token** (same HMAC pattern as HITL) bound to the canonical path hash, scope (`read` / `write`), nonce, and expiry (~300s). Passing `path_approved: true` without a token is rejected.
+
+Implementation: [`src-tauri/src/path_token.rs`](../src-tauri/src/path_token.rs), frontend [`src/lib/pathToken.ts`](../src/lib/pathToken.ts).
 
 ### Cryptographic approval tokens (Wave B1 — shipped)
 

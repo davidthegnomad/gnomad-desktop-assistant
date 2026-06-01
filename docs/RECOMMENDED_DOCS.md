@@ -19,7 +19,9 @@
 | [DEMO_SCRIPT.md](DEMO_SCRIPT.md) | 5–7 min live demo |
 | [QA_CHECKLIST.md](QA_CHECKLIST.md) | Per-OS release QA |
 | [BUILD_PLATFORMS.md](BUILD_PLATFORMS.md) | Build commands |
-| [LINUX_PACKAGES.md](LINUX_PACKAGES.md) | Distro install matrix |
+| [WAVE_B_ROADMAP.md](WAVE_B_ROADMAP.md) | HITL, GGUF, xterm, sandbox (shipped on main) |
+| [UPDATER.md](UPDATER.md) | Auto-update keys and channels |
+| [CROSS_PLATFORM_CHECKLIST.md](CROSS_PLATFORM_CHECKLIST.md) | Per-OS dev verification |
 | [MACOS_PERMISSIONS.md](MACOS_PERMISSIONS.md) | macOS privacy matrix |
 | [KNOWLEDGE.md](KNOWLEDGE.md) | Knowledge base layout |
 

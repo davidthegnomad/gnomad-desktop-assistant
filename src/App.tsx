@@ -381,6 +381,7 @@ function App() {
             onModelChange={llm.handleModelChange}
             onOllamaUrlChange={(url) => void llm.saveOllamaUrl(url)}
             onKeysChanged={() => void llm.refreshLlmAvailability()}
+            onAgentSettingsChanged={() => void llm.refreshLlmAvailability()}
             platformInfo={platformInfo}
             accessibilityGranted={os.accessibilityGranted}
             onRequestPermissions={() => void os.requestPermissions()}

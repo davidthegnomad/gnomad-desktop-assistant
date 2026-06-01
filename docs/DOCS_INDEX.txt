@@ -6,12 +6,14 @@
 DOCUMENTATION INDEX (ALL FORMATS) — GNOMAD DESKTOP ASSISTANT
 ============================================================
 
-Every document is available in three formats:
+Every document is available in three formats (where exported):
 
   Format  |  Best for                             
   .md     |  GitHub, editing, version control     
   .html   |  Browser reading (styled, TOC sidebar)
   .txt    |  Notepad, Word, email, print          
+
+Live site: davidthegnomad.github.io/gnomad-desktop-assistant (landing page + links below)
 
 Regenerate HTML/TXT after editing Markdown:
 
@@ -24,6 +26,7 @@ START HERE
 ----------
 
   Document                   |  MD               |  HTML               |  TXT             
+  Project landing            |  —                |  index.html         |  —               
   README (project overview)  |  ../README.md     |  ../README.html     |  ../README.txt   
   User Guide                 |  USER_GUIDE.md    |  USER_GUIDE.html    |  USER_GUIDE.txt  
   Changelog                  |  ../CHANGELOG.md  |  ../CHANGELOG.html  |  ../CHANGELOG.txt
@@ -33,15 +36,18 @@ START HERE
 ENGINEERING & PORTFOLIO
 -----------------------
 
-  Document         |  MD                 |  HTML                 |  TXT               
-  Tech Stack       |  TECH_STACK.md      |  TECH_STACK.html      |  TECH_STACK.txt    
-  Build Narrative  |  BUILD.md           |  BUILD.html           |  BUILD.txt         
-  Architecture     |  ARCHITECTURE.md    |  ARCHITECTURE.html    |  ARCHITECTURE.txt  
-  Security Model   |  SECURITY_MODEL.md  |  SECURITY_MODEL.html  |  SECURITY_MODEL.txt
-  Privacy          |  PRIVACY.md         |  PRIVACY.html         |  PRIVACY.txt       
-  Roadmap          |  ROADMAP.md         |  ROADMAP.html         |  ROADMAP.txt       
-  Demo Script      |  DEMO_SCRIPT.md     |  DEMO_SCRIPT.html     |  DEMO_SCRIPT.txt   
-  QA Checklists    |  QA_CHECKLIST.md    |  QA_CHECKLIST.html    |  QA_CHECKLIST.txt  
+  Document                             |  MD                           |  HTML                           |  TXT                         
+  Tech Stack                           |  TECH_STACK.md                |  TECH_STACK.html                |  TECH_STACK.txt              
+  Build Narrative                      |  BUILD.md                     |  BUILD.html                     |  BUILD.txt                   
+  Architecture                         |  ARCHITECTURE.md              |  ARCHITECTURE.html              |  ARCHITECTURE.txt            
+  Security Model                       |  SECURITY_MODEL.md            |  SECURITY_MODEL.html            |  SECURITY_MODEL.txt          
+  Privacy                              |  PRIVACY.md                   |  PRIVACY.html                   |  PRIVACY.txt                 
+  Roadmap                              |  ROADMAP.md                   |  ROADMAP.html                   |  ROADMAP.txt                 
+  Wave B (HITL, GGUF, xterm, sandbox)  |  WAVE_B_ROADMAP.md            |  WAVE_B_ROADMAP.html            |  WAVE_B_ROADMAP.txt          
+  Auto-updater setup                   |  UPDATER.md                   |  UPDATER.html                   |  UPDATER.txt                 
+  Demo Script                          |  DEMO_SCRIPT.md               |  DEMO_SCRIPT.html               |  DEMO_SCRIPT.txt             
+  QA Checklists                        |  QA_CHECKLIST.md              |  QA_CHECKLIST.html              |  QA_CHECKLIST.txt            
+  Cross-platform dev checklist         |  CROSS_PLATFORM_CHECKLIST.md  |  CROSS_PLATFORM_CHECKLIST.html  |  CROSS_PLATFORM_CHECKLIST.txt
 
 ────────────────────────────────────────
 

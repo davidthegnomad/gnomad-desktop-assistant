@@ -50,7 +50,7 @@ export function useChatSubmit(options: {
     agentSettings?: Awaited<ReturnType<typeof getAgentSettings>>
   ) => Promise<Message[]>;
   requestHitlApproval: (command: string, reason: string) => Promise<string | null>;
-  requestPathApproval: (path: string, reason: string) => Promise<boolean>;
+  requestPathApproval: (path: string, reason: string, scope?: import("../lib/pathToken").PathScope) => Promise<string | null>;
 }) {
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {

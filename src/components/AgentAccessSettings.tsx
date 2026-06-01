@@ -3,18 +3,25 @@ import { Brain, FolderOpen, Shield, Zap } from "lucide-react";
 import {
   getAgentSettings,
   pickWorkspaceFolder,
+  setAgentExperimentalFlags,
   setCommandPlanner,
   setTrustMode,
   type AgentSettings,
   type TrustMode,
 } from "../lib/agentSettings";
 import { pickGgufFile } from "../lib/commandPlanner";
+import { getEmbeddedLlmStatus, type EmbeddedLlmStatus } from "../lib/embeddedLlm";
 
-export function AgentAccessSettings() {
+export function AgentAccessSettings({
+  onSettingsChanged,
+}: {
+  onSettingsChanged?: () => void;
+}) {
   const [settings, setSettings] = useState<AgentSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [plannerModel, setPlannerModel] = useState("llama3.2:1b");
   const [plannerGguf, setPlannerGguf] = useState("");
+  const [embeddedStatus, setEmbeddedStatus] = useState<EmbeddedLlmStatus | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -23,6 +30,11 @@ export function AgentAccessSettings() {
       setSettings(s);
       setPlannerModel(s.commandPlannerModel || "llama3.2:1b");
       setPlannerGguf(s.commandPlannerGgufPath || "");
+      try {
+        setEmbeddedStatus(await getEmbeddedLlmStatus());
+      } catch {
+        setEmbeddedStatus(null);
+      }
     } finally {
       setLoading(false);
     }
@@ -53,6 +65,20 @@ export function AgentAccessSettings() {
     setSettings(next);
     setPlannerModel(next.commandPlannerModel);
     setPlannerGguf(next.commandPlannerGgufPath);
+    onSettingsChanged?.();
+  };
+
+  const saveExperimental = async (patch: Partial<{
+    useGgufForLocalChat: boolean;
+    sandboxShellInYolo: boolean;
+  }>) => {
+    if (!settings) return;
+    const next = await setAgentExperimentalFlags({
+      useGgufForLocalChat: patch.useGgufForLocalChat ?? settings.useGgufForLocalChat,
+      sandboxShellInYolo: patch.sandboxShellInYolo ?? settings.sandboxShellInYolo,
+    });
+    setSettings(next);
+    onSettingsChanged?.();
   };
 
   return (
@@ -124,9 +150,16 @@ export function AgentAccessSettings() {
             </h4>
             <p className="knowledge-muted">
               When the main model outputs prose instead of a real command, a small
-              local model can rewrite it into CLI (via Ollama). Works with cloud
-              chat too — planner always runs locally.
+              local model rewrites it into CLI. Uses your <strong>GGUF path</strong> in-process
+              when set (no Ollama required for the planner), otherwise Ollama.
             </p>
+            {embeddedStatus && (
+              <p className="knowledge-muted embedded-llm-status" title={embeddedStatus.message}>
+                Embedded GGUF engine:{" "}
+                <strong>{embeddedStatus.available ? "included in this build" : "not in this build"}</strong>
+                {embeddedStatus.modelPath ? ` · ${embeddedStatus.modelPath}` : ""}
+              </p>
+            )}
             <label
               className="agent-trust-option"
               title="Use a fast local model to convert intents like “check if brew is installed” into command -v brew before execution."
@@ -177,7 +210,7 @@ export function AgentAccessSettings() {
                 <div className="settings-row agent-gguf-row">
                   <span
                     className="settings-label"
-                    title="Optional path to a .gguf weights file for future direct inference. Today the planner uses Ollama only — import GGUF with `ollama create` or use the model name field above."
+                    title="Path to a .gguf file for in-process planner inference (requires embedded-llm build). Falls back to Ollama if empty."
                   >
                     GGUF path (optional)
                   </span>
@@ -205,6 +238,48 @@ export function AgentAccessSettings() {
                 </div>
               </div>
             )}
+          </div>
+
+          <div className="agent-planner-block">
+            <h4 className="section-title subsection-title">Experimental</h4>
+            <p className="knowledge-muted">
+              Optional features for local-only chat and tighter YOLO shell isolation. Requires an
+              embedded-llm build for GGUF chat.
+            </p>
+            <label
+              className="agent-trust-option"
+              title="Use the GGUF path above for full local chat (no Ollama). Agent tools are disabled on this path."
+            >
+              <input
+                type="checkbox"
+                checked={settings.useGgufForLocalChat}
+                disabled={!plannerGguf.trim()}
+                onChange={(e) =>
+                  void saveExperimental({ useGgufForLocalChat: e.target.checked })
+                }
+              />
+              <span>
+                <strong>Use GGUF for local chat</strong>
+                {!plannerGguf.trim() ? " (set GGUF path first)" : ""}
+              </span>
+            </label>
+            <label
+              className="agent-trust-option"
+              title="When YOLO mode is on, wrap shell sessions in sandbox-exec (macOS) or bubblewrap (Linux). Network is blocked; writes limited to workspace + temp."
+            >
+              <input
+                type="checkbox"
+                checked={settings.sandboxShellInYolo}
+                disabled={settings.trustMode !== "yolo"}
+                onChange={(e) =>
+                  void saveExperimental({ sandboxShellInYolo: e.target.checked })
+                }
+              />
+              <span>
+                <strong>Sandbox shell in YOLO mode</strong>
+                {settings.trustMode !== "yolo" ? " (enable YOLO first)" : ""}
+              </span>
+            </label>
           </div>
         </>
       ) : null}

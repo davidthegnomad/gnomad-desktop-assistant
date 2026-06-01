@@ -48,6 +48,16 @@ Optional Linux packages for full context pills: xdotool (X11), wl-paste (Wayland
 
 CI (.github/workflows/build.yml) builds all three platforms on every push to main / master.
 
+Cross-platform verification (features & UI tweaks)
+
+Whenever you add or change UI, settings, or OS-facing behavior, use CROSS_PLATFORM_CHECKLIST.md so work on macOS translates—or is explicitly handled—for Windows and Linux.
+
+Quick rules:
+
+  1. Shared React (src/) — same bundle everywhere; smoke panel and windowed on Win/Linux (toolbar may be hidden in windowed).
+  2. Platform shell (title bar, tray, shortcuts) — update platform.rs, window_manager.rs, and .platform-* CSS in index.css.
+  3. Before merge — npm run build, cargo test, CI green on all three OS jobs.
+
 LINUX
 -----
 

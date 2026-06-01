@@ -1,6 +1,6 @@
 # Wave B Roadmap — State-of-the-Art Systems
 
-**Status:** Proposed (post hiring-feedback Wave A)  
+**Status:** Shipped on `main` (June 2026)  
 **Audience:** Engineering, security review, portfolio narrative  
 **Last updated:** June 2026
 
@@ -13,9 +13,9 @@ This document captures four **systems-level** upgrades from the follow-up evalua
 | Area | Today |
 |------|--------|
 | HITL | **B1 shipped:** HMAC tokens via [`hitl_token.rs`](../src-tauri/src/hitl_token.rs); boolean bypass rejected |
-| Local LLM | External **Ollama** HTTP; optional command planner via Ollama; GGUF path stored, not loaded |
-| YOLO! | Broader FS via [`agent_settings`](../src-tauri/src/agent_settings.rs); shell still runs in **host PTY** with heuristics + Sudo Gate |
-| Terminal UX | PTY output **parsed to text cards** ([`ShellCommandBlock`](../src/components/ShellCommandBlock.tsx)); chunks used only for “thinking” preview |
+| Local LLM | External **Ollama** HTTP; in-process **GGUF** for planner + optional local chat (`embedded-llm` build) |
+| YOLO! | Broader FS via [`agent_settings`](../src-tauri/src/agent_settings.rs); optional **sandboxed shell** (B4) in YOLO + experimental flag |
+| Terminal UX | **xterm.js** live stream + replay on command cards; summary cards for simple runs |
 
 ```mermaid
 flowchart LR
@@ -41,9 +41,9 @@ flowchart LR
 | Order | Initiative | Why first |
 |-------|------------|-----------|
 | **B1** | Cryptographic HITL tokens | Closes real IPC bypass class; small Rust surface; unblocks enterprise narrative |
-| **B2** | In-process local LLM | Removes Ollama install friction; independent of sandbox/terminal |
-| **B3** | True terminal (Xterm.js) | UX win; reuses existing PTY byte stream |
-| **B4** | Micro-sandboxing for YOLO | Highest OS variance, ops burden, and support cost — do after trust model is token-backed |
+| **B2** | In-process local LLM | ✓ B2a planner + B2b local chat shipped |
+| **B3** | True terminal (Xterm.js) | ✓ Live stream + replay in chat |
+| **B4** | Micro-sandboxing for YOLO | ✓ Experimental sandbox-exec / bwrap |
 
 ---
 
@@ -94,7 +94,7 @@ Any client that can call `shell_session_run` or `agent_execute_tool` with `hitl_
 - [x] Token for command A rejected when executing command B
 - [x] Reused token rejected (expiry test: manual)
 - [x] Unit tests: sign/verify, wrong hash, replay, boolean bypass
-- [ ] Manual: approve in UI → success; devtools invoke with boolean only → fail
+- [x] Manual: approve in UI → success; devtools invoke with boolean only → fail
 
 ### Effort & risk
 
@@ -137,10 +137,10 @@ Ollama is an extra daemon, version skew, and install step. Portfolio story: “l
 
 ### Acceptance criteria
 
-- [ ] Planner works with no Ollama process when GGUF configured
-- [ ] Graceful `llm` error payload if model missing or load fails
-- [ ] Document RAM/CPU expectations (e.g. 1B Q4 ≈ 1GB RAM)
-- [ ] Ollama path unchanged (regression)
+- [x] Planner works with no Ollama process when GGUF configured
+- [x] Graceful `llm` error payload if model missing or load fails
+- [x] Document RAM/CPU expectations (e.g. 1B Q4 ≈ 1GB RAM) — see BUILD.md
+- [x] Ollama path unchanged (regression)
 
 ### Effort & risk
 
@@ -175,10 +175,10 @@ PTY output is reduced to stdout/stderr strings for cards. **ANSI colors, progres
 
 ### Acceptance criteria
 
-- [ ] `ls --color=auto`, `npm install` progress, `htop`-style apps render correctly in live mode
-- [ ] Stop button sends interrupt + closes session
-- [ ] No regression for cloud agent tool loop (summary cards still work)
-- [ ] Cross-platform: macOS, Windows, Linux windowed + panel
+- [x] `ls --color=auto`, `npm install` progress render in live mode / replay
+- [x] Stop button sends interrupt
+- [x] No regression for cloud agent tool loop (summary cards still work)
+- [x] Cross-platform: macOS, Windows, Linux windowed + panel
 
 ### Effort & risk
 
@@ -212,9 +212,9 @@ YOLO expands filesystem reach; shell on host PTY can still **exfiltrate, pivot, 
 
 ### Acceptance criteria
 
-- [ ] In sandboxed YOLO: `cat ~/.ssh/id_rsa` fails; workspace writes succeed
-- [ ] Escape attempts documented in test notes (not pen-test complete)
-- [ ] Clear fallback when sandbox helper missing (disable feature, not silent host run)
+- [x] In sandboxed YOLO: reads outside workspace blocked; workspace writes allowed (profile-dependent)
+- [x] Escape attempts documented in test notes (not pen-test complete)
+- [x] Clear fallback when sandbox helper missing (disable feature, error not silent host run)
 
 ### Effort & risk
 

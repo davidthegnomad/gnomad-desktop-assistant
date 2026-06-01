@@ -1606,6 +1606,36 @@ body {
   color: var(--color-text);
 }
 
+.shell-command-output-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+
+.shell-live-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.live-terminal-wrap {
+  margin-top: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #0d1117;
+}
+
+.live-terminal-host {
+  height: 200px;
+  width: 100%;
+  padding: 4px;
+}
+
+.shell-command-live .live-terminal-host {
+  height: 160px;
+}
+
 .msg-attachment-pill {
   font-size: 0.72rem;
   padding: 2px 8px;

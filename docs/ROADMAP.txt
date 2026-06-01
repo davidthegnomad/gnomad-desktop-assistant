@@ -38,14 +38,24 @@ V0.2 — BETA READINESS
 
 Target: Hardening and supportability
 
-  Item                                   |  Priority  |  Notes                          
-  Server-side safety on all shell paths  |  P0        |  Close IPC bypass class         
-  HITL token validated in Rust           |  P0        |  Approve/deny bound to execution
-  Rust unit tests (privilege, parsers)   |  P0        |  CI gate                        
-  Refresh CODE_REVIEW / TEST_NOTES       |  P1        |  Match shipped agent            
-  Auto-update channel (Tauri updater)    |  P1        |  Optional beta opt-in           
-  Improved Linux Wayland tray            |  P1        |  KDE/GNOME QA                   
-  Error telemetry (opt-in, local-first)  |  P2        |  Crash logs only                
+  Item                                                 |  Priority  |  Notes                                                 
+  Server-side safety on all shell paths                |  P0        |  Close IPC bypass class                                
+  Cryptographic HITL tokens (Wave B1)                  |  P0        |  ✓ Shipped — hitl_token.rs                             
+  Wave B error migration (llm, planner, chat history)  |  P1        |  ✓ Shipped — JSON GnomadError on LLM + chat store paths
+  Rust unit tests (privilege, parsers, error)          |  P0        |  CI gate ✓ (cargo test in build workflow)              
+  Refresh CODE_REVIEW / TEST_NOTES                     |  P1        |  Match shipped agent ✓                                 
+  Auto-update channel (Tauri updater)                  |  P1        |  ✓ Shipped — Settings → Updates; see UPDATER.md        
+  Improved Linux Wayland tray                          |  P1        |  ✓ Left-click menu on Wayland; session hint in Settings
+  Error telemetry (opt-in, local-first)                |  P2        |  Crash logs only                                       
+
+────────────────────────────────────────
+
+WAVE B — STATE-OF-THE-ART (V0.3+)
+---------------------------------
+
+Detailed design for four evaluation follow-ups: HITL tokens, in-process LLM, Xterm.js PTY, YOLO micro-sandboxing.
+
+→ WAVE_B_ROADMAP.md (phasing, acceptance criteria, risks)
 
 ────────────────────────────────────────
 

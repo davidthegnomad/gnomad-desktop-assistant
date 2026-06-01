@@ -227,6 +227,7 @@ body {
           <div class="brand"><span class="brand-icon">🍄</span><h1>Gnomad</h1></div>
           <p class="doc-path">docs/TEST_NOTES.md</p>
           <a href="#automated-runs" class="toc-h2">Automated runs</a>
+<a href="#embedded-llm-optional" class="toc-h3">Embedded LLM (optional)</a>
 <a href="#not-run-in-this-session-gui-os" class="toc-h2">Not run in this session (GUI / OS)</a>
 <a href="#manual-checklist-copy-for-qa" class="toc-h2">Manual checklist (copy for QA)</a>
 <a href="#known-test-gaps" class="toc-h2">Known test gaps</a>
@@ -236,7 +237,7 @@ body {
         <h2>Test Notes</h2>
         <p class="formats">Also available: <a href="TEST_NOTES.md">Markdown</a> · <a href="TEST_NOTES.txt">Plain text</a></p>
       </header>
-      <h1 id="test-notes-omni-taskbar-ai">Test Notes — Omni Taskbar AI</h1><p><strong>Run date:</strong> 2026-05-31<br><strong>Environment:</strong> macOS (darwin), project path with spaces</p>
+      <h1 id="test-notes-gnomad-desktop-assistant">Test Notes — Gnomad Desktop Assistant</h1><p><strong>Run date:</strong> 2026-05-31<br><strong>Environment:</strong> macOS (darwin), project path with spaces</p>
 <h2 id="automated-runs">Automated runs</h2><table>
 <thead>
 <tr>
@@ -248,25 +249,34 @@ body {
 <tbody><tr>
 <td><code>npm run build</code></td>
 <td><strong>PASS</strong></td>
-<td><code>tsc</code> + Vite 7; output ~210 KB JS bundle</td>
+<td><code>tsc</code> + Vite 7</td>
+</tr>
+<tr>
+<td><code>npm run test</code></td>
+<td><strong>PASS</strong></td>
+<td>Vitest — 7 tests (<code>parseInvokeError</code>, error formatting)</td>
 </tr>
 <tr>
 <td><code>cargo test</code> (src-tauri)</td>
-<td><strong>PASS (0 tests)</strong></td>
-<td>No <code>#[test]</code> functions in crate</td>
+<td><strong>PASS (13 tests)</strong></td>
+<td>error, hitl_token, path_token, privilege, shell_session, shell_sandbox</td>
 </tr>
 <tr>
 <td><code>cargo build</code> (src-tauri)</td>
 <td><strong>PASS</strong></td>
-<td>Debug profile</td>
+<td>Debug profile; default features (no <code>embedded-llm</code>)</td>
 </tr>
 <tr>
-<td><code>cargo clippy -D warnings</code></td>
-<td><strong>FAIL</strong></td>
-<td>Build script error: stale permissions path under <code>Desktop AI Project Folder/src-tauri/target/...</code> (wrong parent folder). Not a source defect; try <code>cargo clean</code> if it recurs</td>
+<td>CI (<code>build.yml</code>)</td>
+<td><strong>PASS</strong></td>
+<td>macOS, Ubuntu, Windows matrix on push to main</td>
 </tr>
 </tbody></table>
-<h2 id="not-run-in-this-session-gui-os">Not run in this session (GUI / OS)</h2><p>These require an interactive Mac session and are <strong>manual</strong>:</p>
+<h3 id="embedded-llm-optional">Embedded LLM (optional)</h3><pre><code class="language-bash">npm run tauri:dev:embedded
+# or: cd src-tauri &amp;&amp; cargo test --features embedded-llm
+</code></pre>
+<p>Not run in default CI to keep matrix fast.</p>
+<h2 id="not-run-in-this-session-gui-os">Not run in this session (GUI / OS)</h2><p>These require an interactive session and are <strong>manual</strong>:</p>
 <table>
 <thead>
 <tr>
@@ -280,62 +290,52 @@ body {
 </tr>
 <tr>
 <td>Overlay toggle</td>
-<td>⌘⇧Space — window should show/hide</td>
+<td>⌘⇧Space / Ctrl+Shift+Space</td>
 </tr>
 <tr>
 <td>Tray menu</td>
-<td>Show Overlay / Quit</td>
+<td>Show Gnomad / Settings / Quit</td>
 </tr>
 <tr>
-<td>Context strip</td>
-<td>Active app, window title, clipboard update every ~2.5s</td>
+<td>Wayland tray (Linux)</td>
+<td>Left-click tray icon → menu</td>
 </tr>
 <tr>
-<td>Cloud chat</td>
-<td>Submit prompt → demo reply + <code>git --version</code> in thread</td>
+<td>Sudo Gate + HITL token</td>
+<td>Approve risky cmd → signed token path</td>
 </tr>
 <tr>
-<td>Local mode</td>
-<td>Switch to Local → Run CLI with safe command (e.g. <code>echo hello</code>)</td>
+<td>Path Gate + path token</td>
+<td>fs_read outside workspace → Allow once</td>
 </tr>
 <tr>
-<td>Sudo Gate</td>
-<td>Local: <code>sudo ls</code> or <code>rm -rf test</code> → modal → approve/deny</td>
+<td>xterm replay</td>
+<td>Expand command card → Terminal view</td>
 </tr>
 <tr>
-<td>Settings keychain</td>
-<td>Save API key, restart app, confirm reload</td>
+<td>Updates</td>
+<td>Settings → Updates → Check for updates</td>
 </tr>
 <tr>
-<td>Elevation test</td>
-<td>Settings → Trigger Touch ID prompt (<code>echo &#39;Success&#39;</code>)</td>
-</tr>
-<tr>
-<td>Accessibility</td>
-<td>Deny/revoke permission → banner → Open Preferences</td>
-</tr>
-<tr>
-<td>Screenshot / automation</td>
-<td>Invoke via devtools or future UI; needs Accessibility (+ possibly Screen Recording)</td>
+<td>YOLO sandbox</td>
+<td>YOLO + experimental sandbox; verify blocked network reads</td>
 </tr>
 </tbody></table>
 <h2 id="manual-checklist-copy-for-qa">Manual checklist (copy for QA)</h2><pre><code>[ ] tauri dev starts without panic
 [ ] Overlay hidden on launch; shortcut shows it
-[ ] Tray icon visible (Accessory — no dock icon)
-[ ] Context: app name matches frontmost app
-[ ] Context: clipboard snippet updates after copy
-[ ] Cloud mode: assistant responds (demo, not real LLM)
-[ ] Local mode: echo hello → stdout in chat
-[ ] Dangerous cmd: Sudo Gate appears before run
-[ ] Deny on Sudo Gate: error message in chat
-[ ] Approve admin cmd: verify stdout (watch for shape bug — see CODE_REVIEW.md)
-[ ] API key persists across restart
+[ ] Cloud agent: tool loop runs shell + fs tools
+[ ] Sudo Gate: unsigned bypass rejected; approve mints token
+[ ] Path Gate: unsigned bypass rejected; approve mints token
+[ ] Standard mode: workspace fs works; outside path gated
+[ ] Settings → Updates: check returns message (even if no new release)
+[ ] npm run test &amp;&amp; cargo test pass locally
 </code></pre>
 <h2 id="known-test-gaps">Known test gaps</h2><ul>
-<li>No CI workflow in repo.</li>
-<li>No headless E2E (Tauri WebDriver not configured).</li>
-<li>Safety logic untested — add Rust unit tests before relying on HITL in production.</li>
+<li>No headless E2E (Tauri WebDriver not configured)</li>
+<li>No mocked cloud agent integration test in CI yet</li>
+<li>Updater install path requires signed release artifacts + real pubkey</li>
 </ul>
+<p>See also <a href="QA_CHECKLIST.md"><code>QA_CHECKLIST.md</code></a> and <a href="CODE_REVIEW.md"><code>CODE_REVIEW.md</code></a>.</p>
 
       <footer class="doc-footer">
         <p>Built with <span aria-label="love">❤️</span> by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>

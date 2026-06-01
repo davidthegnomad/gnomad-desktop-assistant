@@ -144,9 +144,32 @@ Switch via composer or **Settings → Model & API**.
 
 ## Safety: Sudo Gate & Path Gate
 
-**Sudo Gate** — Risky shell (sudo, rm -rf, etc.): read reason, Approve or Deny.
+**Sudo Gate** — Risky shell (sudo, rm -rf, etc.): read reason, Approve or Deny. Approval mints a **signed HITL token** bound to the exact command (single-use, ~2 min TTL). Passing approval without a token is rejected.
 
-**Path Gate** — Standard mode: files outside workspace need approval.
+**Path Gate** — Standard mode: files outside workspace need approval. **Allow once** mints a **signed path token** bound to the canonical path and scope (read/write).
+
+---
+
+## Embedded GGUF (optional build)
+
+When built with `embedded-llm` (`npm run tauri:dev:embedded`):
+
+1. **Settings → Agent access → GGUF path** — point to a small `.gguf` (e.g. Qwen2.5-Coder 1.5B Q4)
+2. **Command planner** uses GGUF in-process (no Ollama required for planner)
+3. **Experimental → Use GGUF for local chat** — full local chat without Ollama
+4. **Experimental → Sandbox shell in YOLO** — wrap shell in OS sandbox (macOS/Linux)
+
+---
+
+## Terminal view (xterm.js)
+
+While the agent runs commands, live PTY output streams in the thinking panel. On command cards, click **Terminal view** to replay ANSI-colored output in an embedded terminal.
+
+---
+
+## Updates
+
+**Settings → Updates** — choose **Stable** or **Beta** channel, then **Check for updates**. Requires signed release artifacts; see [`UPDATER.md`](UPDATER.md).
 
 ---
 
@@ -179,10 +202,11 @@ Sessions stored locally on disk.
 |---------|---------|
 | Model & API | Provider, models, wizard |
 | API keys | Keychain secrets |
-| Agent access | Workspace, trust, planner |
+| Agent access | Workspace, trust, planner, GGUF, experimental flags |
+| Updates | Stable/beta channel, check/install |
 | Agent shell | CWD, reset session |
 | Knowledge | Open library |
-| Permissions | Accessibility, elevation test |
+| Permissions | Accessibility, elevation test; Wayland tray hint |
 
 **Theme:** Sun/moon/monitor icon cycles Light → Dark → System.
 
@@ -205,7 +229,7 @@ Sessions stored locally on disk.
 
 **Windows:** Tray near notification area; elevated cmds in admin terminal.
 
-**Linux:** WebKitGTK + AppIndicator; optional `xdotool`, `wl-paste`, `xclip`.
+**Linux:** WebKitGTK + AppIndicator; optional `xdotool`, `wl-paste`, `xclip`. On **Wayland**, left-click the tray icon to open the menu (Settings shows a hint when Wayland is detected).
 
 ---
 

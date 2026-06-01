@@ -226,7 +226,8 @@ body {
     <nav class="sidebar" aria-label="Table of contents">
           <div class="brand"><span class="brand-icon">🍄</span><h1>Gnomad</h1></div>
           <p class="doc-path">docs/LINUX_PACKAGES.md</p>
-          <a href="#debian-ubuntu-mint-pop_os" class="toc-h2">Debian / Ubuntu / Mint / Pop!_OS</a>
+          <a href="#wayland-vs-x11" class="toc-h3">Wayland vs X11</a>
+<a href="#debian-ubuntu-mint-pop_os" class="toc-h2">Debian / Ubuntu / Mint / Pop!_OS</a>
 <a href="#fedora-rhel-rocky-almalinux" class="toc-h2">Fedora / RHEL / Rocky / AlmaLinux</a>
 <a href="#opensuse-suse" class="toc-h2">openSUSE / SUSE</a>
 <a href="#arch-linux-manjaro" class="toc-h2">Arch Linux / Manjaro</a>
@@ -267,6 +268,7 @@ body {
 </tbody></table>
 <p><strong>Official downloads:</strong> <a href="https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha">GitHub Release v0.1.0-alpha</a> (<code>.deb</code>, <code>.rpm</code>, AppImage) or the <a href="https://davidthegnomad.github.io/gnomad-desktop-assistant/">project site</a>.</p>
 <p>CI also builds on every push to <code>main</code> — backup artifacts under <strong>Actions → Build</strong>.</p>
+<h3 id="wayland-vs-x11">Wayland vs X11</h3><p>Gnomad detects <code>XDG_SESSION_TYPE</code> at runtime. On <strong>Wayland</strong>, use <strong>left-click</strong> on the tray icon to open the menu. Settings shows a hint when Wayland is detected. Optional context tools: <code>wl-paste</code> (Wayland), <code>xdotool</code>/<code>xclip</code> (X11).</p>
 <p>Local build (on Ubuntu 22.04+ or Debian 12+):</p>
 <pre><code class="language-bash">npm run tauri:build:linux          # deb + rpm + AppImage
 npm run tauri:build:linux:deb      # Debian/Ubuntu only

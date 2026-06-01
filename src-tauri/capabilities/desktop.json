@@ -11,6 +11,7 @@
   "permissions": [
     "global-shortcut:default",
     "opener:default",
-    "dialog:default"
+    "dialog:default",
+    "updater:default"
   ]
 }

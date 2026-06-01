@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { chatCompletionTurn, type LlmChatMessage } from "./llm";
 import { executeAgentTool, shellResultFromToolData, type AgentToolCall } from "./agentRuntime";
+import type { PathScope } from "./pathToken";
 import type { AgentSettings } from "./agentSettings";
 import { tryPlanInvalidCommand } from "./commandPlanner";
 import type { ProviderMode } from "./preferences";
@@ -53,7 +54,8 @@ export interface AgentLoopCallbacks {
   onStep?: (step: number, label: string) => void;
   /** Resolves with signed approval token on approve, null on deny. */
   requestHitlApproval: (command: string, reason: string) => Promise<string | null>;
-  requestPathApproval: (path: string, reason: string) => Promise<boolean>;
+  /** Resolves with signed path token on approve, null on deny. */
+  requestPathApproval: (path: string, reason: string, scope?: PathScope) => Promise<string | null>;
   executeElevated?: (command: string, approvalToken: string) => Promise<string>;
 }
 
@@ -234,23 +236,28 @@ async function runOneTool(
     }
   }
 
-  let pathApproved = false;
+  let pathApprovalToken: string | undefined;
+  const fsScope: PathScope = tc.name === "fs_write" ? "write" : "read";
   const runFs = async (retry: boolean) => {
     try {
       return await executeAgentTool(tc.name, args, {
-        pathApproved: retry || pathApproved,
+        pathApprovalToken: retry ? pathApprovalToken : undefined,
         cwd: params.shellCwd,
       });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      if (!retry && msg.includes("outside workspace")) {
+      const payload = parseInvokeError(err);
+      const outside =
+        payload?.code === "path_policy" ||
+        (err instanceof Error && err.message.includes("outside workspace"));
+      if (!retry && outside) {
         const pathHint = String(args.path ?? args.query ?? "");
-        const ok = await params.callbacks.requestPathApproval(
+        const token = await params.callbacks.requestPathApproval(
           pathHint,
-          msg
+          payload?.message ?? "Path is outside workspace.",
+          fsScope
         );
-        if (ok) {
-          pathApproved = true;
+        if (token) {
+          pathApprovalToken = token;
           return runFs(true);
         }
       }

@@ -8,6 +8,9 @@ const LS_ONBOARDING = "omni_onboarding_complete";
 const LS_PROVIDER = "omni_provider";
 const LS_MODEL = "omni_model";
 const LS_LOCAL_MODEL = "omni_local_model";
+const LS_UPDATE_CHANNEL = "omni_update_channel";
+
+export type UpdateChannel = "stable" | "beta";
 
 export function getStoredTheme(): ThemeMode {
   const v = localStorage.getItem(LS_THEME);
@@ -49,6 +52,14 @@ export function getStoredLocalModel(): string {
 
 export function setStoredLocalModel(model: string) {
   localStorage.setItem(LS_LOCAL_MODEL, model);
+}
+
+export function getStoredUpdateChannel(): UpdateChannel {
+  return localStorage.getItem(LS_UPDATE_CHANNEL) === "beta" ? "beta" : "stable";
+}
+
+export function setStoredUpdateChannel(channel: UpdateChannel) {
+  localStorage.setItem(LS_UPDATE_CHANNEL, channel);
 }
 
 export function resolveTheme(mode: ThemeMode): "light" | "dark" {

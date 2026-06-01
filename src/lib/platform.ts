@@ -13,6 +13,8 @@ export interface PlatformInfo {
   supportsActiveWindowContext: boolean;
   supportsClipboardContext: boolean;
   supportsAccessibilitySettings: boolean;
+  linuxSessionType?: string | null;
+  trayLeftClickOpensMenu: boolean;
 }
 
 export async function getPlatformInfo(): Promise<PlatformInfo> {

@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Wave B Roadmap — Gnomad Desktop Assistant</title>
+  <meta name="description" content="Wave B Roadmap documentation for Gnomad Desktop Assistant." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>:root {
+  --bg-base: #0a0a0a;
+  --bg-panel: rgba(18, 18, 20, 0.92);
+  --bg-elevated: rgba(30, 30, 35, 0.95);
+  --border: rgba(255, 255, 255, 0.1);
+  --text: #f3f4f6;
+  --muted: #9ca3af;
+  --accent: #8ab4f8;
+  --accent-secondary: #c58af9;
+  --success: #34a853;
+  --warning: #f9ab00;
+  --danger: #ea4335;
+  --pill-radius: 999px;
+  --radius: 16px;
+  --mesh:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(66, 133, 244, 0.2), transparent 65%),
+    radial-gradient(ellipse 60% 40% at 10% 30%, rgba(168, 85, 247, 0.12), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 95% 40%, rgba(242, 139, 130, 0.1), transparent 50%);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: "Google Sans Flex", "Roboto", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--bg-base);
+  min-height: 100vh;
+}
+
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: var(--mesh);
+  z-index: 0;
+}
+
+.layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 1.5rem 1.25rem;
+  background: var(--bg-panel);
+  backdrop-filter: blur(24px);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.brand-icon { font-size: 1.5rem; }
+.brand h1 { font-size: 1rem; font-weight: 600; }
+
+.doc-path {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  word-break: break-all;
+}
+
+.sidebar a {
+  display: block;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar a.toc-h3 { padding-left: 1.1rem; font-size: 0.78rem; }
+.sidebar a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.sidebar a.active { color: var(--accent); background: rgba(138,180,248,0.12); }
+
+.content {
+  padding: 2rem 2.5rem 3rem;
+  max-width: 760px;
+}
+
+.hero { margin-bottom: 1.5rem; }
+.hero h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.formats { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+.formats a { color: var(--accent); }
+
+.doc-body h1 { font-size: 1.5rem; margin: 1.5rem 0 0.75rem; }
+.doc-body h2 {
+  font-size: 1.25rem;
+  margin: 2rem 0 0.65rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.doc-body h3 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; color: var(--accent); }
+.doc-body h4 { font-size: 0.95rem; margin: 1rem 0 0.4rem; }
+
+.doc-body p { margin-bottom: 0.85rem; }
+.doc-body ul, .doc-body ol { margin: 0 0 1rem 1.25rem; color: var(--muted); }
+.doc-body li { margin-bottom: 0.35rem; }
+.doc-body li strong { color: var(--text); }
+
+.doc-body a { color: var(--accent); }
+.doc-body code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85em;
+  background: rgba(255,255,255,0.08);
+  padding: 0.12em 0.35em;
+  border-radius: 6px;
+  color: var(--accent-secondary);
+}
+
+.doc-body pre {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.doc-body pre code {
+  background: none;
+  padding: 0;
+  color: var(--text);
+}
+
+.doc-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1rem 0;
+}
+
+.doc-body th, .doc-body td {
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-body th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.doc-body blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 0.6rem 1rem;
+  margin: 1rem 0;
+  background: rgba(138,180,248,0.08);
+  border-radius: 0 12px 12px 0;
+  color: var(--muted);
+}
+
+.doc-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+.doc-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.doc-footer a { color: var(--accent); text-decoration: none; }
+.doc-footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="mesh-bg" aria-hidden="true"></div>
+  <div class="layout">
+    <nav class="sidebar" aria-label="Table of contents">
+          <div class="brand"><span class="brand-icon">🍄</span><h1>Gnomad</h1></div>
+          <p class="doc-path">docs/WAVE_B_ROADMAP.md</p>
+          <a href="#current-baseline" class="toc-h2">Current baseline</a>
+<a href="#recommended-delivery-order" class="toc-h2">Recommended delivery order</a>
+<a href="#b1-cryptographic-hitl-approval-tokens" class="toc-h2">B1 — Cryptographic HITL approval tokens</a>
+<a href="#problem" class="toc-h3">Problem</a>
+<a href="#design" class="toc-h3">Design</a>
+<a href="#files-indicative" class="toc-h3">Files (indicative)</a>
+<a href="#acceptance-criteria" class="toc-h3">Acceptance criteria</a>
+<a href="#effort-amp-risk" class="toc-h3">Effort &amp; risk</a>
+<a href="#b2-in-process-native-local-llm-candle-or-llamacpp" class="toc-h2">B2 — In-process native local LLM (Candle or llama.cpp)</a>
+<a href="#problem" class="toc-h3">Problem</a>
+<a href="#options" class="toc-h3">Options</a>
+<a href="#design" class="toc-h3">Design</a>
+<a href="#acceptance-criteria" class="toc-h3">Acceptance criteria</a>
+<a href="#effort-amp-risk" class="toc-h3">Effort &amp; risk</a>
+<a href="#b3-true-terminal-emulation-xtermjs" class="toc-h2">B3 — True terminal emulation (Xterm.js)</a>
+<a href="#problem" class="toc-h3">Problem</a>
+<a href="#design" class="toc-h3">Design</a>
+<a href="#acceptance-criteria" class="toc-h3">Acceptance criteria</a>
+<a href="#effort-amp-risk" class="toc-h3">Effort &amp; risk</a>
+<a href="#b4-micro-sandboxing-for-yolo-mode" class="toc-h2">B4 — Micro-sandboxing for YOLO! mode</a>
+<a href="#problem" class="toc-h3">Problem</a>
+<a href="#design-platform-specific" class="toc-h3">Design (platform-specific)</a>
+<a href="#ux" class="toc-h3">UX</a>
+<a href="#acceptance-criteria" class="toc-h3">Acceptance criteria</a>
+<a href="#effort-amp-risk" class="toc-h3">Effort &amp; risk</a>
+<a href="#cross-cutting-dependencies" class="toc-h2">Cross-cutting dependencies</a>
+<a href="#mapping-to-product-versions" class="toc-h2">Mapping to product versions</a>
+<a href="#explicit-non-goals-wave-b" class="toc-h2">Explicit non-goals (Wave B)</a>
+<a href="#related-docs" class="toc-h2">Related docs</a>
+        </nav>
+    <main class="content doc-body">
+      <header class="hero">
+        <h2>Wave B Roadmap</h2>
+        <p class="formats">Also available: <a href="WAVE_B_ROADMAP.md">Markdown</a> · <a href="WAVE_B_ROADMAP.txt">Plain text</a></p>
+      </header>
+      <h1 id="wave-b-roadmap-state-of-the-art-systems">Wave B Roadmap — State-of-the-Art Systems</h1><p><strong>Status:</strong> Shipped on <code>main</code> (June 2026)<br><strong>Audience:</strong> Engineering, security review, portfolio narrative<br><strong>Last updated:</strong> June 2026</p>
+<p>This document captures four <strong>systems-level</strong> upgrades from the follow-up evaluation. They build on what shipped in Wave A (structured <code>GnomadError</code> payloads, elevation hardening, <code>App.tsx</code> decomposition) and address residual alpha gaps called out in <a href="CODE_REVIEW.md"><code>CODE_REVIEW.md</code></a> and <a href="SECURITY_MODEL.md"><code>SECURITY_MODEL.md</code></a>.</p>
+<hr>
+<h2 id="current-baseline">Current baseline</h2><table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Today</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>HITL</td>
+<td><strong>B1 shipped:</strong> HMAC tokens via <a href="../src-tauri/src/hitl_token.rs"><code>hitl_token.rs</code></a>; boolean bypass rejected</td>
+</tr>
+<tr>
+<td>Local LLM</td>
+<td>External <strong>Ollama</strong> HTTP; in-process <strong>GGUF</strong> for planner + optional local chat (<code>embedded-llm</code> build)</td>
+</tr>
+<tr>
+<td>YOLO!</td>
+<td>Broader FS via <a href="../src-tauri/src/agent_settings.rs"><code>agent_settings</code></a>; optional <strong>sandboxed shell</strong> (B4) in YOLO + experimental flag</td>
+</tr>
+<tr>
+<td>Terminal UX</td>
+<td><strong>xterm.js</strong> live stream + replay on command cards; summary cards for simple runs</td>
+</tr>
+</tbody></table>
+<pre><code class="language-mermaid">flowchart LR
+  subgraph today [Wave A]
+    UI[Sudo Gate UI]
+    IPC[&quot;invoke(hitl_approved: true)&quot;]
+    Rust[shell_session + privilege]
+    UI --&gt; IPC --&gt; Rust
+  end
+  subgraph waveB [Wave B target]
+    Token[HMAC approval token]
+    Rust2[Verify token + command hash]
+    UI2[Sudo Gate UI]
+    UI2 --&gt; Token --&gt; Rust2
+  end
+  today -.-&gt; waveB
+</code></pre>
+<hr>
+<h2 id="recommended-delivery-order">Recommended delivery order</h2><table>
+<thead>
+<tr>
+<th>Order</th>
+<th>Initiative</th>
+<th>Why first</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>B1</strong></td>
+<td>Cryptographic HITL tokens</td>
+<td>Closes real IPC bypass class; small Rust surface; unblocks enterprise narrative</td>
+</tr>
+<tr>
+<td><strong>B2</strong></td>
+<td>In-process local LLM</td>
+<td>✓ B2a planner + B2b local chat shipped</td>
+</tr>
+<tr>
+<td><strong>B3</strong></td>
+<td>True terminal (Xterm.js)</td>
+<td>✓ Live stream + replay in chat</td>
+</tr>
+<tr>
+<td><strong>B4</strong></td>
+<td>Micro-sandboxing for YOLO</td>
+<td>✓ Experimental sandbox-exec / bwrap</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="b1-cryptographic-hitl-approval-tokens">B1 — Cryptographic HITL approval tokens</h2><h3 id="problem">Problem</h3><p>Any client that can call <code>shell_session_run</code> or <code>agent_execute_tool</code> with <code>hitl_approved: true</code> may bypass the UI gate. Safety heuristics still run, but <strong>approval is not cryptographically bound</strong> to a specific command, time window, or session.</p>
+<h3 id="design">Design</h3><ol>
+<li><p><strong><code>check_command_safety</code></strong> (or a dedicated <code>request_hitl_token</code> command) returns:</p>
+<ul>
+<li><code>requires_hitl_approval</code>, <code>danger_reason</code> (unchanged)</li>
+<li><strong><code>approval_nonce</code></strong> + <strong><code>approval_token</code></strong> when HITL is required</li>
+</ul>
+</li>
+<li><p><strong>Token payload</strong> (signed, not encrypted — local app only):</p>
+<pre><code class="language-text">v1 | command_sha256 | nonce | issued_at_unix | expires_at_unix | scope
+</code></pre>
+<ul>
+<li><code>command_sha256</code>: SHA-256 of normalized command string (trim, NFC)</li>
+<li><code>scope</code>: <code>shell_run</code> | <code>elevated</code> | <code>path_once</code> (future)</li>
+<li>TTL: e.g. <strong>60–120 seconds</strong>, single-use (nonce stored in memory until consumed or expired)</li>
+</ul>
+</li>
+<li><p><strong>Signing:</strong> HMAC-SHA256 with a <strong>per-install secret</strong> generated on first launch and stored in OS keychain (<code>gnomad-hitl-secret</code>), not in frontend.</p>
+</li>
+<li><p><strong>Execution:</strong> <code>shell_session_run</code> / elevated path accepts optional <code>approval_token</code> instead of bare <code>hitl_approved</code>. Rust:</p>
+<ul>
+<li>Verifies HMAC + expiry + command hash match + nonce not reused</li>
+<li>Re-runs <code>check_command_safety</code> (defense in depth)</li>
+<li>On success, burns nonce</li>
+</ul>
+</li>
+<li><p><strong>Frontend:</strong> After Sudo Gate approve, pass <code>approval_token</code> from the pending safety response — never a raw boolean.</p>
+</li>
+<li><p><strong>Elevation:</strong> <code>execute_elevated_command</code> requires token with <code>scope=elevated</code> and matching command hash.</p>
+</li>
+</ol>
+<h3 id="files-indicative">Files (indicative)</h3><table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Files</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Rust</td>
+<td>New <code>hitl_token.rs</code>; <code>privilege.rs</code>, <code>shell_session.rs</code>, <code>agent_runtime.rs</code>, <code>lib.rs</code></td>
+</tr>
+<tr>
+<td>TS</td>
+<td><code>shellSession.ts</code>, <code>agentRuntime.ts</code>, <code>useAgentExecution.ts</code>, <code>agentLoop.ts</code></td>
+</tr>
+<tr>
+<td>Docs</td>
+<td><code>SECURITY_MODEL.md</code>, <code>QA_CHECKLIST.md</code> (IPC bypass test case)</td>
+</tr>
+</tbody></table>
+<h3 id="acceptance-criteria">Acceptance criteria</h3><ul>
+<li><input checked="" disabled="" type="checkbox"> <code>hitl_approved: true</code> without valid token → <code>safety_blocked</code> JSON payload</li>
+<li><input checked="" disabled="" type="checkbox"> Token for command A rejected when executing command B</li>
+<li><input checked="" disabled="" type="checkbox"> Reused token rejected (expiry test: manual)</li>
+<li><input checked="" disabled="" type="checkbox"> Unit tests: sign/verify, wrong hash, replay, boolean bypass</li>
+<li><input checked="" disabled="" type="checkbox"> Manual: approve in UI → success; devtools invoke with boolean only → fail</li>
+</ul>
+<h3 id="effort-amp-risk">Effort &amp; risk</h3><table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Effort</strong></td>
+<td>~3–5 days</td>
+</tr>
+<tr>
+<td><strong>Risk</strong></td>
+<td>Low–medium (API migration; keep deprecated bool one release behind feature flag)</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="b2-in-process-native-local-llm-candle-or-llamacpp">B2 — In-process native local LLM (Candle or llama.cpp)</h2><h3 id="problem">Problem</h3><p>Ollama is an extra daemon, version skew, and install step. Portfolio story: “local works out of the box” requires an <strong>embedded</strong> inference path for small models (e.g. 1B Qwen-Coder for planner / tag extraction).</p>
+<h3 id="options">Options</h3><table>
+<thead>
+<tr>
+<th>Backend</th>
+<th>Pros</th>
+<th>Cons</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>llama-cpp-2</strong> (Rust bindings)</td>
+<td>Mature GGUF ecosystem; matches existing GGUF settings field</td>
+<td>Binary size, CPU/GPU feature matrix per platform</td>
+</tr>
+<tr>
+<td><strong>Candle</strong> (Hugging Face)</td>
+<td>Pure Rust, good for custom models</td>
+<td>Heavier integration for chat templates; GPU paths vary</td>
+</tr>
+</tbody></table>
+<p><strong>Recommendation:</strong> <strong>llama-cpp-2</strong> for v1 in-process path (aligns with stored GGUF path + planner use case); keep Ollama as optional “bring your own models.”</p>
+<h3 id="design">Design</h3><ol>
+<li><p><strong><code>local_inference</code> module</strong> in <code>src-tauri</code>:</p>
+<ul>
+<li><code>load_model(path: PathBuf, n_ctx, n_threads)</code> — lazy singleton</li>
+<li><code>complete(prompt, max_tokens, stop)</code> → string</li>
+<li><code>plan_command(prose) -&gt; Result&lt;String, GnomadError&gt;</code> — used by command planner</li>
+</ul>
+</li>
+<li><p><strong>Model delivery:</strong></p>
+<ul>
+<li><strong>Phase B2a:</strong> User-selected GGUF on disk (Settings)</li>
+<li><strong>Phase B2b (optional):</strong> Bundled tiny model in app resources (size cap ~500MB–1GB for alpha)</li>
+</ul>
+</li>
+<li><p><strong>Frontend:</strong> Provider mode <code>local-embedded</code> vs <code>local-ollama</code>; same chat UI, different backend invoke.</p>
+</li>
+<li><p><strong>Build:</strong> Feature flag <code>embedded-llm</code>; CI builds without it on constrained runners; macOS/Windows/Linux matrix docs in <a href="BUILD_PLATFORMS.md"><code>BUILD_PLATFORMS.md</code></a>.</p>
+</li>
+</ol>
+<h3 id="acceptance-criteria">Acceptance criteria</h3><ul>
+<li><input checked="" disabled="" type="checkbox"> Planner works with no Ollama process when GGUF configured</li>
+<li><input checked="" disabled="" type="checkbox"> Graceful <code>llm</code> error payload if model missing or load fails</li>
+<li><input checked="" disabled="" type="checkbox"> Document RAM/CPU expectations (e.g. 1B Q4 ≈ 1GB RAM) — see BUILD.md</li>
+<li><input checked="" disabled="" type="checkbox"> Ollama path unchanged (regression)</li>
+</ul>
+<h3 id="effort-amp-risk">Effort &amp; risk</h3><table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Effort</strong></td>
+<td>~2–4 weeks (bindings, threading, packaging)</td>
+</tr>
+<tr>
+<td><strong>Risk</strong></td>
+<td>Medium–high (artifact size, Metal/CUDA/CPU fallbacks, licensing of bundled weights)</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="b3-true-terminal-emulation-xtermjs">B3 — True terminal emulation (Xterm.js)</h2><h3 id="problem">Problem</h3><p>PTY output is reduced to stdout/stderr strings for cards. <strong>ANSI colors, progress bars, TUI apps, and interactive prompts</strong> are lossy or confusing (stall/timeout heuristics fight full-screen TUIs).</p>
+<h3 id="design">Design</h3><ol>
+<li><p><strong>Rust (minimal change):</strong> Already emits PTY chunks via events — add optional <strong>base64 or raw UTF-8 frame</strong> event <code>shell-pty-output</code> with session id (if not already sufficient).</p>
+</li>
+<li><p><strong>Frontend:</strong></p>
+<ul>
+<li>Add <code>@xterm/xterm</code> + fit addon</li>
+<li><strong><code>TerminalPanel</code></strong> component: embedded in chat when user expands a run, or docked below composer</li>
+<li>Wire <code>subscribeShellOutput</code> → <code>term.write(data)</code></li>
+<li><strong>Input:</strong> optional <code>term.onData</code> → new <code>shell_session_write</code> command for interactive sessions (separate from one-shot <code>shell_run</code>)</li>
+</ul>
+</li>
+<li><p><strong>Modes:</strong></p>
+<ul>
+<li><strong>Compact (default):</strong> Keep <code>ShellCommandBlock</code> summary for simple commands</li>
+<li><strong>Live:</strong> Open xterm when command tagged interactive or user clicks “Show terminal”</li>
+</ul>
+</li>
+<li><p><strong>Security:</strong> xterm does not bypass gates; interactive mode still requires HITL token for flagged commands.</p>
+</li>
+</ol>
+<h3 id="acceptance-criteria">Acceptance criteria</h3><ul>
+<li><input checked="" disabled="" type="checkbox"> <code>ls --color=auto</code>, <code>npm install</code> progress render in live mode / replay</li>
+<li><input checked="" disabled="" type="checkbox"> Stop button sends interrupt</li>
+<li><input checked="" disabled="" type="checkbox"> No regression for cloud agent tool loop (summary cards still work)</li>
+<li><input checked="" disabled="" type="checkbox"> Cross-platform: macOS, Windows, Linux windowed + panel</li>
+</ul>
+<h3 id="effort-amp-risk">Effort &amp; risk</h3><table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Effort</strong></td>
+<td>~1–2 weeks</td>
+</tr>
+<tr>
+<td><strong>Risk</strong></td>
+<td>Medium (bundle size, focus/keyboard in Tauri webview, accessibility)</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="b4-micro-sandboxing-for-yolo-mode">B4 — Micro-sandboxing for YOLO! mode</h2><h3 id="problem">Problem</h3><p>YOLO expands filesystem reach; shell on host PTY can still <strong>exfiltrate, pivot, or damage</strong> outside workspace if the model is tricked. Goal: when YOLO is on, <strong>contain shell side effects</strong> without breaking normal Standard mode.</p>
+<h3 id="design-platform-specific">Design (platform-specific)</h3><table>
+<thead>
+<tr>
+<th>OS</th>
+<th>Mechanism</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>macOS</strong></td>
+<td><code>sandbox-exec</code> with <strong>dynamic profile</strong> per session</td>
+<td>Profile allows: workspace R/W, temp dir, deny network optional, deny <code>~/.ssh</code> etc. Fragile across macOS versions — needs version matrix</td>
+</tr>
+<tr>
+<td><strong>Linux</strong></td>
+<td><strong>bubblewrap</strong> / user namespaces</td>
+<td>Mount minimal FS; require optional dep (<a href="LINUX_PACKAGES.md"><code>LINUX_PACKAGES.md</code></a>)</td>
+</tr>
+<tr>
+<td><strong>Windows</strong></td>
+<td><strong>AppContainer</strong> or restricted token</td>
+<td>Hardest parity; may ship “YOLO FS only, shell Standard” on Windows v1</td>
+</tr>
+</tbody></table>
+<p><strong>Principle:</strong> Sandbox wraps <strong>shell execution path only</strong>; <code>agent_fs</code> already path-gated — optionally route YOLO shell through <code>bwrap</code> helper binary shipped with app.</p>
+<h3 id="ux">UX</h3><ul>
+<li>Settings → YOLO: sub-option <strong>“Sandbox shell (experimental)”</strong> with platform badge</li>
+<li>Audit log records <code>sandboxed: true</code> and profile hash</li>
+</ul>
+<h3 id="acceptance-criteria">Acceptance criteria</h3><ul>
+<li><input checked="" disabled="" type="checkbox"> In sandboxed YOLO: reads outside workspace blocked; workspace writes allowed (profile-dependent)</li>
+<li><input checked="" disabled="" type="checkbox"> Escape attempts documented in test notes (not pen-test complete)</li>
+<li><input checked="" disabled="" type="checkbox"> Clear fallback when sandbox helper missing (disable feature, error not silent host run)</li>
+</ul>
+<h3 id="effort-amp-risk">Effort &amp; risk</h3><table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Effort</strong></td>
+<td>~4–8 weeks across OSes</td>
+</tr>
+<tr>
+<td><strong>Risk</strong></td>
+<td><strong>High</strong> — support burden, false sense of security if profiles wrong; enterprise may demand third-party audit</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="cross-cutting-dependencies">Cross-cutting dependencies</h2><pre><code class="language-mermaid">flowchart TB
+  B1[B1 HITL tokens]
+  B2[B2 Embedded LLM]
+  B3[B3 Xterm.js]
+  B4[B4 Sandbox YOLO]
+  B1 --&gt; B4
+  B3 --&gt; B4
+  B1 --&gt; B3
+</code></pre>
+<ul>
+<li><strong>B4</strong> should assume <strong>B1</strong> so sandboxed runs cannot skip gates via IPC.</li>
+<li><strong>B3</strong> interactive PTY should require tokens for elevated/interactive flows.</li>
+<li><strong>B2</strong> is largely orthogonal; improves planner without widening shell attack surface.</li>
+</ul>
+<hr>
+<h2 id="mapping-to-product-versions">Mapping to product versions</h2><table>
+<thead>
+<tr>
+<th>Version</th>
+<th>Wave B items</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>v0.2 beta</strong></td>
+<td>B1 (HITL tokens) + Wave B error migration (<code>llm</code>, <code>command_planner</code>, <code>chat_history</code>)</td>
+</tr>
+<tr>
+<td><strong>v0.3</strong></td>
+<td>B3 (xterm) + B2a (GGUF in-process planner)</td>
+</tr>
+<tr>
+<td><strong>v0.4+</strong></td>
+<td>B2b (optional bundled model), B4 (sandbox experimental per OS)</td>
+</tr>
+</tbody></table>
+<p>See also <a href="ROADMAP.md"><code>ROADMAP.md</code></a>.</p>
+<hr>
+<h2 id="explicit-non-goals-wave-b">Explicit non-goals (Wave B)</h2><ul>
+<li>Full VM per command (Docker/Podman required) — too heavy for default install</li>
+<li>Remote attestation / hardware security modules</li>
+<li>Replacing cloud providers with on-device 70B models</li>
+<li>Autonomous background agents without user message</li>
+</ul>
+<hr>
+<h2 id="related-docs">Related docs</h2><ul>
+<li><a href="SECURITY_MODEL.md"><code>SECURITY_MODEL.md</code></a> — threat model + future HITL token section  </li>
+<li><a href="AGENT_CAPABILITIES_PROPOSAL.md"><code>AGENT_CAPABILITIES_PROPOSAL.md</code></a> — agent architecture  </li>
+<li><a href="CODE_REVIEW.md"><code>CODE_REVIEW.md</code></a> — Wave A completion status  </li>
+<li><a href="CROSS_PLATFORM_CHECKLIST.md"><code>CROSS_PLATFORM_CHECKLIST.md</code></a> — smoke tests when each B item lands</li>
+</ul>
+
+      <footer class="doc-footer">
+        <p>Built with <span aria-label="love">❤️</span> by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+      </footer>
+    </main>
+  </div>
+  <script>
+    const links = document.querySelectorAll(".sidebar a[href^='#']");
+    const sections = [...links].map((a) => document.querySelector(a.getAttribute("href")));
+    const onScroll = () => {
+      let cur = 0;
+      sections.forEach((s, i) => { if (s && s.getBoundingClientRect().top <= 120) cur = i; });
+      links.forEach((l, i) => l.classList.toggle("active", i === cur));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  </script>
+</body>
+</html>

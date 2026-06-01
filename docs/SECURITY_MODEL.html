@@ -232,6 +232,7 @@ body {
 <a href="#human-in-the-loop-gates" class="toc-h2">Human-in-the-loop gates</a>
 <a href="#sudo-gate" class="toc-h3">Sudo Gate</a>
 <a href="#path-gate" class="toc-h3">Path Gate</a>
+<a href="#cryptographic-approval-tokens-wave-b1-shipped" class="toc-h3">Cryptographic approval tokens (Wave B1 — shipped)</a>
 <a href="#command-safety-server-side" class="toc-h2">Command safety (server-side)</a>
 <a href="#secrets-handling" class="toc-h2">Secrets handling</a>
 <a href="#audit-amp-observability" class="toc-h2">Audit &amp; observability</a>
@@ -318,7 +319,16 @@ body {
 <li><strong>Deny</strong> → command not executed  </li>
 <li><strong>Approve</strong> → execution proceeds; macOS/Linux may prompt for administrator credentials</li>
 </ul>
-<h3 id="path-gate">Path Gate</h3><p>In <strong>Standard</strong> mode, filesystem tool calls targeting paths outside the workspace require explicit approval.</p>
+<h3 id="path-gate">Path Gate</h3><p>In <strong>Standard</strong> mode, filesystem tool calls targeting paths outside the workspace require explicit approval. After <strong>Allow once</strong>, the app issues a signed <strong>path gate token</strong> (same HMAC pattern as HITL) bound to the canonical path hash, scope (<code>read</code> / <code>write</code>), nonce, and expiry (~300s). Passing <code>path_approved: true</code> without a token is rejected.</p>
+<p>Implementation: <a href="../src-tauri/src/path_token.rs"><code>src-tauri/src/path_token.rs</code></a>, frontend <a href="../src/lib/pathToken.ts"><code>src/lib/pathToken.ts</code></a>.</p>
+<h3 id="cryptographic-approval-tokens-wave-b1-shipped">Cryptographic approval tokens (Wave B1 — shipped)</h3><p>When <code>check_command_safety</code> requires HITL:</p>
+<ol>
+<li>After Sudo Gate <strong>Approve</strong>, the app calls <code>issue_hitl_approval_token</code> (Rust). The backend returns a short-lived <strong>HMAC-SHA256</strong> token bound to <code>SHA-256(normalized command)</code>, nonce, expiry (~120s), and scope (<code>shell_run</code> or <code>elevated</code>).</li>
+<li>Signing secret is stored in the OS keychain (<code>hitl-hmac-secret</code>); not exposed to the webview.</li>
+<li><code>shell_session_run</code>, <code>agent_execute_tool</code> (<code>shell_run</code>), and <code>execute_elevated_command</code> require a valid token. Passing <code>hitl_approved: true</code> without a token returns <code>safety_blocked</code> (“Unsigned HITL approval is not accepted”).</li>
+<li>Tokens are <strong>single-use</strong> (nonce burned in memory after verification).</li>
+</ol>
+<p>Implementation: <a href="../src-tauri/src/hitl_token.rs"><code>src-tauri/src/hitl_token.rs</code></a>, frontend <a href="../src/lib/hitlToken.ts"><code>src/lib/hitlToken.ts</code></a>.</p>
 <hr>
 <h2 id="command-safety-server-side">Command safety (server-side)</h2><p><code>privilege.rs</code> analyzes command strings before execution:</p>
 <ul>

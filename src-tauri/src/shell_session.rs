@@ -525,7 +525,12 @@ fn classify_result(wait: WaitOutcome, duration_ms: u64) -> ShellRunResult {
     }
 }
 
-fn spawn_session(app: &AppHandle, cwd: PathBuf) -> Result<ActiveSession, String> {
+fn spawn_session(
+    app: &AppHandle,
+    cwd: PathBuf,
+    sandbox: bool,
+    workspace: PathBuf,
+) -> Result<ActiveSession, String> {
     let pty_system = native_pty_system();
     let pair = pty_system
         .openpty(PtySize {
@@ -537,8 +542,14 @@ fn spawn_session(app: &AppHandle, cwd: PathBuf) -> Result<ActiveSession, String>
         .map_err(|e| format!("Failed to open PTY: {e}"))?;
 
     let (shell, args) = default_shell();
-    let mut cmd = CommandBuilder::new(&shell);
-    for arg in args {
+    let (program, program_args) = if sandbox {
+        crate::shell_sandbox::sandboxed_shell_command(app, &workspace, &shell, &args)?
+    } else {
+        (shell.clone(), args.clone())
+    };
+
+    let mut cmd = CommandBuilder::new(&program);
+    for arg in program_args {
         cmd.arg(arg);
     }
     cmd.cwd(&cwd);
@@ -609,12 +620,21 @@ fn spawn_session(app: &AppHandle, cwd: PathBuf) -> Result<ActiveSession, String>
 fn ensure_session(
     app: &AppHandle,
     state: &ShellSessionState,
+    settings_state: &crate::agent_settings::AgentSettingsState,
     cwd: Option<String>,
 ) -> Result<(), String> {
     let desired = cwd
         .map(PathBuf::from)
         .filter(|p| p.is_absolute() || p.exists())
         .unwrap_or_else(default_cwd);
+
+    let (sandbox, workspace) = {
+        let guard = settings_state.inner.lock().map_err(|e| e.to_string())?;
+        (
+            crate::agent_settings::should_sandbox_shell(&guard),
+            guard.workspace_root.clone(),
+        )
+    };
 
     let mut guard = state.inner.lock().map_err(|e| e.to_string())?;
     let needs_spawn = match guard.as_ref() {
@@ -626,7 +646,7 @@ fn ensure_session(
         if let Some(mut old) = guard.take() {
             let _ = old.child.kill();
         }
-        let session = spawn_session(app, desired)?;
+        let session = spawn_session(app, desired, sandbox, workspace)?;
         *guard = Some(session);
     }
     Ok(())
@@ -698,6 +718,7 @@ pub fn validate_shell_command(command: String) -> bool {
 pub fn run_shell_command(
     app: &AppHandle,
     state: &ShellSessionState,
+    settings_state: &crate::agent_settings::AgentSettingsState,
     hitl_state: &crate::hitl_token::HitlTokenState,
     command: String,
     cwd: Option<String>,
@@ -732,7 +753,7 @@ pub fn run_shell_command(
         hitl_approved,
     )?;
 
-    ensure_session(&app, &state, cwd)?;
+    ensure_session(&app, &state, settings_state, cwd)?;
     let timeout = Duration::from_millis(timeout_ms.unwrap_or(120_000).clamp(5_000, 600_000));
     let stall = Duration::from_millis(stall_ms.unwrap_or(DEFAULT_STALL_MS).clamp(5_000, 120_000));
 
@@ -821,6 +842,7 @@ pub fn run_shell_command(
 pub fn shell_session_run(
     app: AppHandle,
     state: State<'_, ShellSessionState>,
+    settings_state: State<'_, crate::agent_settings::AgentSettingsState>,
     hitl_state: State<'_, crate::hitl_token::HitlTokenState>,
     command: String,
     cwd: Option<String>,
@@ -832,6 +854,7 @@ pub fn shell_session_run(
     run_shell_command(
         &app,
         state.inner(),
+        settings_state.inner(),
         hitl_state.inner(),
         command,
         cwd,

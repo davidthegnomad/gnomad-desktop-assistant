@@ -46,6 +46,7 @@
   },
   "bundle": {
     "active": true,
+    "createUpdaterArtifacts": true,
     "copyright": "Built with ❤️ by Gnomad Studio 🦙",
     "targets": "all",
     "icon": [
@@ -81,6 +82,16 @@
           "/usr/share/doc/gnomad/README.md": "../../README.md"
         }
       }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "active": true,
+      "dialog": false,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IHRhdXJpLXVwZGF0ZXIgcHVibGljIGtleSByZXBsYWNlIG1lIHRvIGdlbmVyYXRlIHlvdXIgb3duIGtleSBwYWlyLi4u",
+      "endpoints": [
+        "https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/latest/download/latest.json"
+      ]
     }
   }
 }

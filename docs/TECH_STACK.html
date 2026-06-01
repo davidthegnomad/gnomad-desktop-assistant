@@ -304,6 +304,16 @@ body {
 <td>GitHub Actions + tauri-action</td>
 <td>Matrix builds: macOS, Ubuntu 22.04, Windows</td>
 </tr>
+<tr>
+<td><strong>Frontend tests</strong></td>
+<td>Vitest 3</td>
+<td><code>parseInvokeError</code> and error formatting</td>
+</tr>
+<tr>
+<td><strong>Terminal UI</strong></td>
+<td>@xterm/xterm</td>
+<td>Live PTY stream + command card replay</td>
+</tr>
 </tbody></table>
 <hr>
 <h2 id="frontend-presentation-layer">Frontend (presentation layer)</h2><h3 id="react-19-typescript">React 19 + TypeScript</h3><p>The UI is a single-page application compiled by Vite and embedded in Tauri’s WebView. TypeScript enforces contracts between the frontend and Tauri <code>invoke</code> payloads (messages, safety checks, platform info, agent settings).</p>
@@ -317,31 +327,39 @@ body {
 </thead>
 <tbody><tr>
 <td><code>App.tsx</code></td>
-<td>Root layout, chat flow, settings/knowledge overlays, gates (Sudo, Path)</td>
+<td>Thin shell: providers, overlays, gate modals wiring</td>
 </tr>
 <tr>
-<td><code>lib/llm.ts</code></td>
-<td>Cloud/local chat completion wiring</td>
+<td><code>hooks/useAgentExecution.ts</code></td>
+<td>Shell cwd, Sudo/Path gates, command execution</td>
 </tr>
 <tr>
-<td><code>lib/agentLoop.ts</code></td>
-<td>Multi-step agent orchestration (tool calls, up to 10 steps)</td>
+<td><code>hooks/useChatSubmit.ts</code></td>
+<td>Submit orchestration, agent loop entry</td>
 </tr>
 <tr>
-<td><code>lib/chatHistory.ts</code></td>
-<td>Session persistence via Tauri commands</td>
+<td><code>components/ChatView.tsx</code></td>
+<td>Messages, composer, context footer</td>
 </tr>
 <tr>
-<td><code>lib/knowledge.ts</code></td>
-<td>Knowledge bundle injection into prompts</td>
+<td><code>components/LiveTerminal.tsx</code></td>
+<td>xterm.js PTY panel</td>
 </tr>
 <tr>
-<td><code>lib/shellSession.ts</code></td>
-<td>Streaming shell output subscription</td>
+<td><code>lib/hitlToken.ts</code> / <code>lib/pathToken.ts</code></td>
+<td>Mint signed approval tokens after gates</td>
 </tr>
 <tr>
-<td><code>hooks/useTheme.ts</code></td>
-<td>Light / dark / system theme with FOUC prevention</td>
+<td><code>lib/embeddedLlm.ts</code></td>
+<td>Embedded GGUF status helpers</td>
+</tr>
+<tr>
+<td><code>lib/updater.ts</code></td>
+<td>In-app update check/install</td>
+</tr>
+<tr>
+<td><code>lib/errors.ts</code></td>
+<td>Parse structured <code>GnomadError</code> JSON from invoke</td>
 </tr>
 </tbody></table>
 <h3 id="design-system">Design system</h3><p>Visual language follows a <strong>Gemini-inspired “Neural Expressive”</strong> pattern: pill composer, centered welcome state, gradient mesh backgrounds, dual provider/model selectors, and near-black dark theme (<code>#0a0a0a</code>). Theme tokens live in <code>src/index.css</code> as CSS variables under <code>[data-theme=&quot;light&quot;]</code> and <code>[data-theme=&quot;dark&quot;]</code>, enabling consistent surfaces without a runtime CSS framework.</p>
@@ -362,12 +380,18 @@ body {
 ├── llm.rs              # Rust-side LLM helpers where needed
 ├── shell_executor.rs   # One-shot shell execution
 ├── shell_session.rs    # PTY-backed persistent shell + interrupt
+├── error.rs            # GnomadError JSON payloads
+├── hitl_token.rs       # Cryptographic shell approval tokens
+├── path_token.rs       # Cryptographic path approval tokens
+├── local_inference.rs  # In-process GGUF (optional embedded-llm)
+├── shell_sandbox.rs    # YOLO micro-sandbox (macOS/Linux)
+├── updater.rs          # Tauri updater commands
 ├── privilege.rs        # Safety heuristics, Sudo Gate signals
 ├── agent_runtime.rs    # Tool execution loop (shell_run, fs_*)
 ├── agent_fs.rs         # Workspace-scoped filesystem operations
 ├── agent_settings.rs   # Trust mode, workspace root, planner config
 ├── agent_audit.rs      # JSONL audit log
-├── command_planner.rs  # Local Ollama fallback for invalid shell tags
+├── command_planner.rs  # Local GGUF or Ollama command planner
 ├── knowledge.rs        # Knowledge base indexing on disk
 ├── chat_history.rs     # Session store
 ├── attachments.rs      # Staged file handling
@@ -400,8 +424,8 @@ body {
 <td>File/folder pickers for knowledge and workspace</td>
 </tr>
 <tr>
-<td><code>tauri-plugin-fs</code></td>
-<td>Scoped filesystem access per capabilities</td>
+<td><code>tauri-plugin-updater</code></td>
+<td>Signed in-app updates (stable/beta channels)</td>
 </tr>
 </tbody></table>
 <p>Capabilities are declared in <code>src-tauri/capabilities/</code> (<code>default.json</code>, <code>desktop.json</code>) following Tauri v2’s permission model.</p>
@@ -421,8 +445,8 @@ body {
 </tr>
 <tr>
 <td><strong>Local</strong></td>
-<td>Ollama</td>
-<td>Base URL in keychain; model tag in settings</td>
+<td>Ollama HTTP <strong>or</strong> embedded GGUF (<code>embedded-llm</code> build)</td>
+<td>Base URL in keychain; or GGUF path in Agent access</td>
 </tr>
 </tbody></table>
 <p><strong>Cloud agent path:</strong> <code>chatCompletion</code> + <code>runAgentLoop</code> issue structured tool calls (<code>shell_run</code>, filesystem tools, <code>workspace_info</code>) with up to <strong>10 steps</strong> per user message.</p>
@@ -438,15 +462,19 @@ body {
 </thead>
 <tbody><tr>
 <td><strong>Sudo Gate</strong></td>
-<td>Modal HITL for destructive/privileged shell patterns</td>
+<td>Modal HITL + <strong>HMAC approval tokens</strong> for shell (<code>hitl_token.rs</code>)</td>
 </tr>
 <tr>
 <td><strong>Path Gate</strong></td>
-<td>Approval for filesystem paths outside workspace (Standard trust mode)</td>
+<td>Modal + <strong>HMAC path tokens</strong> for out-of-workspace FS (<code>path_token.rs</code>)</td>
 </tr>
 <tr>
 <td><strong>Trust modes</strong></td>
-<td>Standard (workspace-scoped) vs YOLO (broader FS access; shell gates may remain)</td>
+<td>Standard (workspace-scoped) vs YOLO (broader FS; optional shell sandbox)</td>
+</tr>
+<tr>
+<td><strong>Structured errors</strong></td>
+<td>JSON <code>AgentErrorPayload</code> on invoke failures (<code>error.rs</code>)</td>
 </tr>
 <tr>
 <td><strong>Audit log</strong></td>
@@ -457,7 +485,7 @@ body {
 <td>OS keychain; keys never re-displayed after save</td>
 </tr>
 </tbody></table>
-<p>Shell safety heuristics flag patterns such as <code>rm -rf</code>, <code>sudo</code>, <code>chmod 777</code>, and chained operators before execution. Production hardening would add server-side re-validation on every <code>invoke</code> (documented in internal code review).</p>
+<p>Shell safety heuristics flag patterns such as <code>rm -rf</code>, <code>sudo</code>, <code>chmod 777</code>, and chained operators before execution. Unsigned <code>hitl_approved</code> / <code>path_approved</code> bypass attempts are rejected server-side.</p>
 <hr>
 <h2 id="build-amp-release-engineering">Build &amp; release engineering</h2><table>
 <thead>
@@ -479,8 +507,8 @@ body {
 <td>Windows</td>
 </tr>
 </tbody></table>
-<p><strong>CI:</strong> <code>.github/workflows/build.yml</code> runs a three-OS matrix on push to <code>main</code>/<code>master</code>. Release artifacts attach to version tags via <code>release.yml</code>.</p>
-<p><strong>Dev loop:</strong> <code>npm run tauri dev</code> — Vite on port 1420, Rust debug binary, hot reload for frontend.</p>
+<p><strong>CI:</strong> <code>.github/workflows/build.yml</code> runs a three-OS matrix on push to <code>main</code>/<code>master</code> (<code>npm run test</code>, <code>npm run build</code>, <code>cargo test</code>). Release artifacts attach to version tags via <code>release.yml</code> with updater JSON.</p>
+<p><strong>Dev loop:</strong> <code>npm run tauri dev</code> — Vite on port 1420, Rust debug binary, hot reload for frontend. Optional: <code>npm run tauri:dev:embedded</code> for GGUF.</p>
 <hr>
 <h2 id="dependencies-worth-noting">Dependencies worth noting</h2><p><strong>Intentionally omitted:</strong> Electron, Next.js, heavy state libraries (Redux), CSS frameworks (Tailwind). The stack stays lean for a portfolio-grade native assistant: one UI bundle, one Rust binary, OS-native chrome where possible.</p>
 <p><strong>Alpha caveats:</strong> CSP is relaxed (<code>null</code>) for local asset loading; Snap/Flatpak not shipped; ARM Linux requires local build. See <code>CHANGELOG.md</code> for release-scoped limitations.</p>
@@ -501,12 +529,20 @@ body {
 <td>Per-OS build commands</td>
 </tr>
 <tr>
-<td><a href="QA_CHECKLIST.md"><code>QA_CHECKLIST.md</code></a></td>
-<td>Release QA matrices</td>
+<td><a href="WAVE_B_ROADMAP.md"><code>WAVE_B_ROADMAP.md</code></a></td>
+<td>Advanced systems (HITL, GGUF, xterm, sandbox)</td>
 </tr>
 <tr>
-<td><a href="USER_GUIDE.txt"><code>USER_GUIDE.txt</code></a> / <a href="USER_GUIDE.html"><code>USER_GUIDE.html</code></a></td>
-<td>End-user documentation</td>
+<td><a href="UPDATER.md"><code>UPDATER.md</code></a></td>
+<td>Auto-update signing keys and channels</td>
+</tr>
+<tr>
+<td><a href="CROSS_PLATFORM_CHECKLIST.md"><code>CROSS_PLATFORM_CHECKLIST.md</code></a></td>
+<td>Dev checklist when adding UI/features (mac → Win/Linux)</td>
+</tr>
+<tr>
+<td><a href="QA_CHECKLIST.md"><code>QA_CHECKLIST.md</code></a></td>
+<td>Release QA matrices</td>
 </tr>
 </tbody></table>
 <p>Built with ❤️ by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>

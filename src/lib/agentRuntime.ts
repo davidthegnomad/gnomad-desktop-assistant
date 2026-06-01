@@ -21,7 +21,9 @@ export async function executeAgentTool(
     /** @deprecated Use approvalToken */
     hitlApproved?: boolean;
     approvalToken?: string;
+    /** @deprecated Use pathApprovalToken */
     pathApproved?: boolean;
+    pathApprovalToken?: string;
     cwd?: string;
   }
 ): Promise<ToolExecutionResult> {
@@ -30,6 +32,7 @@ export async function executeAgentTool(
     arguments: JSON.stringify(args),
     hitlApproved: options?.hitlApproved ?? null,
     approvalToken: options?.approvalToken ?? null,
+    pathApprovalToken: options?.pathApprovalToken ?? null,
     pathApproved: options?.pathApproved ?? null,
     cwd: options?.cwd ?? null,
   });

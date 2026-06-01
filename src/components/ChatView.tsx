@@ -14,6 +14,7 @@ import {
   AttachmentChipList,
 } from "./ComposerAttachments";
 import { GnomadLogo } from "./GnomadLogo";
+import { LiveTerminal } from "./LiveTerminal";
 import { ShellCommandBlock } from "./ShellCommandBlock";
 import { StudioLink } from "./StudioLink";
 import { APP_NAME } from "../lib/brand";
@@ -147,9 +148,10 @@ export function ChatView({
                 Stop
               </button>
             </span>
-            <div className="thinking-block">{thinkingText}</div>
-          </div>
-        )}
+                <div className="thinking-block">{thinkingText}</div>
+                <LiveTerminal active stream />
+              </div>
+            )}
         <div ref={scrollRef} />
       </div>
 

@@ -34,11 +34,11 @@ Gnomad becomes the **default desktop agent surface**: always available, OS-aware
 |------|----------|-------|
 | Server-side safety on all shell paths | P0 | Close IPC bypass class |
 | **Cryptographic HITL tokens (Wave B1)** | P0 | ✓ Shipped — [hitl_token.rs](../src-tauri/src/hitl_token.rs) |
-| Wave B error migration (`llm`, planner, chat history) | P1 | JSON `GnomadError` on remaining invoke paths |
+| Wave B error migration (`llm`, planner, chat history) | P1 | ✓ Shipped — JSON `GnomadError` on LLM + chat store paths |
 | Rust unit tests (`privilege`, parsers, `error`) | P0 | CI gate ✓ (`cargo test` in build workflow) |
 | Refresh CODE_REVIEW / TEST_NOTES | P1 | Match shipped agent ✓ |
-| Auto-update channel (Tauri updater) | P1 | Optional beta opt-in |
-| Improved Linux Wayland tray | P1 | KDE/GNOME QA |
+| Auto-update channel (Tauri updater) | P1 | ✓ Shipped — Settings → Updates; see [UPDATER.md](UPDATER.md) |
+| Improved Linux Wayland tray | P1 | ✓ Left-click menu on Wayland; session hint in Settings |
 | Error telemetry (opt-in, local-first) | P2 | Crash logs only |
 
 ---

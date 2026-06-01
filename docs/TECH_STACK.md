@@ -25,6 +25,8 @@ Gnomad is a **native desktop application** built on **Tauri v2**, pairing a **Re
 | **Secrets** | keyring crate | OS-native credential storage |
 | **PTY** | portable-pty | Persistent shell sessions with cwd tracking |
 | **CI/CD** | GitHub Actions + tauri-action | Matrix builds: macOS, Ubuntu 22.04, Windows |
+| **Frontend tests** | Vitest 3 | `parseInvokeError` and error formatting |
+| **Terminal UI** | @xterm/xterm | Live PTY stream + command card replay |
 
 ---
 
@@ -38,13 +40,15 @@ The UI is a single-page application compiled by Vite and embedded in Tauri’s W
 
 | Module | Responsibility |
 |--------|----------------|
-| `App.tsx` | Root layout, chat flow, settings/knowledge overlays, gates (Sudo, Path) |
-| `lib/llm.ts` | Cloud/local chat completion wiring |
-| `lib/agentLoop.ts` | Multi-step agent orchestration (tool calls, up to 10 steps) |
-| `lib/chatHistory.ts` | Session persistence via Tauri commands |
-| `lib/knowledge.ts` | Knowledge bundle injection into prompts |
-| `lib/shellSession.ts` | Streaming shell output subscription |
-| `hooks/useTheme.ts` | Light / dark / system theme with FOUC prevention |
+| `App.tsx` | Thin shell: providers, overlays, gate modals wiring |
+| `hooks/useAgentExecution.ts` | Shell cwd, Sudo/Path gates, command execution |
+| `hooks/useChatSubmit.ts` | Submit orchestration, agent loop entry |
+| `components/ChatView.tsx` | Messages, composer, context footer |
+| `components/LiveTerminal.tsx` | xterm.js PTY panel |
+| `lib/hitlToken.ts` / `lib/pathToken.ts` | Mint signed approval tokens after gates |
+| `lib/embeddedLlm.ts` | Embedded GGUF status helpers |
+| `lib/updater.ts` | In-app update check/install |
+| `lib/errors.ts` | Parse structured `GnomadError` JSON from invoke |
 
 ### Design system
 
@@ -74,12 +78,18 @@ src-tauri/src/
 ├── llm.rs              # Rust-side LLM helpers where needed
 ├── shell_executor.rs   # One-shot shell execution
 ├── shell_session.rs    # PTY-backed persistent shell + interrupt
+├── error.rs            # GnomadError JSON payloads
+├── hitl_token.rs       # Cryptographic shell approval tokens
+├── path_token.rs       # Cryptographic path approval tokens
+├── local_inference.rs  # In-process GGUF (optional embedded-llm)
+├── shell_sandbox.rs    # YOLO micro-sandbox (macOS/Linux)
+├── updater.rs          # Tauri updater commands
 ├── privilege.rs        # Safety heuristics, Sudo Gate signals
 ├── agent_runtime.rs    # Tool execution loop (shell_run, fs_*)
 ├── agent_fs.rs         # Workspace-scoped filesystem operations
 ├── agent_settings.rs   # Trust mode, workspace root, planner config
 ├── agent_audit.rs      # JSONL audit log
-├── command_planner.rs  # Local Ollama fallback for invalid shell tags
+├── command_planner.rs  # Local GGUF or Ollama command planner
 ├── knowledge.rs        # Knowledge base indexing on disk
 ├── chat_history.rs     # Session store
 ├── attachments.rs      # Staged file handling
@@ -101,7 +111,7 @@ src-tauri/src/
 | `tauri-plugin-global-shortcut` | Toggle visibility (⌘⇧Space / Ctrl+Shift+Space) |
 | `tauri-plugin-opener` | Open URLs (e.g. Gnomad Studio site) |
 | `tauri-plugin-dialog` | File/folder pickers for knowledge and workspace |
-| `tauri-plugin-fs` | Scoped filesystem access per capabilities |
+| `tauri-plugin-updater` | Signed in-app updates (stable/beta channels) |
 
 Capabilities are declared in `src-tauri/capabilities/` (`default.json`, `desktop.json`) following Tauri v2’s permission model.
 
@@ -112,7 +122,7 @@ Capabilities are declared in `src-tauri/capabilities/` (`default.json`, `desktop
 | Mode | Provider | Configuration |
 |------|----------|----------------|
 | **Cloud** | DeepSeek API | API key in keychain or `DeepSeek_API_KEY` in `.env` |
-| **Local** | Ollama | Base URL in keychain; model tag in settings |
+| **Local** | Ollama HTTP **or** embedded GGUF (`embedded-llm` build) | Base URL in keychain; or GGUF path in Agent access |
 
 **Cloud agent path:** `chatCompletion` + `runAgentLoop` issue structured tool calls (`shell_run`, filesystem tools, `workspace_info`) with up to **10 steps** per user message.
 
@@ -126,13 +136,14 @@ Capabilities are declared in `src-tauri/capabilities/` (`default.json`, `desktop
 
 | Control | Mechanism |
 |---------|-----------|
-| **Sudo Gate** | Modal HITL for destructive/privileged shell patterns |
-| **Path Gate** | Approval for filesystem paths outside workspace (Standard trust mode) |
-| **Trust modes** | Standard (workspace-scoped) vs YOLO (broader FS access; shell gates may remain) |
+| **Sudo Gate** | Modal HITL + **HMAC approval tokens** for shell (`hitl_token.rs`) |
+| **Path Gate** | Modal + **HMAC path tokens** for out-of-workspace FS (`path_token.rs`) |
+| **Trust modes** | Standard (workspace-scoped) vs YOLO (broader FS; optional shell sandbox) |
+| **Structured errors** | JSON `AgentErrorPayload` on invoke failures (`error.rs`) |
 | **Audit log** | `{app_data}/gnomad/agent-audit.jsonl` |
 | **Secrets** | OS keychain; keys never re-displayed after save |
 
-Shell safety heuristics flag patterns such as `rm -rf`, `sudo`, `chmod 777`, and chained operators before execution. Production hardening would add server-side re-validation on every `invoke` (documented in internal code review).
+Shell safety heuristics flag patterns such as `rm -rf`, `sudo`, `chmod 777`, and chained operators before execution. Unsigned `hitl_approved` / `path_approved` bypass attempts are rejected server-side.
 
 ---
 
@@ -144,9 +155,9 @@ Shell safety heuristics flag patterns such as `rm -rf`, `sudo`, `chmod 777`, and
 | `.deb`, `.rpm`, AppImage | Linux x86_64 (CI); optional `xdotool` / `wl-paste` for context |
 | `.msi`, NSIS | Windows |
 
-**CI:** `.github/workflows/build.yml` runs a three-OS matrix on push to `main`/`master`. Release artifacts attach to version tags via `release.yml`.
+**CI:** `.github/workflows/build.yml` runs a three-OS matrix on push to `main`/`master` (`npm run test`, `npm run build`, `cargo test`). Release artifacts attach to version tags via `release.yml` with updater JSON.
 
-**Dev loop:** `npm run tauri dev` — Vite on port 1420, Rust debug binary, hot reload for frontend.
+**Dev loop:** `npm run tauri dev` — Vite on port 1420, Rust debug binary, hot reload for frontend. Optional: `npm run tauri:dev:embedded` for GGUF.
 
 ---
 
@@ -164,8 +175,9 @@ Shell safety heuristics flag patterns such as `rm -rf`, `sudo`, `chmod 777`, and
 |----------|----------|
 | [`BUILD.md`](BUILD.md) | Product build narrative and feature delivery phases |
 | [`BUILD_PLATFORMS.md`](BUILD_PLATFORMS.md) | Per-OS build commands |
+| [`WAVE_B_ROADMAP.md`](WAVE_B_ROADMAP.md) | Advanced systems (HITL, GGUF, xterm, sandbox) |
+| [`UPDATER.md`](UPDATER.md) | Auto-update signing keys and channels |
 | [`CROSS_PLATFORM_CHECKLIST.md`](CROSS_PLATFORM_CHECKLIST.md) | Dev checklist when adding UI/features (mac → Win/Linux) |
 | [`QA_CHECKLIST.md`](QA_CHECKLIST.md) | Release QA matrices |
-| [`USER_GUIDE.txt`](USER_GUIDE.txt) / [`USER_GUIDE.html`](USER_GUIDE.html) | End-user documentation |
 
 Built with ❤️ by [Gnomad Studio](https://gnomadstudio.org) 🦙

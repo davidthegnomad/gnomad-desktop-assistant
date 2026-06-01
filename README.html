@@ -227,7 +227,7 @@ body {
           <div class="brand"><span class="brand-icon">🍄</span><h1>Gnomad</h1></div>
           <p class="doc-path">README.md</p>
           <a href="#why-this-exists" class="toc-h2">Why this exists</a>
-<a href="#capabilities-v010-alpha" class="toc-h2">Capabilities (v0.1.0-alpha)</a>
+<a href="#capabilities-v010-alpha-main" class="toc-h2">Capabilities (v0.1.0-alpha + main)</a>
 <a href="#platforms" class="toc-h2">Platforms</a>
 <a href="#quick-start" class="toc-h2">Quick start</a>
 <a href="#end-users" class="toc-h3">End users</a>
@@ -254,7 +254,7 @@ body {
 <h2 id="why-this-exists">Why this exists</h2><p>Desktop knowledge work is fragmented: chat in a browser tab, terminal in another, files elsewhere. Gnomad unifies <strong>conversation</strong>, <strong>OS awareness</strong>, and <strong>action</strong> in a native shell that stays out of the way until invoked—then anchors next to the menu bar or tray with a focused, Gemini-inspired interface.</p>
 <p>The alpha demonstrates end-to-end delivery: multi-platform installers, CI/CD, credential hygiene, agent tooling with human-in-the-loop gates, and documentation suitable for technical review.</p>
 <hr>
-<h2 id="capabilities-v010-alpha">Capabilities (v0.1.0-alpha)</h2><table>
+<h2 id="capabilities-v010-alpha-main">Capabilities (v0.1.0-alpha + main)</h2><table>
 <thead>
 <tr>
 <th>Area</th>
@@ -267,11 +267,19 @@ body {
 </tr>
 <tr>
 <td><strong>Intelligence</strong></td>
-<td>DeepSeek (cloud) and Ollama (local); multi-step agent with shell + filesystem tools</td>
+<td>DeepSeek (cloud), Ollama (local), optional in-process <strong>GGUF</strong> (<code>embedded-llm</code> build)</td>
+</tr>
+<tr>
+<td><strong>Agent</strong></td>
+<td>Multi-step tool loop (shell + filesystem), command planner, persistent PTY shell</td>
 </tr>
 <tr>
 <td><strong>Safety</strong></td>
-<td>Sudo Gate for risky commands, Path Gate for out-of-workspace files, Standard vs YOLO trust modes, audit log</td>
+<td><strong>Cryptographic</strong> Sudo Gate (HITL) and Path Gate tokens; Standard vs YOLO trust; optional YOLO shell sandbox</td>
+</tr>
+<tr>
+<td><strong>Terminal</strong></td>
+<td>xterm.js live stream + replay on command cards</td>
 </tr>
 <tr>
 <td><strong>Context</strong></td>
@@ -279,11 +287,15 @@ body {
 </tr>
 <tr>
 <td><strong>Memory</strong></td>
-<td>Chat history on disk; knowledge library (skills, agents, uploads) injected into prompts</td>
+<td>Chat history on disk; knowledge library (skills, agents, uploads)</td>
+</tr>
+<tr>
+<td><strong>Updates</strong></td>
+<td>In-app check (stable/beta) via Tauri updater — see <a href="docs/UPDATER.md"><code>docs/UPDATER.md</code></a></td>
 </tr>
 <tr>
 <td><strong>Platform</strong></td>
-<td>macOS (primary), Windows, Linux (<code>.deb</code>, <code>.rpm</code>, AppImage)</td>
+<td>macOS (primary), Windows, Linux (<code>.deb</code>, <code>.rpm</code>, AppImage); Wayland tray improvements</td>
 </tr>
 </tbody></table>
 <hr>
@@ -315,7 +327,7 @@ body {
 <td>See <a href="docs/LINUX_PACKAGES.md">Linux packages</a></td>
 </tr>
 </tbody></table>
-<p>Per-OS build instructions: <a href="docs/BUILD_PLATFORMS.md"><code>docs/BUILD_PLATFORMS.md</code></a></p>
+<p>Per-OS build instructions: <a href="docs/BUILD_PLATFORMS.md"><code>docs/BUILD_PLATFORMS.md</code></a><br><strong>Adding features or UI?</strong> Use the <a href="docs/CROSS_PLATFORM_CHECKLIST.md"><code>docs/CROSS_PLATFORM_CHECKLIST.md</code></a> so changes are verified on macOS, Windows, and Linux.</p>
 <hr>
 <h2 id="quick-start">Quick start</h2><h3 id="end-users">End users</h3><ol>
 <li>Download the installer for your OS from <a href="https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha">Releases</a> or the <a href="https://davidthegnomad.github.io/gnomad-desktop-assistant/">project site</a>.</li>
@@ -329,6 +341,11 @@ cd gnomad-desktop-assistant
 npm ci
 cp .env.example .env   # optional: DeepSeek_API_KEY for local dev
 npm run tauri dev
+npm run test              # Vitest (error parsing)
+cd src-tauri &amp;&amp; cargo test
+</code></pre>
+<p><strong>Embedded GGUF (optional, in-process local LLM):</strong></p>
+<pre><code class="language-bash">npm run tauri:dev:embedded
 </code></pre>
 <p><strong>Production build:</strong></p>
 <pre><code class="language-bash">npm run tauri:build:mac     # macOS
@@ -361,6 +378,18 @@ npm run tauri:build:win     # Windows (on Windows host)
 </tr>
 </thead>
 <tbody><tr>
+<td><strong>All docs (index)</strong></td>
+<td><a href="docs/DOCS_INDEX.md">docs/DOCS_INDEX.md</a></td>
+<td><a href="docs/DOCS_INDEX.html">docs/DOCS_INDEX.html</a></td>
+<td><a href="docs/DOCS_INDEX.txt">docs/DOCS_INDEX.txt</a></td>
+</tr>
+<tr>
+<td><strong>Project site</strong></td>
+<td>—</td>
+<td><a href="docs/index.html">docs/index.html</a></td>
+<td>—</td>
+</tr>
+<tr>
 <td>User Guide</td>
 <td><a href="docs/USER_GUIDE.md">docs/USER_GUIDE.md</a></td>
 <td><a href="docs/USER_GUIDE.html">docs/USER_GUIDE.html</a></td>
@@ -389,6 +418,18 @@ npm run tauri:build:win     # Windows (on Windows host)
 <td><a href="docs/SECURITY_MODEL.md">docs/SECURITY_MODEL.md</a></td>
 <td><a href="docs/SECURITY_MODEL.html">docs/SECURITY_MODEL.html</a></td>
 <td><a href="docs/SECURITY_MODEL.txt">docs/SECURITY_MODEL.txt</a></td>
+</tr>
+<tr>
+<td>Wave B Roadmap</td>
+<td><a href="docs/WAVE_B_ROADMAP.md">docs/WAVE_B_ROADMAP.md</a></td>
+<td><a href="docs/WAVE_B_ROADMAP.html">docs/WAVE_B_ROADMAP.html</a></td>
+<td><a href="docs/WAVE_B_ROADMAP.txt">docs/WAVE_B_ROADMAP.txt</a></td>
+</tr>
+<tr>
+<td>Auto-updater</td>
+<td><a href="docs/UPDATER.md">docs/UPDATER.md</a></td>
+<td><a href="docs/UPDATER.html">docs/UPDATER.html</a></td>
+<td><a href="docs/UPDATER.txt">docs/UPDATER.txt</a></td>
 </tr>
 <tr>
 <td>Privacy</td>
@@ -430,8 +471,9 @@ npm run tauri:build:win     # Windows (on Windows host)
 <hr>
 <h2 id="security-amp-privacy-alpha">Security &amp; privacy (alpha)</h2><ul>
 <li>API keys are stored in the <strong>OS keychain</strong>, not in chat logs or <code>localStorage</code>.</li>
-<li>Destructive or privileged shell operations require <strong>Sudo Gate</strong> approval.</li>
-<li>Filesystem access defaults to a <strong>workspace folder</strong> (Standard trust mode); broader access requires explicit trust or per-path approval.</li>
+<li>Destructive or privileged shell operations require <strong>Sudo Gate</strong> approval with <strong>signed HITL tokens</strong> (unsigned IPC bypass rejected).</li>
+<li>Filesystem access outside the workspace requires <strong>Path Gate</strong> approval with <strong>signed path tokens</strong> (Standard mode).</li>
+<li>Optional <strong>YOLO shell sandbox</strong> (macOS/Linux experimental) limits network and writes when enabled.</li>
 <li>Agent actions are appended to a local <strong>audit log</strong> under application data.</li>
 </ul>
 <p>Alpha software: review <a href="CHANGELOG.md"><code>CHANGELOG.md</code></a> for known limitations before production use.</p>

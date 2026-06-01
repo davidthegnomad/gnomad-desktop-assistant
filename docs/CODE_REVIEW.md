@@ -73,19 +73,19 @@ Stable `code` values are covered by `error::tests::payload_codes_are_stable`.
 
 1. **Wave B error migration** — `llm.rs`, `command_planner.rs`, `chat_history.rs` still return plain strings in some paths.
 2. **Windows elevation** — Structured `elevation_unsupported`; user must use elevated terminal for admin ops.
-3. **Path Gate tokens** — Filesystem approvals still use `path_approved` boolean; consider signed tokens similar to B1 HITL.
+3. **Path Gate tokens** — ✓ Shipped — [`path_token.rs`](../src-tauri/src/path_token.rs); boolean IPC bypass rejected.
 
 ### P2 — Engineering
 
 4. **Typed invoke errors** — Optional future: `Result<T, AgentErrorPayload>` at Tauri boundary once JSON-in-string is stable everywhere.
-5. **Vitest** — Optional unit tests for `parseInvokeError` in CI.
-6. **GGUF planner** — Settings field exists; direct inference not enabled (Ollama planner only).
+5. **Vitest** — ✓ `parseInvokeError` tests in CI (`npm run test`).
+6. **GGUF planner + local chat** — In-process inference via optional `embedded-llm` feature; Ollama remains fallback.
 
 ---
 
 ## Suggested next steps
 
-1. Migrate remaining Rust commands to `into_invoke_err`.
+1. Generate updater signing keys per [UPDATER.md](UPDATER.md) and replace the placeholder `pubkey` in `tauri.conf.json`.
 2. Prefer `agent_fs` + Path Gate over elevated shell for file writes.
 3. Add integration test for cloud agent turn (mocked) if CI budget allows.
 

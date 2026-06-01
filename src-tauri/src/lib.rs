@@ -1,11 +1,15 @@
+mod path_token;
+mod updater;
 mod error;
 mod hitl_token;
+mod local_inference;
 mod context;
 mod privilege;
 mod keychain;
 mod attachments;
 mod automation;
 mod shell_executor;
+mod shell_sandbox;
 mod shell_session;
 mod agent_settings;
 mod agent_audit;
@@ -180,6 +184,8 @@ pub fn run() {
         .manage(shell_session::ShellSessionState::default())
         .manage(agent_settings::AgentSettingsState::default())
         .manage(hitl_token::HitlTokenState::default())
+        .manage(path_token::PathTokenState::default())
+        .manage(local_inference::EmbeddedLlmState::default())
         .plugin(
             tauri_plugin_global_shortcut::Builder::new().with_handler(
                 |app: &tauri::AppHandle,
@@ -195,6 +201,7 @@ pub fn run() {
         )
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(|app| {
             env_config::load_dotenv_files();
             let _ = knowledge::init_knowledge_store(&app.handle());
@@ -202,6 +209,11 @@ pub fn run() {
                 let handle = app.handle().clone();
                 let agent_state = handle.state::<agent_settings::AgentSettingsState>();
                 agent_settings::init_agent_settings(&handle, &agent_state);
+            }
+
+            #[cfg(target_os = "linux")]
+            {
+                std::env::set_var("GTK_USE_PORTAL", "1");
             }
 
             let global_shortcut_manager = app.global_shortcut();
@@ -227,6 +239,13 @@ pub fn run() {
             #[cfg(target_os = "macos")]
             {
                 tray_builder = tray_builder.icon_as_template(false);
+            }
+            #[cfg(target_os = "linux")]
+            {
+                if platform::linux_session_type() == "wayland" {
+                    // Wayland compositors often lack reliable right-click tray menus.
+                    tray_builder = tray_builder.show_menu_on_left_click(true);
+                }
             }
             let _tray = tray_builder
                 .menu(&tray_menu)
@@ -302,6 +321,12 @@ pub fn run() {
             privilege::check_command_safety,
             privilege::execute_elevated_command,
             hitl_token::issue_hitl_approval_token,
+            path_token::issue_path_gate_token,
+            updater::check_for_updates,
+            updater::install_update,
+            local_inference::embedded_llm_status,
+            local_inference::embedded_llm_complete,
+            local_inference::embedded_llm_unload,
             keychain::store_credential,
             keychain::get_credential,
             keychain::has_credential,
@@ -319,6 +344,7 @@ pub fn run() {
             agent_settings::set_workspace_root,
             agent_settings::set_trust_mode,
             agent_settings::set_command_planner,
+            agent_settings::set_agent_experimental_flags,
             command_planner::plan_shell_command,
             agent_fs::agent_fs_list,
             agent_fs::agent_fs_read,
