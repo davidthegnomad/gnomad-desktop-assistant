@@ -283,7 +283,6 @@ function main() {
   const files = [
     join(ROOT, "README.md"),
     join(ROOT, "CHANGELOG.md"),
-    join(ROOT, "HUMAN.md"),
     join(ROOT, "CONTRIBUTING.md"),
     ...collectMarkdownFiles(join(ROOT, "docs")),
   ];

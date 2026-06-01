@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Report owner-only blockers — see HUMAN.md
+# Report owner-only blockers — see local HUMAN.md (gitignored, not published)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 CONF="$ROOT/src-tauri/tauri.conf.json"
 PLACEHOLDER="dW50cnVzdGVkIGNvbW1lbnQ6IHRhdXJpLXVwZGF0ZXIgcHVibGljIGtleSByZXBsYWNlIG1l"
 
-echo "==> Gnomad human preflight (see HUMAN.md)"
+echo "==> Gnomad human preflight (see local HUMAN.md — not in repo)"
 echo ""
 
 BLOCKERS=0

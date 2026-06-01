@@ -31,7 +31,7 @@ In-app updates require signed artifacts — see [UPDATER.md](UPDATER.md).
    - Agent shell + fs tools
    - Sudo Gate / Path Gate tokens
    - Settings → Updates (check only; full install needs signed release)
-6. **Updater keys** — run `npm run verify:updater` (must pass before tagging); see **[HUMAN.md](../HUMAN.md)** for secrets and tag steps.
+6. **Updater keys** — run `npm run verify:updater` (must pass before tagging); set CI secrets `TAURI_SIGNING_PRIVATE_KEY` and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` — see [UPDATER.md](UPDATER.md).
 
 ---
 
@@ -109,8 +109,6 @@ GitHub Releases cannot be “un-published” cleanly for users who already downl
 | `GITHUB_TOKEN` | All releases | Provided by Actions |
 | `TAURI_SIGNING_PRIVATE_KEY` | Signed updates | Minisign private key contents |
 | `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | Signed updates | Empty string if no password |
-
-See **[HUMAN.md](../HUMAN.md)** for the full owner checklist (Apple secrets, tagging, sign-offs).
 
 ---
 

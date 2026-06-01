@@ -75,10 +75,8 @@ Gnomad becomes the **default desktop agent surface**: always available, OS-aware
 
 ### Operational before GA tag
 
-→ **[HUMAN.md](../HUMAN.md)** — full owner checklist with commands
-
-1. Replace updater placeholder pubkey — `npm run setup:updater-keys` → `verify:updater`
-2. Configure GitHub Actions secrets + Apple Developer ID
+1. Replace updater placeholder pubkey — `npm run setup:updater-keys` → `npm run verify:updater`
+2. Configure GitHub Actions secrets (`TAURI_SIGNING_*`, optional `APPLE_*`) — see [RELEASE_RUNBOOK.md](RELEASE_RUNBOOK.md)
 3. Tag `v0.2.0-beta.1` (or next beta) to publish installers
 4. Run [SECURITY_REVIEW.md](SECURITY_REVIEW.md) sign-off
 5. Full WCAG contrast + screen reader pass

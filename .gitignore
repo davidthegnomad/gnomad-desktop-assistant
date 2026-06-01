@@ -3,6 +3,13 @@
 .env.local
 .env.*.local
 
+# Private maintainer notes (local only — not published)
+HUMAN.md
+HUMAN.html
+HUMAN.txt
+docs/HUMAN.html
+docs/HUMAN.txt
+
 # Dependencies & build
 node_modules/
 dist/

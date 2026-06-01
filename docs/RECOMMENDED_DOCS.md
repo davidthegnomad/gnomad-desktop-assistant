@@ -35,7 +35,6 @@
 | [CROSS_PLATFORM_CHECKLIST.md](CROSS_PLATFORM_CHECKLIST.md) | Per-OS dev verification |
 | [MACOS_PERMISSIONS.md](MACOS_PERMISSIONS.md) | macOS privacy matrix |
 | [KNOWLEDGE.md](KNOWLEDGE.md) | Knowledge base layout |
-| [HUMAN.md](../HUMAN.md) | **Owner-only** secrets, tags, GA checklist |
 
 ---
 

@@ -2,9 +2,9 @@
 
 ## [Unreleased] — main branch
 
-### Added
+### Changed
 
-- **HUMAN.md** — owner checklist for secrets, tags, Apple account, and GA sign-offs; `npm run human:preflight`
+- HUMAN.md removed from repo and GitHub Pages (private local maintainer notes only)
 
 ---
 
