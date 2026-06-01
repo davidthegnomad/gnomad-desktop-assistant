@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Changelog — Gnomad Desktop Assistant</title>
-  <meta name="description" content="Changelog documentation for Gnomad Desktop Assistant." />
+  <title>Contributing to Gnomad Desktop Assistant — Gnomad Desktop Assistant</title>
+  <meta name="description" content="Contributing to Gnomad Desktop Assistant documentation for Gnomad Desktop Assistant." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
@@ -225,88 +225,84 @@ body {
   <div class="layout">
     <nav class="sidebar" aria-label="Table of contents">
           <div class="brand"><span class="brand-icon">🍄</span><h1>Gnomad</h1></div>
-          <p class="doc-path">CHANGELOG.md</p>
-          <a href="#unreleased-main-branch" class="toc-h2">[Unreleased] — main branch</a>
-<a href="#added" class="toc-h3">Added</a>
-<a href="#020-beta1-2026-05-31" class="toc-h2">[0.2.0-beta.1] — 2026-05-31</a>
-<a href="#added" class="toc-h3">Added</a>
-<a href="#changed" class="toc-h3">Changed</a>
-<a href="#known-limitations" class="toc-h3">Known limitations</a>
-<a href="#010-alpha-2026-05-31" class="toc-h2">[0.1.0-alpha] — 2026-05-31</a>
-<a href="#added" class="toc-h3">Added</a>
-<a href="#known-limitations-alpha-tag" class="toc-h3">Known limitations (alpha tag)</a>
+          <p class="doc-path">CONTRIBUTING.md</p>
+          <a href="#development-setup" class="toc-h2">Development setup</a>
+<a href="#before-you-open-a-pr" class="toc-h2">Before you open a PR</a>
+<a href="#project-layout" class="toc-h2">Project layout</a>
+<a href="#code-conventions" class="toc-h2">Code conventions</a>
+<a href="#reporting-issues" class="toc-h2">Reporting issues</a>
+<a href="#license" class="toc-h2">License</a>
         </nav>
     <main class="content doc-body">
       <header class="hero">
-        <h2>Changelog</h2>
-        <p class="formats">Also available: <a href="CHANGELOG.md">Markdown</a> · <a href="CHANGELOG.txt">Plain text</a></p>
+        <h2>Contributing to Gnomad Desktop Assistant</h2>
+        <p class="formats">Also available: <a href="CONTRIBUTING.md">Markdown</a> · <a href="CONTRIBUTING.txt">Plain text</a></p>
       </header>
-      <h1 id="changelog">Changelog</h1><h2 id="unreleased-main-branch">[Unreleased] — main branch</h2><h3 id="added">Added</h3><ul>
-<li><strong>HUMAN.md</strong> — owner checklist for secrets, tags, Apple account, and GA sign-offs; <code>npm run human:preflight</code></li>
+      <h1 id="contributing-to-gnomad-desktop-assistant">Contributing to Gnomad Desktop Assistant</h1><p>Thanks for your interest in Gnomad. This project is maintained by <a href="https://gnomadstudio.org">Gnomad Studio</a>.</p>
+<hr>
+<h2 id="development-setup">Development setup</h2><p><strong>Prerequisites:</strong> Node.js LTS, Rust stable, <a href="https://v2.tauri.app/start/prerequisites/">Tauri v2 platform deps</a></p>
+<pre><code class="language-bash">git clone https://github.com/davidthegnomad/gnomad-desktop-assistant.git
+cd gnomad-desktop-assistant
+npm ci
+cp .env.example .env   # optional API keys for local dev
+npm run tauri dev
+</code></pre>
+<p><strong>Embedded GGUF (optional):</strong></p>
+<pre><code class="language-bash">npm run tauri:dev:embedded
+npm run download:gguf    # optional small model for planner dev
+</code></pre>
+<hr>
+<h2 id="before-you-open-a-pr">Before you open a PR</h2><pre><code class="language-bash">npm run test              # Vitest (frontend)
+cd src-tauri &amp;&amp; cargo test
+npm run build
+</code></pre>
+<p>Edit docs in <code>.md</code> form, then:</p>
+<pre><code class="language-bash">npm run docs:export
+</code></pre>
+<p>Cross-platform UI or shell changes: walk through <a href="docs/CROSS_PLATFORM_CHECKLIST.md">CROSS_PLATFORM_CHECKLIST.md</a>.</p>
+<hr>
+<h2 id="project-layout">Project layout</h2><table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>src/</code></td>
+<td>React UI, hooks, agent loop</td>
+</tr>
+<tr>
+<td><code>src-tauri/src/</code></td>
+<td>Rust commands, agent, safety, LLM</td>
+</tr>
+<tr>
+<td><code>docs/</code></td>
+<td>User and engineering documentation</td>
+</tr>
+<tr>
+<td><code>packaging/</code></td>
+<td>Flatpak and Snap manifests</td>
+</tr>
+<tr>
+<td><code>.github/workflows/</code></td>
+<td>CI, release, packaging</td>
+</tr>
+</tbody></table>
+<p>Start from <a href="docs/DOCS_INDEX.md">docs/DOCS_INDEX.md</a> and <a href="docs/ARCHITECTURE.md">docs/ARCHITECTURE.md</a>.</p>
+<hr>
+<h2 id="code-conventions">Code conventions</h2><ul>
+<li><strong>Minimal diffs</strong> — match existing naming and patterns  </li>
+<li><strong>Safety first</strong> — shell and FS paths must use HITL tokens; no new unsigned bypasses  </li>
+<li><strong>Structured errors</strong> — use <code>GnomadError</code> JSON on Rust invoke errors  </li>
+<li><strong>No secrets in repo</strong> — keys in keychain or <code>.env</code> (gitignored)</li>
 </ul>
 <hr>
-<h2 id="020-beta1-2026-05-31">[0.2.0-beta.1] — 2026-05-31</h2><p>Beta readiness release: v0.2 hardening, v0.3 reach features, documentation portfolio, and GitHub Pages auto-deploy.</p>
-<h3 id="added">Added</h3><ul>
-<li><strong>Voice input (beta)</strong> — opt-in push-to-talk via Web Speech API; Settings → Privacy</li>
-<li><strong>Security review checklist</strong> — <a href="docs/SECURITY_REVIEW.md">SECURITY_REVIEW.md</a></li>
-<li><strong>Accessibility statement</strong> — <a href="docs/ACCESSIBILITY_STATEMENT.md">ACCESSIBILITY_STATEMENT.md</a></li>
-<li><strong>GitHub Pages workflow</strong> — auto-publish docs on push to <code>main</code></li>
-<li><strong>Onboarding a11y</strong> — focus trap, <code>role=&quot;dialog&quot;</code>, OpenAI-compatible copy</li>
-<li><strong>Enterprise deployment guide</strong> — <a href="docs/ENTERPRISE.md">ENTERPRISE.md</a></li>
-<li><strong>CONTRIBUTING.md</strong> — dev setup and PR checklist</li>
-<li><strong>GGUF download helper</strong> — <code>npm run download:gguf</code> + <a href="docs/GGUF_SETUP.md">GGUF_SETUP.md</a></li>
-<li><strong>Updater verify script</strong> — <code>npm run verify:updater</code> detects placeholder pubkey</li>
-<li><strong>Skip link (windowed mode)</strong> — jump to main chat content</li>
-<li><strong>Terminal aria-live</strong> — debounced screen reader summaries for xterm output</li>
-<li><strong>macOS notarization guide</strong> — <a href="docs/MACOS_NOTARIZATION.md">MACOS_NOTARIZATION.md</a> + <code>npm run notarize:macos</code></li>
-<li><strong>Test strategy</strong> — <a href="docs/TEST_STRATEGY.md">TEST_STRATEGY.md</a></li>
-<li><strong>P0 shell IPC hardening</strong> — removed legacy <code>execute_shell_command</code>; all shell via <code>shell_session_run</code> + HITL</li>
-<li><strong>Keyboard accessibility</strong> — global shortcuts (⌘K composer, ⌘, settings, ⌘N new chat, Escape); focus traps on gate modals; <code>:focus-visible</code> styles — <a href="docs/ACCESSIBILITY.md">ACCESSIBILITY.md</a></li>
-<li><strong>Starter skill packs</strong> — bundled <code>starter</code> pack (4 skills); <code>list_skill_packs</code> / <code>install_skill_pack</code>; Knowledge UI</li>
-<li><strong>OpenAI-compatible cloud router</strong> — Settings → Cloud API endpoint; env <code>OPENAI_API_KEY</code> / <code>CLOUD_API_BASE_URL</code></li>
-<li><strong>Windows YOLO sandbox (workspace-scoped)</strong> — TEMP + cwd limited to workspace</li>
-<li><strong>Flatpak / Snap packaging</strong> — manifests + build scripts + CI workflow</li>
-<li><strong>Updater key script</strong> — <code>npm run setup:updater-keys</code></li>
-<li><strong>RELEASE_RUNBOOK.md</strong>, <strong>TROUBLESHOOTING.md</strong></li>
-<li><strong>Agent loop integration tests</strong> — Vitest mocks cloud turn + <code>shell_run</code> round trip</li>
-<li><strong>Shell audit metadata</strong> — <code>sandboxed</code> and <code>success</code> on shell runs</li>
-<li><strong>File-write safety hint</strong> — Sudo Gate suggests <code>fs_write</code></li>
-<li><strong>Local error log (opt-in)</strong> — Settings → Diagnostics</li>
-<li><strong>Startup update check (opt-in)</strong> — Settings → Updates</li>
-<li><strong>Wave B</strong> — HITL tokens, GGUF, xterm PTY, YOLO sandbox, Path Gate tokens, structured errors, auto-updater, Wayland tray, Vitest</li>
-</ul>
-<h3 id="changed">Changed</h3><ul>
-<li>Version <strong>0.2.0-beta.1</strong> across <code>package.json</code>, Tauri config, and UI</li>
-<li><code>App.tsx</code> slimmed; agent orchestration moved to hooks</li>
-<li>Release workflow: optional macOS notarization when Apple secrets set</li>
-<li>Docs site regenerated (33+ documents, HTML + TXT)</li>
-</ul>
-<h3 id="known-limitations">Known limitations</h3><ul>
-<li>Updater requires generated minisign keys (placeholder pubkey until replaced)</li>
-<li>Embedded GGUF not in default CI builds</li>
-<li>Windows sandbox is workspace-scoped only</li>
-<li>External pen test and full WCAG audit pending v1.0 GA</li>
-<li>Team workspace sync deferred post–v1.0</li>
-</ul>
+<h2 id="reporting-issues">Reporting issues</h2><p>Use <a href="https://github.com/davidthegnomad/gnomad-desktop-assistant/issues">GitHub Issues</a> with OS version, Gnomad version, and steps to reproduce. Do not paste API keys.</p>
 <hr>
-<h2 id="010-alpha-2026-05-31">[0.1.0-alpha] — 2026-05-31</h2><p>First public alpha.</p>
-<h3 id="added">Added</h3><ul>
-<li>macOS menu-bar accessory with mushroom tray icon</li>
-<li>Linux <code>.deb</code>, <code>.rpm</code>, and AppImage packages</li>
-<li>Windows <code>.msi</code> / NSIS installer (CI)</li>
-<li>Gemini-style chat UI, collapsible sidebar, chat history</li>
-<li>DeepSeek and Ollama chat integration</li>
-<li>Knowledge base and skills library</li>
-<li>Native File / Edit / View / Window / Help menus (windowed mode)</li>
-<li>GitHub Actions multi-platform builds</li>
-<li><a href="https://davidthegnomad.github.io/gnomad-desktop-assistant/">Project site</a></li>
-</ul>
-<h3 id="known-limitations-alpha-tag">Known limitations (alpha tag)</h3><ul>
-<li>Requires manual API key / Ollama setup</li>
-<li>macOS permissions for automation may need re-grant after updates</li>
-<li>Linux builds target x86_64 in CI; ARM requires local build</li>
-<li>Snap / Flatpak not yet available</li>
-</ul>
+<h2 id="license">License</h2><p>Private / portfolio project — see repository settings for licensing inquiries.</p>
+<hr>
+<p>Built with ❤️ by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
 
       <footer class="doc-footer">
         <p>Built with <span aria-label="love">❤️</span> by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>

@@ -34,6 +34,7 @@ jobs:
         run: |
           npm ci
           npm run docs:export
+          cp -f HUMAN.html HUMAN.txt CONTRIBUTING.html CONTRIBUTING.txt docs/
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

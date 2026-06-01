@@ -54,6 +54,10 @@ jobs:
           npm run build
           cd src-tauri && cargo test
 
+      - name: Owner preflight (informational)
+        continue-on-error: true
+        run: npm run human:preflight
+
       - name: Install Linux system deps
         if: matrix.linux_artifacts == true
         run: |

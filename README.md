@@ -10,6 +10,8 @@ Built with ❤️ by [Gnomad Studio](https://gnomadstudio.org) 🦙
 
 **Live project site:** [davidthegnomad.github.io/gnomad-desktop-assistant](https://davidthegnomad.github.io/gnomad-desktop-assistant/)
 
+**Maintainers:** Owner-only tasks (keys, tags, Apple account) → **[HUMAN.md](HUMAN.md)** · `npm run human:preflight`
+
 ---
 
 ## Why this exists
@@ -118,6 +120,8 @@ All docs ship as **Markdown** (source), **HTML** (browser), and **TXT** (Notepad
 | Document | MD | HTML | TXT |
 |----------|----|------|-----|
 | **All docs (index)** | [docs/DOCS_INDEX.md](docs/DOCS_INDEX.md) | [docs/DOCS_INDEX.html](docs/DOCS_INDEX.html) | [docs/DOCS_INDEX.txt](docs/DOCS_INDEX.txt) |
+| **Owner checklist** | [HUMAN.md](HUMAN.md) | [HUMAN.html](HUMAN.html) | [HUMAN.txt](HUMAN.txt) |
+| **Contributing** | [CONTRIBUTING.md](CONTRIBUTING.md) | [CONTRIBUTING.html](CONTRIBUTING.html) | [CONTRIBUTING.txt](CONTRIBUTING.txt) |
 | **Project site** | — | [docs/index.html](docs/index.html) | — |
 | User Guide | [docs/USER_GUIDE.md](docs/USER_GUIDE.md) | [docs/USER_GUIDE.html](docs/USER_GUIDE.html) | [docs/USER_GUIDE.txt](docs/USER_GUIDE.txt) |
 | Tech Stack | [docs/TECH_STACK.md](docs/TECH_STACK.md) | [docs/TECH_STACK.html](docs/TECH_STACK.html) | [docs/TECH_STACK.txt](docs/TECH_STACK.txt) |

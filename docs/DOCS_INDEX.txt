@@ -27,6 +27,7 @@ START HERE
 
   Document                   |  MD               |  HTML               |  TXT             
   Project landing            |  —                |  index.html         |  —               
+  Owner checklist (HUMAN)    |  ../HUMAN.md      |  HUMAN.html         |  HUMAN.txt       
   README (project overview)  |  ../README.md     |  ../README.html     |  ../README.txt   
   User Guide                 |  USER_GUIDE.md    |  USER_GUIDE.html    |  USER_GUIDE.txt  
   Changelog                  |  ../CHANGELOG.md  |  ../CHANGELOG.html  |  ../CHANGELOG.txt

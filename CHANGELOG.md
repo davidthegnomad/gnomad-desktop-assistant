@@ -4,7 +4,7 @@
 
 ### Added
 
-(nothing yet)
+- **HUMAN.md** — owner checklist for secrets, tags, Apple account, and GA sign-offs; `npm run human:preflight`
 
 ---
 

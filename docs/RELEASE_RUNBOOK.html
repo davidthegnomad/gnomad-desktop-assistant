@@ -285,7 +285,7 @@ body {
 <li>Settings → Updates (check only; full install needs signed release)</li>
 </ul>
 </li>
-<li><strong>Updater keys</strong> — run <code>npm run verify:updater</code> (must pass before tagging); placeholder <code>pubkey</code> in <code>tauri.conf.json</code> must be replaced; CI secrets <code>TAURI_SIGNING_PRIVATE_KEY</code> and <code>TAURI_SIGNING_PRIVATE_KEY_PASSWORD</code> set.</li>
+<li><strong>Updater keys</strong> — run <code>npm run verify:updater</code> (must pass before tagging); see <strong><a href="../HUMAN.md">HUMAN.md</a></strong> for secrets and tag steps.</li>
 </ol>
 <hr>
 <h2 id="cut-a-release">Cut a release</h2><h3 id="1-merge-to-main">1. Merge to <code>main</code></h3><p>All release work should be on <code>main</code> (or the branch your workflows watch).</p>
@@ -375,6 +375,7 @@ git push origin v0.2.0-beta.1
 <td>Empty string if no password</td>
 </tr>
 </tbody></table>
+<p>See <strong><a href="../HUMAN.md">HUMAN.md</a></strong> for the full owner checklist (Apple secrets, tagging, sign-offs).</p>
 <hr>
 <h2 id="related-docs">Related docs</h2><ul>
 <li><a href="UPDATER.md">UPDATER.md</a> — key generation and channels</li>

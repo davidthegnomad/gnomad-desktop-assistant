@@ -23,6 +23,7 @@ npm run docs:export
 | Document | MD | HTML | TXT |
 |----------|----|------|-----|
 | **Project landing** | — | [index.html](index.html) | — |
+| **Owner checklist (HUMAN)** | [../HUMAN.md](../HUMAN.md) | [HUMAN.html](HUMAN.html) | [HUMAN.txt](HUMAN.txt) |
 | README (project overview) | [../README.md](../README.md) | [../README.html](../README.html) | [../README.txt](../README.txt) |
 | **User Guide** | [USER_GUIDE.md](USER_GUIDE.md) | [USER_GUIDE.html](USER_GUIDE.html) | [USER_GUIDE.txt](USER_GUIDE.txt) |
 | Changelog | [../CHANGELOG.md](../CHANGELOG.md) | [../CHANGELOG.html](../CHANGELOG.html) | [../CHANGELOG.txt](../CHANGELOG.txt) |

@@ -23,6 +23,7 @@
     "pack:snap": "bash packaging/snap/build.sh",
     "setup:updater-keys": "bash scripts/setup-updater-keys.sh",
     "verify:updater": "bash scripts/verify-updater-pubkey.sh",
+    "human:preflight": "bash scripts/human-preflight.sh",
     "download:gguf": "bash scripts/download-gguf-model.sh",
     "notarize:macos": "bash scripts/notarize-macos.sh",
     "tauri:build:win": "tauri build --bundles msi,nsis",

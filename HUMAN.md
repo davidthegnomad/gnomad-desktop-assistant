@@ -1,0 +1,212 @@
+# HUMAN.md — Actions only you can take
+
+**Project:** Gnomad Desktop Assistant · **Version on main:** 0.2.0-beta.1  
+**Last updated:** June 2026
+
+Everything else (code, docs, CI, GitHub Pages) is automated on `main`. This file is the **owner checklist** for secrets, accounts, legal sign-off, and release tags that require a human.
+
+Run status anytime:
+
+```bash
+npm run human:preflight
+```
+
+---
+
+## Priority order
+
+| # | Task | Blocker for | Est. time |
+|---|------|-------------|-----------|
+| 1 | [Updater signing keys](#1-updater-signing-keys) | In-app updates | ~15 min |
+| 2 | [GitHub Actions secrets](#2-github-actions-secrets) | Signed release CI | ~10 min |
+| 3 | [Tag release v0.2.0-beta.1](#3-tag-release-v020-beta1) | Download links on site | ~5 min + CI wait |
+| 4 | [Apple Developer + notarization](#4-apple-developer--notarization) | Enterprise macOS | ~1 hr + $99/yr |
+| 5 | [Security review sign-off](#5-security-review-sign-off) | v1.0 GA | ~1–2 hr |
+| 6 | [WCAG / accessibility audit](#6-wcag--accessibility-audit) | v1.0 GA | External or 1 day |
+| 7 | [External pen test](#7-external-pen-test-optional-before-ga) | Enterprise trust | Vendor |
+| 8 | [Store submissions](#8-store-submissions-optional) | Flathub / Snap discoverability | Days |
+
+---
+
+## 1. Updater signing keys
+
+**Why:** In-app updates reject unsigned artifacts. The repo still has a **placeholder** pubkey until you generate real minisign keys.
+
+**Steps:**
+
+```bash
+npm run setup:updater-keys
+```
+
+1. Keys are written to `~/.tauri/gnomad-updater.key` (private — **never commit**).
+2. Copy the printed **public key** into `src-tauri/tauri.conf.json` → `plugins.updater.pubkey`.
+3. Verify:
+
+```bash
+npm run verify:updater
+```
+
+4. Commit only `tauri.conf.json` (public key), push to `main`.
+
+**Docs:** [docs/UPDATER.md](docs/UPDATER.md)
+
+---
+
+## 2. GitHub Actions secrets
+
+**Where:** GitHub → **Settings → Secrets and variables → Actions → New repository secret**
+
+| Secret | Value | Required for |
+|--------|--------|--------------|
+| `TAURI_SIGNING_PRIVATE_KEY` | Full contents of `~/.tauri/gnomad-updater.key` | Signed installers + `latest.json` |
+| `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | Password or empty string `""` | Same |
+| `APPLE_ID` | Apple ID email | macOS notarization (optional until enterprise) |
+| `APPLE_PASSWORD` | [App-specific password](https://appleid.apple.com) | Notarization |
+| `APPLE_TEAM_ID` | 10-char Team ID from developer account | Notarization |
+| `APPLE_CERTIFICATE` | Base64 `.p12` Developer ID cert (if signing in CI) | macOS code sign in CI |
+| `APPLE_CERTIFICATE_PASSWORD` | Export password for `.p12` | Same |
+
+Without `TAURI_SIGNING_*`, release CI still builds installers but **updates will not verify** in the app.
+
+**Docs:** [docs/RELEASE_RUNBOOK.md](docs/RELEASE_RUNBOOK.md)
+
+---
+
+## 3. Tag release v0.2.0-beta.1
+
+**Why:** Code is on `main` but [GitHub Releases](https://github.com/davidthegnomad/gnomad-desktop-assistant/releases) may still show v0.1.0-alpha. The [project site](https://davidthegnomad.github.io/gnomad-desktop-assistant/) prefers `v0.2.0-beta.1` assets when present.
+
+**Recommended:** Complete [§1](#1-updater-signing-keys) and [§2](#2-github-actions-secrets) first so the tag ships signed updaters.
+
+**When ready:**
+
+```bash
+git pull origin main
+npm run test
+cd src-tauri && cargo test && cd ..
+npm run verify:updater    # must pass
+git tag -a v0.2.0-beta.1 -m "Gnomad v0.2.0-beta.1"
+git push origin v0.2.0-beta.1
+```
+
+Monitor **Actions → Release**. Expect four matrix jobs (macOS, Linux x86_64, Linux ARM64, Windows).
+
+**Shortcut:** Actions → **Release** → Run workflow → tag `v0.2.0-beta.1`.
+
+**After CI:** Smoke-install one build per OS using [docs/QA_CHECKLIST.md](docs/QA_CHECKLIST.md).
+
+---
+
+## 4. Apple Developer + notarization
+
+**Why:** Gatekeeper blocks unsigned macOS apps for most users outside dev mode.
+
+**Prerequisites:**
+
+- [Apple Developer Program](https://developer.apple.com/programs/) membership ($99/year)
+- **Developer ID Application** certificate in Keychain
+- App-specific password for `notarytool`
+
+**Local test (after `npm run tauri:build:mac`):**
+
+```bash
+export APPLE_ID="you@example.com"
+export APPLE_PASSWORD="xxxx-xxxx-xxxx-xxxx"
+export APPLE_TEAM_ID="XXXXXXXXXX"
+npm run notarize:macos
+```
+
+**CI:** Add secrets from [§2](#2-github-actions-secrets); release workflow notarizes automatically when `APPLE_*` are set.
+
+**Docs:** [docs/MACOS_NOTARIZATION.md](docs/MACOS_NOTARIZATION.md)
+
+---
+
+## 5. Security review sign-off
+
+**Why:** v1.0 GA requires a structured security pass. An internal checklist is shipped; you fill in the sign-off table.
+
+1. Open [docs/SECURITY_REVIEW.md](docs/SECURITY_REVIEW.md)
+2. Walk each section (shell, FS, secrets, supply chain, privacy)
+3. Run the regression commands at the bottom
+4. Fill **Sign-off** table with name + date
+5. Commit the signed checklist (or save PDF in your records)
+
+External penetration test is **recommended** before enterprise sales — see [§7](#7-external-pen-test-optional-before-ga).
+
+---
+
+## 6. WCAG / accessibility audit
+
+**Why:** [ACCESSIBILITY_STATEMENT.md](docs/ACCESSIBILITY_STATEMENT.md) claims partial conformance; full WCAG 2.2 AA needs human verification.
+
+**Minimum manual pass:**
+
+- VoiceOver (macOS), NVDA (Windows), or Orca (Linux)
+- Keyboard-only flow: onboarding → chat → Settings → Sudo Gate
+- Windowed mode: skip link → composer
+- Contrast check on light + dark themes
+
+**Docs:** [docs/ACCESSIBILITY.md](docs/ACCESSIBILITY.md) testing checklist
+
+---
+
+## 7. External pen test (optional before GA)
+
+Not automatable. Budget for a vendor or run OWASP-style review focused on:
+
+- HITL / Path Gate token bypass attempts
+- Shell injection via agent loop
+- IPC surface (Tauri invoke handlers)
+- Updater signature validation
+
+Track findings in a private issue or security advisory.
+
+---
+
+## 8. Store submissions (optional)
+
+Linux packages on GitHub Releases are the **primary** distribution. Optional store reach:
+
+| Store | Doc | Your action |
+|-------|-----|-------------|
+| **Flathub** | [docs/FLATPAK.md](docs/FLATPAK.md) | Fork flathub, PR manifest, respond to review |
+| **Snap Store** | [docs/SNAP.md](docs/SNAP.md) | `snapcraft upload` + classic confinement justification |
+
+---
+
+## Local dev secrets (optional)
+
+For day-to-day development only — **never commit**:
+
+| File | Purpose |
+|------|---------|
+| `.env` | `OPENAI_API_KEY`, `CLOUD_API_BASE_URL`, etc. |
+| `~/.tauri/gnomad-updater.key` | Updater signing private key |
+
+Copy from `.env.example` if present.
+
+---
+
+## What agents already handle
+
+- Code, tests, docs export, GitHub Pages deploy on push to `main`
+- Build matrix (macOS, Windows, Linux x86_64 + ARM64) on PR/push
+- Release workflow when **you** push a `v*` tag
+- Documentation at [davidthegnomad.github.io/gnomad-desktop-assistant](https://davidthegnomad.github.io/gnomad-desktop-assistant/)
+
+---
+
+## Quick reference commands
+
+```bash
+npm run human:preflight     # what's still blocked on you
+npm run verify:updater      # pubkey configured?
+npm run setup:updater-keys  # generate minisign pair
+npm run notarize:macos      # after local macOS build + APPLE_* env
+npm run docs:export         # regenerate HTML/TXT (also runs in Pages CI)
+```
+
+---
+
+Built with ❤️ by [Gnomad Studio](https://gnomadstudio.org) 🦙

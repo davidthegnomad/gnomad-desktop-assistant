@@ -16,6 +16,8 @@ Built with ❤️ by Gnomad Studio 🦙
 
 Live project site: davidthegnomad.github.io/gnomad-desktop-assistant
 
+Maintainers: Owner-only tasks (keys, tags, Apple account) → HUMAN.md · npm run human:preflight
+
 ────────────────────────────────────────
 
 WHY THIS EXISTS
@@ -123,6 +125,8 @@ All docs ship as Markdown (source), HTML (browser), and TXT (Notepad/Word). Full
 
   Document          |  MD                       |  HTML                       |  TXT                     
   All docs (index)  |  docs/DOCS_INDEX.md       |  docs/DOCS_INDEX.html       |  docs/DOCS_INDEX.txt     
+  Owner checklist   |  HUMAN.md                 |  HUMAN.html                 |  HUMAN.txt               
+  Contributing      |  CONTRIBUTING.md          |  CONTRIBUTING.html          |  CONTRIBUTING.txt        
   Project site      |  —                        |  docs/index.html            |  —                       
   User Guide        |  docs/USER_GUIDE.md       |  docs/USER_GUIDE.html       |  docs/USER_GUIDE.txt     
   Tech Stack        |  docs/TECH_STACK.md       |  docs/TECH_STACK.html       |  docs/TECH_STACK.txt     
