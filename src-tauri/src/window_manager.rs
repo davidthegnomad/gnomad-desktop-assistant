@@ -2,8 +2,10 @@ use serde::{Deserialize, Serialize};
 use std::sync::Mutex;
 use tauri::{
     tray::{MouseButton, MouseButtonState, TrayIconEvent},
-    ActivationPolicy, Emitter, Manager, PhysicalPosition, PhysicalSize, Runtime, WebviewWindow,
+    Emitter, Manager, PhysicalPosition, PhysicalSize, Runtime, WebviewWindow,
 };
+#[cfg(target_os = "macos")]
+use tauri::ActivationPolicy;
 
 /// Tray panel — tall rectangle for welcome + composer (minimal UI).
 pub const PANEL_WIDTH: u32 = 600;
