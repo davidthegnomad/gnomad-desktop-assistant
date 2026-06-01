@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Gnomad Desktop Assistant — Alpha</title>
+    <meta
+      name="description"
+      content="Cross-platform AI desktop assistant by Gnomad Studio. macOS, Linux, and Windows — alpha release."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0f1117;
+        --panel: #1a1d27;
+        --border: #2a3040;
+        --text: #e8eaef;
+        --muted: #9aa3b5;
+        --accent: #7c6cf0;
+        --accent-soft: rgba(124, 108, 240, 0.15);
+        --warn: #f0b429;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "DM Sans", system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+        min-height: 100vh;
+      }
+      .glow {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background: radial-gradient(
+            ellipse 80% 50% at 50% -20%,
+            rgba(124, 108, 240, 0.25),
+            transparent
+          ),
+          radial-gradient(
+            ellipse 60% 40% at 100% 100%,
+            rgba(240, 180, 41, 0.08),
+            transparent
+          );
+      }
+      .wrap {
+        position: relative;
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 3rem 1.5rem 4rem;
+      }
+      .badge {
+        display: inline-block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--warn);
+        background: rgba(240, 180, 41, 0.12);
+        border: 1px solid rgba(240, 180, 41, 0.35);
+        padding: 0.25rem 0.65rem;
+        border-radius: 999px;
+        margin-bottom: 1rem;
+      }
+      h1 {
+        font-size: clamp(2rem, 5vw, 2.75rem);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin-bottom: 0.5rem;
+      }
+      .emoji {
+        font-size: 1.15em;
+      }
+      .lead {
+        color: var(--muted);
+        font-size: 1.125rem;
+        margin-bottom: 2rem;
+      }
+      .version {
+        font-size: 0.9rem;
+        color: var(--muted);
+        margin-bottom: 2.5rem;
+      }
+      .version strong {
+        color: var(--text);
+      }
+      section {
+        margin-bottom: 2rem;
+      }
+      h2 {
+        font-size: 1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--muted);
+        margin-bottom: 0.75rem;
+      }
+      .cards {
+        display: grid;
+        gap: 0.75rem;
+      }
+      .card {
+        display: block;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        text-decoration: none;
+        color: inherit;
+        transition: border-color 0.15s, background 0.15s;
+      }
+      .card:hover {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+      }
+      .card strong {
+        display: block;
+        margin-bottom: 0.2rem;
+      }
+      .card span {
+        font-size: 0.9rem;
+        color: var(--muted);
+      }
+      .platforms {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+      }
+      .pill {
+        font-size: 0.8rem;
+        padding: 0.2rem 0.55rem;
+        border-radius: 6px;
+        background: var(--accent-soft);
+        border: 1px solid var(--border);
+        color: var(--text);
+      }
+      .alpha-note {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-left: 3px solid var(--warn);
+        border-radius: 8px;
+        padding: 1rem 1.25rem;
+        font-size: 0.95rem;
+        color: var(--muted);
+      }
+      .alpha-note strong {
+        color: var(--warn);
+      }
+      footer {
+        margin-top: 3rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--border);
+        font-size: 0.875rem;
+        color: var(--muted);
+      }
+      footer a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+      footer a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="glow" aria-hidden="true"></div>
+    <main class="wrap">
+      <p class="badge">Alpha preview</p>
+      <h1>
+        <span class="emoji">🦙</span> Gnomad
+        <span class="emoji">🍄</span>
+      </h1>
+      <p class="lead">
+        Cross-platform desktop AI assistant — tray-first on macOS, native menus on
+        Linux and Windows, Gemini-style chat, and local knowledge.
+      </p>
+      <p class="version">Current release: <strong>v0.1.0-alpha</strong></p>
+
+      <div class="alpha-note">
+        <strong>Alpha software.</strong> Expect rough edges, API key setup, and
+        changing features. Feedback welcome via GitHub Issues.
+      </div>
+
+      <section style="margin-top: 2rem">
+        <h2>Downloads</h2>
+        <div class="cards">
+          <a
+            class="card"
+            href="https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha"
+          >
+            <strong>Release v0.1.0-alpha</strong>
+            <span>Tagged alpha builds when published</span>
+          </a>
+          <a
+            class="card"
+            href="https://github.com/davidthegnomad/gnomad-desktop-assistant/actions/workflows/build.yml"
+          >
+            <strong>CI build artifacts</strong>
+            <span>Latest .deb, .rpm, AppImage, .msi from Actions</span>
+            <div class="platforms">
+              <span class="pill">macOS</span>
+              <span class="pill">Linux deb/rpm/AppImage</span>
+              <span class="pill">Windows</span>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <section>
+        <h2>Documentation</h2>
+        <div class="cards">
+          <a
+            class="card"
+            href="https://github.com/davidthegnomad/gnomad-desktop-assistant/blob/main/docs/LINUX_PACKAGES.md"
+          >
+            <strong>Linux packages</strong>
+            <span>Install per distro — Debian, Fedora, Arch, AppImage</span>
+          </a>
+          <a
+            class="card"
+            href="https://github.com/davidthegnomad/gnomad-desktop-assistant/blob/main/docs/BUILD_PLATFORMS.md"
+          >
+            <strong>Build from source</strong>
+            <span>macOS, Linux, and Windows dev setup</span>
+          </a>
+          <a
+            class="card"
+            href="https://github.com/davidthegnomad/gnomad-desktop-assistant/blob/main/README.md"
+          >
+            <strong>README</strong>
+            <span>Features, API keys, and quick start</span>
+          </a>
+        </div>
+      </section>
+
+      <footer>
+        Built with ❤️ by
+        <a href="https://gnomadstudio.org" rel="noopener">Gnomad Studio</a>
+        ·
+        <a
+          href="https://github.com/davidthegnomad/gnomad-desktop-assistant"
+          rel="noopener"
+          >GitHub</a
+        >
+      </footer>
+    </main>
+  </body>
+</html>

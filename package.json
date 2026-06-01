@@ -1,7 +1,7 @@
 {
   "name": "gnomad",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.0-alpha",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,7 +11,10 @@
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
     "tauri:build:mac": "tauri build",
-    "tauri:build:linux": "tauri build --bundles deb,appimage",
+    "tauri:build:linux": "tauri build --bundles deb,rpm,appimage",
+    "tauri:build:linux:deb": "tauri build --bundles deb",
+    "tauri:build:linux:rpm": "tauri build --bundles rpm",
+    "tauri:build:linux:appimage": "tauri build --bundles appimage",
     "tauri:build:win": "tauri build --bundles msi,nsis"
   },
   "dependencies": {

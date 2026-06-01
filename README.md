@@ -1,6 +1,11 @@
 # Gnomad Desktop Assistant 🦙🍄
 
+[![Alpha](https://img.shields.io/badge/status-alpha-f0b429)](https://davidthegnomad.github.io/gnomad-desktop-assistant/)
+[![Version](https://img.shields.io/badge/version-0.1.0--alpha-7c6cf0)](https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha)
+
 Cross-platform desktop assistant built with **Tauri v2**, **React 19**, and **TypeScript**. Gemini-inspired UI, system tray, chat history, knowledge base, and DeepSeek/Ollama chat.
+
+**Project site:** [davidthegnomad.github.io/gnomad-desktop-assistant](https://davidthegnomad.github.io/gnomad-desktop-assistant/)
 
 Built with ❤️ by [Gnomad Studio](https://gnomadstudio.org)
 
@@ -9,7 +14,7 @@ Built with ❤️ by [Gnomad Studio](https://gnomadstudio.org)
 | Platform | Status | Notes |
 |----------|--------|--------|
 | **macOS** | Primary | Menu-bar accessory; full menu bar in Windowed mode |
-| **Linux** | Supported | `.deb` / AppImage; in-window menus, system tray |
+| **Linux** | Supported | `.deb`, `.rpm`, AppImage — see [`docs/LINUX_PACKAGES.md`](docs/LINUX_PACKAGES.md) |
 | **Windows** | Supported | `.msi` installer; system tray, `Ctrl+Shift+Space` |
 
 See [`docs/BUILD_PLATFORMS.md`](docs/BUILD_PLATFORMS.md) for per-OS build steps.
@@ -59,6 +64,7 @@ npm run tauri:build:win    # Windows (on Windows host)
 | Doc | Contents |
 |-----|----------|
 | [`docs/BUILD_PLATFORMS.md`](docs/BUILD_PLATFORMS.md) | macOS / Linux / Windows builds |
+| [`docs/LINUX_PACKAGES.md`](docs/LINUX_PACKAGES.md) | `.deb` / `.rpm` / AppImage per distro |
 | [`docs/CODE_REVIEW.md`](docs/CODE_REVIEW.md) | Architecture and findings |
 | [`docs/KNOWLEDGE.md`](docs/KNOWLEDGE.md) | Knowledge base and skills |
 | [`docs/MACOS_PERMISSIONS.md`](docs/MACOS_PERMISSIONS.md) | macOS privacy and elevation |

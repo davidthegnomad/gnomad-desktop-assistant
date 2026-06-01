@@ -33,7 +33,20 @@ npm run tauri:build:linux
 
 Install [Tauri Linux dependencies](https://v2.tauri.app/start/prerequisites/#linux) first (webkit2gtk, etc.).
 
-Output: `.deb` and/or `.AppImage` under `src-tauri/target/release/bundle/`
+Output under `src-tauri/target/release/bundle/`:
+
+- **`.deb`** — Debian, Ubuntu, Mint, Pop!\_OS
+- **`.rpm`** — Fedora, RHEL, Rocky, openSUSE
+- **AppImage** — distro-agnostic (Arch, NixOS, etc.)
+
+See [`LINUX_PACKAGES.md`](LINUX_PACKAGES.md) for install commands per distribution.
+
+```bash
+npm run tauri:build:linux          # all three
+npm run tauri:build:linux:deb      # deb only
+npm run tauri:build:linux:rpm      # rpm only
+npm run tauri:build:linux:appimage # AppImage only
+```
 
 - Same UI as macOS (Gemini layout, sidebar, composer)
 - Full **File / Edit / View / Window / Help** menus in the window menu bar
