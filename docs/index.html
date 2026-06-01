@@ -170,6 +170,15 @@
       footer a:hover {
         text-decoration: underline;
       }
+      .card.disabled {
+        opacity: 0.55;
+        pointer-events: none;
+      }
+      .card .status {
+        font-size: 0.8rem;
+        color: var(--warn);
+        margin-top: 0.35rem;
+      }
     </style>
   </head>
   <body>
@@ -192,28 +201,47 @@
       </div>
 
       <section style="margin-top: 2rem">
-        <h2>Downloads</h2>
-        <div class="cards">
-          <a
-            class="card"
-            href="https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha"
-          >
-            <strong>Release v0.1.0-alpha</strong>
-            <span>Tagged alpha builds when published</span>
+        <h2>Downloads — v0.1.0-alpha</h2>
+        <div class="cards" id="download-cards">
+          <a class="card disabled" id="dl-macos" href="#" download>
+            <strong>macOS</strong>
+            <span>Universal .dmg — Apple Silicon &amp; Intel</span>
+            <p class="status" id="dl-macos-status">Loading…</p>
           </a>
-          <a
-            class="card"
-            href="https://github.com/davidthegnomad/gnomad-desktop-assistant/actions/workflows/build.yml"
-          >
-            <strong>CI build artifacts</strong>
-            <span>Latest .deb, .rpm, AppImage, .msi from Actions</span>
-            <div class="platforms">
-              <span class="pill">macOS</span>
-              <span class="pill">Linux deb/rpm/AppImage</span>
-              <span class="pill">Windows</span>
-            </div>
+          <a class="card disabled" id="dl-deb" href="#" download>
+            <strong>Linux (.deb)</strong>
+            <span>Debian, Ubuntu, Mint, Pop!_OS</span>
+            <p class="status" id="dl-deb-status">Loading…</p>
+          </a>
+          <a class="card disabled" id="dl-rpm" href="#" download>
+            <strong>Linux (.rpm)</strong>
+            <span>Fedora, RHEL, Rocky, openSUSE</span>
+            <p class="status" id="dl-rpm-status">Loading…</p>
+          </a>
+          <a class="card disabled" id="dl-appimage" href="#" download>
+            <strong>Linux (AppImage)</strong>
+            <span>Arch, NixOS, and other distros</span>
+            <p class="status" id="dl-appimage-status">Loading…</p>
+          </a>
+          <a class="card disabled" id="dl-msi" href="#" download>
+            <strong>Windows (.msi)</strong>
+            <span>Recommended installer</span>
+            <p class="status" id="dl-msi-status">Loading…</p>
+          </a>
+          <a class="card disabled" id="dl-nsis" href="#" download>
+            <strong>Windows (setup.exe)</strong>
+            <span>NSIS installer</span>
+            <p class="status" id="dl-nsis-status">Loading…</p>
           </a>
         </div>
+        <p style="margin-top: 1rem; font-size: 0.875rem; color: var(--muted)">
+          All files on
+          <a
+            href="https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha"
+            style="color: var(--accent)"
+            >GitHub Releases</a
+          >. Builds are produced by CI when a version tag is published.
+        </p>
       </section>
 
       <section>
@@ -254,5 +282,63 @@
         >
       </footer>
     </main>
+    <script>
+      (function () {
+        const TAG = "v0.1.0-alpha";
+        const BASE =
+          "https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/download/" +
+          TAG + "/";
+
+        const slots = [
+          { id: "dl-macos", status: "dl-macos-status", match: (n) => /\.dmg$/i.test(n) },
+          { id: "dl-deb", status: "dl-deb-status", match: (n) => /\.deb$/i.test(n) },
+          { id: "dl-rpm", status: "dl-rpm-status", match: (n) => /\.rpm$/i.test(n) },
+          {
+            id: "dl-appimage",
+            status: "dl-appimage-status",
+            match: (n) => /\.appimage$/i.test(n),
+          },
+          { id: "dl-msi", status: "dl-msi-status", match: (n) => /\.msi$/i.test(n) },
+          {
+            id: "dl-nsis",
+            status: "dl-nsis-status",
+            match: (n) => /setup\.exe$/i.test(n) || /-setup\.exe$/i.test(n),
+          },
+        ];
+
+        function enableLink(slot, fileName) {
+          const el = document.getElementById(slot.id);
+          const st = document.getElementById(slot.status);
+          el.href = BASE + encodeURIComponent(fileName);
+          el.classList.remove("disabled");
+          st.textContent = fileName;
+        }
+
+        function markMissing(slot) {
+          const st = document.getElementById(slot.status);
+          st.textContent = "Not uploaded yet — check Releases";
+        }
+
+        fetch(
+          "https://api.github.com/repos/davidthegnomad/gnomad-desktop-assistant/releases/tags/" +
+            TAG
+        )
+          .then((r) => {
+            if (!r.ok) throw new Error("release not found");
+            return r.json();
+          })
+          .then((release) => {
+            const names = (release.assets || []).map((a) => a.name);
+            slots.forEach((slot) => {
+              const file = names.find(slot.match);
+              if (file) enableLink(slot, file);
+              else markMissing(slot);
+            });
+          })
+          .catch(() => {
+            slots.forEach(markMissing);
+          });
+      })();
+    </script>
   </body>
 </html>

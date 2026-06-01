@@ -51,7 +51,19 @@ npm install
 npm run tauri dev
 ```
 
-## Build
+## Download (v0.1.0-alpha)
+
+| Platform | Installer |
+|----------|-----------|
+| **macOS** | [`.dmg` (Universal)](https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha) |
+| **Linux** | [`.deb`](https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha) · [`.rpm`](https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha) · [AppImage](https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha) |
+| **Windows** | [`.msi`](https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha) · [`setup.exe`](https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha) |
+
+**Project site (live download links):** [davidthegnomad.github.io/gnomad-desktop-assistant](https://davidthegnomad.github.io/gnomad-desktop-assistant/)
+
+Installers are attached to each [GitHub Release](https://github.com/davidthegnomad/gnomad-desktop-assistant/releases) by the `Release` workflow when a `v*` tag is pushed.
+
+## Build from source
 
 ```bash
 npm run tauri:build:mac    # macOS
