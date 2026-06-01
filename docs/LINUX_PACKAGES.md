@@ -8,7 +8,9 @@ Gnomad ships three official Linux formats from [Tauri](https://v2.tauri.app/dist
 | **`.rpm`** | `gnomad-*-1.x86_64.rpm` | Fedora, RHEL, CentOS Stream, Rocky, AlmaLinux, openSUSE |
 | **AppImage** | `gnomad_*_amd64.AppImage` | Arch, NixOS, Gentoo, or any distro without native packaging |
 
-CI builds all three on every push to `main` — download from **Actions → Build → Artifacts** (`linux-deb-x86_64`, `linux-rpm-x86_64`, `linux-appimage-x86_64`).
+**Official downloads:** [GitHub Release v0.1.0-alpha](https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha) (`.deb`, `.rpm`, AppImage) or the [project site](https://davidthegnomad.github.io/gnomad-desktop-assistant/).
+
+CI also builds on every push to `main` — backup artifacts under **Actions → Build**.
 
 Local build (on Ubuntu 22.04+ or Debian 12+):
 
