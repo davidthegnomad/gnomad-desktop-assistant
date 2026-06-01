@@ -246,6 +246,7 @@ body {
 <a href="#knowledge-amp-skills-library" class="toc-h2">Knowledge &amp; skills library</a>
 <a href="#chat-history-amp-sidebar" class="toc-h2">Chat history &amp; sidebar</a>
 <a href="#settings-reference" class="toc-h2">Settings reference</a>
+<a href="#voice-input-beta" class="toc-h2">Voice input (beta)</a>
 <a href="#keyboard-shortcuts" class="toc-h2">Keyboard shortcuts</a>
 <a href="#platform-specific-notes" class="toc-h2">Platform-specific notes</a>
 <a href="#troubleshooting" class="toc-h2">Troubleshooting</a>
@@ -256,7 +257,7 @@ body {
         <h2>User Guide</h2>
         <p class="formats">Also available: <a href="USER_GUIDE.md">Markdown</a> · <a href="USER_GUIDE.txt">Plain text</a></p>
       </header>
-      <h1 id="user-guide-gnomad-desktop-assistant">User Guide — Gnomad Desktop Assistant</h1><p><strong>Version:</strong> 0.1.0-alpha</p>
+      <h1 id="user-guide-gnomad-desktop-assistant">User Guide — Gnomad Desktop Assistant</h1><p><strong>Version:</strong> 0.2.0-beta.1</p>
 <p>Project site: <a href="https://davidthegnomad.github.io/gnomad-desktop-assistant/">davidthegnomad.github.io/gnomad-desktop-assistant</a><br>Studio: <a href="https://gnomadstudio.org">gnomadstudio.org</a></p>
 <hr>
 <h2 id="introduction">Introduction</h2><p>Gnomad is a desktop AI assistant that lives in your menu bar (macOS) or system tray (Windows/Linux). It can:</p>
@@ -472,6 +473,13 @@ body {
 </tbody></table>
 <p><strong>Theme:</strong> Sun/moon/monitor icon cycles Light → Dark → System.</p>
 <hr>
+<h2 id="voice-input-beta">Voice input (beta)</h2><ol>
+<li><strong>Settings → Privacy → Enable microphone dictation</strong></li>
+<li>Click the <strong>mic</strong> button in the composer (push-to-talk — click again to stop)</li>
+<li>Speech is converted to text by your OS/browser engine and appended to the message</li>
+</ol>
+<p>Audio may be processed by Apple, Google, or another vendor depending on platform — not sent to Gnomad servers. Disable anytime in Settings.</p>
+<hr>
 <h2 id="keyboard-shortcuts">Keyboard shortcuts</h2><table>
 <thead>
 <tr>
@@ -501,7 +509,8 @@ body {
 <p><strong>Windows:</strong> Tray near notification area; elevated cmds in admin terminal.</p>
 <p><strong>Linux:</strong> WebKitGTK + AppIndicator; optional <code>xdotool</code>, <code>wl-paste</code>, <code>xclip</code>. On <strong>Wayland</strong>, left-click the tray icon to open the menu (Settings shows a hint when Wayland is detected).</p>
 <hr>
-<h2 id="troubleshooting">Troubleshooting</h2><table>
+<h2 id="troubleshooting">Troubleshooting</h2><p>See <strong><a href="TROUBLESHOOTING.md">TROUBLESHOOTING.md</a></strong> for the full guide. Quick fixes:</p>
+<table>
 <thead>
 <tr>
 <th>Issue</th>
@@ -510,7 +519,7 @@ body {
 </thead>
 <tbody><tr>
 <td>Cloud disabled</td>
-<td>Add DeepSeek API key or <code>.env</code></td>
+<td>Add API key, or set <code>DeepSeek_API_KEY</code> / <code>OPENAI_API_KEY</code> in <code>.env</code></td>
 </tr>
 <tr>
 <td>Local disabled</td>
@@ -518,7 +527,7 @@ body {
 </tr>
 <tr>
 <td>Chat errors</td>
-<td>Check network or <code>curl</code> Ollama URL</td>
+<td>Check network, cloud endpoint in Settings, or <code>curl</code> Ollama URL</td>
 </tr>
 <tr>
 <td>No tray (Linux)</td>

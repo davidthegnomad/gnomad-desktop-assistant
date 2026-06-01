@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Gnomad
+Comment=Desktop AI assistant with shell and filesystem agent tools
+Exec=gnomad
+Icon=com.gnomadstudio.Gnomad
+Terminal=false
+Categories=Utility;Development;
+StartupWMClass=gnomad

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flatpak packaging — Gnomad Desktop Assistant</title>
+  <meta name="description" content="Flatpak packaging documentation for Gnomad Desktop Assistant." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>:root {
+  --bg-base: #0a0a0a;
+  --bg-panel: rgba(18, 18, 20, 0.92);
+  --bg-elevated: rgba(30, 30, 35, 0.95);
+  --border: rgba(255, 255, 255, 0.1);
+  --text: #f3f4f6;
+  --muted: #9ca3af;
+  --accent: #8ab4f8;
+  --accent-secondary: #c58af9;
+  --success: #34a853;
+  --warning: #f9ab00;
+  --danger: #ea4335;
+  --pill-radius: 999px;
+  --radius: 16px;
+  --mesh:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(66, 133, 244, 0.2), transparent 65%),
+    radial-gradient(ellipse 60% 40% at 10% 30%, rgba(168, 85, 247, 0.12), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 95% 40%, rgba(242, 139, 130, 0.1), transparent 50%);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: "Google Sans Flex", "Roboto", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--bg-base);
+  min-height: 100vh;
+}
+
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: var(--mesh);
+  z-index: 0;
+}
+
+.layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 1.5rem 1.25rem;
+  background: var(--bg-panel);
+  backdrop-filter: blur(24px);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.brand-icon { font-size: 1.5rem; }
+.brand h1 { font-size: 1rem; font-weight: 600; }
+
+.doc-path {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  word-break: break-all;
+}
+
+.sidebar a {
+  display: block;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar a.toc-h3 { padding-left: 1.1rem; font-size: 0.78rem; }
+.sidebar a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.sidebar a.active { color: var(--accent); background: rgba(138,180,248,0.12); }
+
+.content {
+  padding: 2rem 2.5rem 3rem;
+  max-width: 760px;
+}
+
+.hero { margin-bottom: 1.5rem; }
+.hero h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.formats { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+.formats a { color: var(--accent); }
+
+.doc-body h1 { font-size: 1.5rem; margin: 1.5rem 0 0.75rem; }
+.doc-body h2 {
+  font-size: 1.25rem;
+  margin: 2rem 0 0.65rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.doc-body h3 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; color: var(--accent); }
+.doc-body h4 { font-size: 0.95rem; margin: 1rem 0 0.4rem; }
+
+.doc-body p { margin-bottom: 0.85rem; }
+.doc-body ul, .doc-body ol { margin: 0 0 1rem 1.25rem; color: var(--muted); }
+.doc-body li { margin-bottom: 0.35rem; }
+.doc-body li strong { color: var(--text); }
+
+.doc-body a { color: var(--accent); }
+.doc-body code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85em;
+  background: rgba(255,255,255,0.08);
+  padding: 0.12em 0.35em;
+  border-radius: 6px;
+  color: var(--accent-secondary);
+}
+
+.doc-body pre {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.doc-body pre code {
+  background: none;
+  padding: 0;
+  color: var(--text);
+}
+
+.doc-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1rem 0;
+}
+
+.doc-body th, .doc-body td {
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-body th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.doc-body blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 0.6rem 1rem;
+  margin: 1rem 0;
+  background: rgba(138,180,248,0.08);
+  border-radius: 0 12px 12px 0;
+  color: var(--muted);
+}
+
+.doc-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+.doc-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.doc-footer a { color: var(--accent); text-decoration: none; }
+.doc-footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="mesh-bg" aria-hidden="true"></div>
+  <div class="layout">
+    <nav class="sidebar" aria-label="Table of contents">
+          <div class="brand"><span class="brand-icon">🍄</span><h1>Gnomad</h1></div>
+          <p class="doc-path">docs/FLATPAK.md</p>
+          <a href="#prerequisites" class="toc-h2">Prerequisites</a>
+<a href="#build-from-source" class="toc-h2">Build from source</a>
+<a href="#permissions-finish-args" class="toc-h2">Permissions (finish-args)</a>
+<a href="#flathub-submission" class="toc-h2">Flathub submission</a>
+<a href="#related" class="toc-h2">Related</a>
+        </nav>
+    <main class="content doc-body">
+      <header class="hero">
+        <h2>Flatpak packaging</h2>
+        <p class="formats">Also available: <a href="FLATPAK.md">Markdown</a> · <a href="FLATPAK.txt">Plain text</a></p>
+      </header>
+      <h1 id="flatpak-packaging-gnomad-desktop-assistant">Flatpak packaging — Gnomad Desktop Assistant</h1><p>Gnomad’s primary Linux artifacts are <strong><code>.deb</code></strong>, <strong><code>.rpm</code></strong>, and <strong>AppImage</strong> from Tauri CI. <strong>Flatpak</strong> is an optional community/store format for sandboxed desktop distribution.</p>
+<hr>
+<h2 id="prerequisites">Prerequisites</h2><p>On a Linux host with Flatpak installed:</p>
+<pre><code class="language-bash">sudo apt install flatpak flatpak-builder   # Debian/Ubuntu
+flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+flatpak install flathub org.freedesktop.Platform//23.08 org.freedesktop.Sdk//23.08 \
+  org.freedesktop.Sdk.Extension.node20//23.08 org.freedesktop.Sdk.Extension.rust-stable//23.08
+</code></pre>
+<hr>
+<h2 id="build-from-source">Build from source</h2><p>From the repository root:</p>
+<pre><code class="language-bash">bash packaging/flatpak/build.sh          # build only
+bash packaging/flatpak/build.sh --install # build + user install
+</code></pre>
+<p>Manifest: <a href="../packaging/flatpak/com.gnomadstudio.Gnomad.yml"><code>packaging/flatpak/com.gnomadstudio.Gnomad.yml</code></a></p>
+<p>First build compiles the full Tauri app inside the Flatpak SDK (15–30+ minutes).</p>
+<p>After install:</p>
+<pre><code class="language-bash">flatpak run com.gnomadstudio.Gnomad
+</code></pre>
+<p>Export a single-file bundle for sideloading:</p>
+<pre><code class="language-bash">flatpak build-bundle packaging/flatpak/repo gnomad.flatpak com.gnomadstudio.Gnomad
+</code></pre>
+<hr>
+<h2 id="permissions-finish-args">Permissions (finish-args)</h2><p>The manifest requests:</p>
+<table>
+<thead>
+<tr>
+<th>Permission</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>home</code></td>
+<td>Workspace, knowledge library, chat history</td>
+</tr>
+<tr>
+<td><code>network</code></td>
+<td>Cloud LLM APIs, updates</td>
+</tr>
+<tr>
+<td><code>wayland</code> / <code>x11</code></td>
+<td>UI</td>
+</tr>
+<tr>
+<td><code>secrets</code></td>
+<td>API keys via libsecret</td>
+</tr>
+</tbody></table>
+<p><strong>Agent shell tools</strong> require broad filesystem access under <code>--filesystem=home</code>. Flathub review may ask for justification — document that Gnomad is a desktop automation assistant.</p>
+<hr>
+<h2 id="flathub-submission">Flathub submission</h2><ol>
+<li>Fork <a href="https://github.com/flathub/flathub">flathub/flathub</a> and add a PR with this manifest (often as a separate repo + <code>flatpak-builder</code> JSON).</li>
+<li>Include <a href="../packaging/flatpak/com.gnomadstudio.Gnomad.metainfo.xml"><code>com.gnomadstudio.Gnomad.metainfo.xml</code></a>.</li>
+<li>Pin sources to release tags rather than <code>type: dir</code> for production.</li>
+</ol>
+<hr>
+<h2 id="related">Related</h2><ul>
+<li><a href="LINUX_PACKAGES.md">LINUX_PACKAGES.md</a> — deb/rpm/AppImage (recommended default)</li>
+<li><a href="BUILD_PLATFORMS.md">BUILD_PLATFORMS.md</a> — native Tauri builds</li>
+<li><a href="RELEASE_RUNBOOK.md">RELEASE_RUNBOOK.md</a> — tagged releases</li>
+</ul>
+<hr>
+<p>Built with ❤️ by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+
+      <footer class="doc-footer">
+        <p>Built with <span aria-label="love">❤️</span> by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+      </footer>
+    </main>
+  </div>
+  <script>
+    const links = document.querySelectorAll(".sidebar a[href^='#']");
+    const sections = [...links].map((a) => document.querySelector(a.getAttribute("href")));
+    const onScroll = () => {
+      let cur = 0;
+      sections.forEach((s, i) => { if (s && s.getBoundingClientRect().top <= 120) cur = i; });
+      links.forEach((l, i) => l.classList.toggle("active", i === cur));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  </script>
+</body>
+</html>

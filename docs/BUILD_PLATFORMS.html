@@ -255,6 +255,7 @@ npm run build
 <li><strong>Windowed:</strong> full menu bar (Gnomad, File, Edit, View, Window, Help), Gemini-style body without duplicate toolbar</li>
 <li>Close button hides to menu bar; <strong>Quit</strong> from tray menu</li>
 </ul>
+<p><strong>Notarization (v1.0):</strong> CI builds are unsigned for Gatekeeper until Apple Developer ID secrets are configured. See <a href="MACOS_NOTARIZATION.md">MACOS_NOTARIZATION.md</a> and <code>npm run notarize:macos</code>.</p>
 <h2 id="cross-platform-parity-macos-windows-linux">Cross-platform parity (macOS, Windows, Linux)</h2><p>The <strong>same React UI</strong> ships in every build: chat, attachments, API keys (keychain / Credential Manager / Secret Service), cursor bloom, knowledge base, settings, and window modes (tray panel, pop-out, windowed, fullscreen).</p>
 <table>
 <thead>
@@ -315,7 +316,7 @@ npm run build
 </tr>
 </tbody></table>
 <p><strong>Optional Linux packages</strong> for full context pills: <code>xdotool</code> (X11), <code>wl-paste</code> (Wayland) or <code>xclip</code>.</p>
-<p>CI (<code>.github/workflows/build.yml</code>) builds all three platforms on every push to <code>main</code> / <code>master</code>.</p>
+<p>CI (<code>.github/workflows/build.yml</code>) builds macOS, Linux x86_64, <strong>Linux ARM64</strong>, and Windows on every push to <code>main</code> / <code>master</code>.</p>
 <h3 id="cross-platform-verification-features-amp-ui-tweaks">Cross-platform verification (features &amp; UI tweaks)</h3><p>Whenever you add or change UI, settings, or OS-facing behavior, use <strong><a href="CROSS_PLATFORM_CHECKLIST.md"><code>CROSS_PLATFORM_CHECKLIST.md</code></a></strong> so work on macOS translates—or is explicitly handled—for Windows and Linux.</p>
 <p>Quick rules:</p>
 <ol>
@@ -338,7 +339,9 @@ npm run build
 npm run tauri:build:linux:deb      # deb only
 npm run tauri:build:linux:rpm      # rpm only
 npm run tauri:build:linux:appimage # AppImage only
+npm run tauri:build:linux:arm64    # ARM64 deb + AppImage (native or cross)
 </code></pre>
+<p>CI also builds <strong>Linux ARM64</strong> on <code>ubuntu-24.04-arm</code> (see <code>.github/workflows/build.yml</code>).</p>
 <ul>
 <li>Same UI and features as macOS (Gemini layout, sidebar, composer, attachments, API keys)</li>
 <li>Full <strong>File / Edit / View / Window / Help</strong> menus in the window menu bar</li>

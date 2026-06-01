@@ -537,8 +537,8 @@ body {
 </tr>
 <tr>
 <td><strong>Windows</strong></td>
-<td><strong>AppContainer</strong> or restricted token</td>
-<td>Hardest parity; may ship “YOLO FS only, shell Standard” on Windows v1</td>
+<td><strong>Workspace-scoped init</strong> (<code>yolo-shell-init.cmd</code>)</td>
+<td>TEMP + cwd scoped to workspace; <strong>network not blocked</strong> — full AppContainer deferred</td>
 </tr>
 </tbody></table>
 <p><strong>Principle:</strong> Sandbox wraps <strong>shell execution path only</strong>; <code>agent_fs</code> already path-gated — optionally route YOLO shell through <code>bwrap</code> helper binary shipped with app.</p>

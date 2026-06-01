@@ -27,6 +27,11 @@ jobs:
           - platform: ubuntu-22.04
             args: "--bundles deb,rpm,appimage"
             rust_targets: ""
+            linux_arch: x86_64
+          - platform: ubuntu-24.04-arm
+            args: "--bundles deb,appimage"
+            rust_targets: ""
+            linux_arch: aarch64
           - platform: windows-latest
             args: "--bundles msi,nsis"
             rust_targets: ""
@@ -56,7 +61,7 @@ jobs:
         run: npm ci
 
       - name: Install Linux system deps
-        if: matrix.platform == 'ubuntu-22.04'
+        if: startsWith(matrix.platform, 'ubuntu-')
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -73,6 +78,7 @@ jobs:
           fi
 
       - name: Build and upload to GitHub Release
+        id: tauri_build
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -82,18 +88,32 @@ jobs:
           tagName: ${{ steps.tag.outputs.name }}
           releaseName: "Gnomad ${{ steps.tag.outputs.name }}"
           releaseBody: |
-            ## Gnomad Desktop Assistant — Alpha
+            ## Gnomad Desktop Assistant — Beta
 
             Download the installer for your platform below.
 
             | Platform | Files |
             |----------|--------|
             | **macOS** | `.dmg` (Universal) |
-            | **Linux** | `.deb`, `.rpm`, `.AppImage` |
+            | **Linux x86_64** | `.deb`, `.rpm`, `.AppImage` |
+            | **Linux ARM64** | `.deb`, `.AppImage` |
             | **Windows** | `.msi`, `-setup.exe` (NSIS) |
 
-            See [Linux install guide](https://github.com/davidthegnomad/gnomad-desktop-assistant/blob/main/docs/LINUX_PACKAGES.md).
+            Docs: https://davidthegnomad.github.io/gnomad-desktop-assistant/
           prerelease: true
           includeUpdaterJson: true
           assetNamePattern: "gnomad-[name]-[version]-[platform][ext]"
           args: ${{ matrix.args }}
+
+      - name: Notarize macOS DMG (optional)
+        if: matrix.platform == 'macos-latest'
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          if [[ -z "${APPLE_ID:-}" || -z "${APPLE_PASSWORD:-}" || -z "${APPLE_TEAM_ID:-}" ]]; then
+            echo "Skipping notarization — set APPLE_ID, APPLE_PASSWORD, APPLE_TEAM_ID secrets to enable."
+            exit 0
+          fi
+          bash scripts/notarize-macos.sh

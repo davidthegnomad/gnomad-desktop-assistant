@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import "@xterm/xterm/css/xterm.css";
@@ -13,6 +13,12 @@ interface LiveTerminalProps {
   className?: string;
 }
 
+function summarizeForScreenReader(text: string, maxLen = 120): string {
+  const line = text.split(/\r?\n/).filter(Boolean).pop()?.trim() ?? "";
+  if (!line) return "";
+  return line.length > maxLen ? `${line.slice(0, maxLen - 1)}…` : line;
+}
+
 /** xterm.js view for PTY output — live stream or static replay. */
 export function LiveTerminal({
   active,
@@ -22,6 +28,7 @@ export function LiveTerminal({
 }: LiveTerminalProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const termRef = useRef<Terminal | null>(null);
+  const [liveAnnouncement, setLiveAnnouncement] = useState("");
 
   useEffect(() => {
     if (!active || !containerRef.current) return;
@@ -49,8 +56,15 @@ export function LiveTerminal({
       if (!initialText.endsWith("\n")) {
         term.write("\r\n");
       }
+      const lines = initialText.split(/\r?\n/).filter(Boolean).length;
+      setLiveAnnouncement(
+        lines > 0
+          ? `Command output loaded, ${lines} line${lines === 1 ? "" : "s"}.`
+          : "Command output loaded."
+      );
     } else if (stream) {
       term.writeln("\x1b[90m— live shell output —\x1b[0m");
+      setLiveAnnouncement("Live terminal output started.");
     }
 
     const onResize = () => {
@@ -65,9 +79,22 @@ export function LiveTerminal({
     ro.observe(containerRef.current);
 
     let unlisten: (() => void) | undefined;
+    let announceTimer: ReturnType<typeof setTimeout> | undefined;
+    let pendingChunk = "";
+
     if (stream) {
       void subscribeShellOutput((chunk) => {
         term.write(chunk);
+        pendingChunk += chunk;
+        if (announceTimer) return;
+        announceTimer = setTimeout(() => {
+          announceTimer = undefined;
+          const summary = summarizeForScreenReader(pendingChunk);
+          pendingChunk = "";
+          if (summary) {
+            setLiveAnnouncement(`Terminal: ${summary}`);
+          }
+        }, 2000);
       }).then((fn) => {
         unlisten = fn;
       });
@@ -76,6 +103,7 @@ export function LiveTerminal({
     return () => {
       window.removeEventListener("resize", onResize);
       ro.disconnect();
+      if (announceTimer) clearTimeout(announceTimer);
       unlisten?.();
       term.dispose();
       termRef.current = null;
@@ -90,7 +118,14 @@ export function LiveTerminal({
       role="region"
       aria-label="Terminal output"
     >
-      <div ref={containerRef} className="live-terminal-host" />
+      <div
+        className="sr-only"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        {liveAnnouncement}
+      </div>
+      <div ref={containerRef} className="live-terminal-host" aria-hidden="true" />
     </div>
   );
 }

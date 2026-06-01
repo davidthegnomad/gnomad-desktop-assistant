@@ -7,6 +7,31 @@ pub struct SafetyCheckResult {
     pub requires_hitl_approval: bool,
     pub requires_admin: bool,
     pub danger_reason: Option<String>,
+    #[serde(default)]
+    pub suggest_agent_fs: bool,
+}
+
+/// Detect shell patterns that are better handled via agent fs_write + Path Gate.
+pub fn looks_like_file_write(command: &str) -> bool {
+    let t = command.trim();
+    if t.is_empty() {
+        return false;
+    }
+    if t.contains('>') {
+        return true;
+    }
+    let lower = t.to_lowercase();
+    if lower.starts_with("tee ") || lower.contains(" tee ") {
+        return true;
+    }
+    if lower.contains(" sed -i") || lower.starts_with("sed -i") {
+        return true;
+    }
+    let parts: Vec<&str> = lower.split_whitespace().collect();
+    if parts.is_empty() {
+        return false;
+    }
+    matches!(parts[0], "cp" | "mv" | "install" | "touch")
 }
 
 /// Block shell metacharacters that enable injection in elevated paths.
@@ -68,6 +93,7 @@ pub fn check_command_safety(command: &str) -> SafetyCheckResult {
     let mut requires_admin = false;
     let mut requires_hitl = false;
     let mut danger_reason = None;
+    let suggest_agent_fs = looks_like_file_write(command);
 
     let admin_commands = [
         "sudo", "pkexec", "apt-get", "dnf", "yum", "pacman", "brew-services", "launchctl",
@@ -126,6 +152,7 @@ pub fn check_command_safety(command: &str) -> SafetyCheckResult {
         requires_hitl_approval: requires_hitl,
         requires_admin,
         danger_reason,
+        suggest_agent_fs,
     }
 }
 
@@ -245,5 +272,13 @@ mod tests {
         assert!(elevation_command_rejected("echo $(whoami)").is_some());
         assert!(elevation_command_rejected("ls && rm -rf /").is_some());
         assert!(elevation_command_rejected("echo ok").is_none());
+    }
+
+    #[test]
+    fn detects_file_write_patterns() {
+        assert!(looks_like_file_write("echo hello > file.txt"));
+        assert!(looks_like_file_write("tee /tmp/out"));
+        assert!(looks_like_file_write("cp src dest"));
+        assert!(!looks_like_file_write("ls -la"));
     }
 }

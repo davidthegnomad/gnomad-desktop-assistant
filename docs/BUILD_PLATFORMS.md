@@ -23,6 +23,8 @@ Output: `src-tauri/target/release/bundle/macos/Gnomad.app`
 - **Windowed:** full menu bar (Gnomad, File, Edit, View, Window, Help), Gemini-style body without duplicate toolbar
 - Close button hides to menu bar; **Quit** from tray menu
 
+**Notarization (v1.0):** CI builds are unsigned for Gatekeeper until Apple Developer ID secrets are configured. See [MACOS_NOTARIZATION.md](MACOS_NOTARIZATION.md) and `npm run notarize:macos`.
+
 ## Cross-platform parity (macOS, Windows, Linux)
 
 The **same React UI** ships in every build: chat, attachments, API keys (keychain / Credential Manager / Secret Service), cursor bloom, knowledge base, settings, and window modes (tray panel, pop-out, windowed, fullscreen).
@@ -40,7 +42,7 @@ The **same React UI** ships in every build: chat, attachments, API keys (keychai
 
 **Optional Linux packages** for full context pills: `xdotool` (X11), `wl-paste` (Wayland) or `xclip`.
 
-CI (`.github/workflows/build.yml`) builds all three platforms on every push to `main` / `master`.
+CI (`.github/workflows/build.yml`) builds macOS, Linux x86_64, **Linux ARM64**, and Windows on every push to `main` / `master`.
 
 ### Cross-platform verification (features & UI tweaks)
 
@@ -75,7 +77,10 @@ npm run tauri:build:linux          # all three
 npm run tauri:build:linux:deb      # deb only
 npm run tauri:build:linux:rpm      # rpm only
 npm run tauri:build:linux:appimage # AppImage only
+npm run tauri:build:linux:arm64    # ARM64 deb + AppImage (native or cross)
 ```
+
+CI also builds **Linux ARM64** on `ubuntu-24.04-arm` (see `.github/workflows/build.yml`).
 
 - Same UI and features as macOS (Gemini layout, sidebar, composer, attachments, API keys)
 - Full **File / Edit / View / Window / Help** menus in the window menu bar

@@ -753,6 +753,13 @@ pub fn run_shell_command(
         hitl_approved,
     )?;
 
+    let sandboxed = settings_state
+        .inner
+        .lock()
+        .ok()
+        .map(|g| crate::agent_settings::should_sandbox_shell(&g))
+        .unwrap_or(false);
+
     ensure_session(&app, &state, settings_state, cwd)?;
     let timeout = Duration::from_millis(timeout_ms.unwrap_or(120_000).clamp(5_000, 600_000));
     let stall = Duration::from_millis(stall_ms.unwrap_or(DEFAULT_STALL_MS).clamp(5_000, 120_000));
@@ -833,6 +840,13 @@ pub fn run_shell_command(
         phase,
         Some(result.status_code),
         Some(result.message.clone()),
+    );
+
+    crate::agent_audit::log_shell_run(
+        app,
+        trimmed,
+        sandboxed,
+        matches!(result.state, ShellRunState::Completed),
     );
 
     Ok(result)

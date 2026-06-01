@@ -71,7 +71,7 @@ Stable `code` values are covered by `error::tests::payload_codes_are_stable`.
 
 ### P1 — Security / product
 
-1. **Wave B error migration** — `llm.rs`, `command_planner.rs`, `chat_history.rs` still return plain strings in some paths.
+1. **Wave B error migration** — ✓ Shipped on LLM, planner, and chat history paths.
 2. **Windows elevation** — Structured `elevation_unsupported`; user must use elevated terminal for admin ops.
 3. **Path Gate tokens** — ✓ Shipped — [`path_token.rs`](../src-tauri/src/path_token.rs); boolean IPC bypass rejected.
 
@@ -86,8 +86,8 @@ Stable `code` values are covered by `error::tests::payload_codes_are_stable`.
 ## Suggested next steps
 
 1. Generate updater signing keys per [UPDATER.md](UPDATER.md) and replace the placeholder `pubkey` in `tauri.conf.json`.
-2. Prefer `agent_fs` + Path Gate over elevated shell for file writes.
-3. Add integration test for cloud agent turn (mocked) if CI budget allows.
+2. End-to-end updater test once signing keys are configured.
+3. Snap / Flatpak manifests (community packaging).
 
 ---
 

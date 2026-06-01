@@ -310,7 +310,7 @@ ChatView / SettingsPanel ──invoke──► Tauri commands
 </ol>
 <hr>
 <h2 id="remaining-gaps-priority">Remaining gaps (priority)</h2><h3 id="p1-security-product">P1 — Security / product</h3><ol>
-<li><strong>Wave B error migration</strong> — <code>llm.rs</code>, <code>command_planner.rs</code>, <code>chat_history.rs</code> still return plain strings in some paths.</li>
+<li><strong>Wave B error migration</strong> — ✓ Shipped on LLM, planner, and chat history paths.</li>
 <li><strong>Windows elevation</strong> — Structured <code>elevation_unsupported</code>; user must use elevated terminal for admin ops.</li>
 <li><strong>Path Gate tokens</strong> — ✓ Shipped — <a href="../src-tauri/src/path_token.rs"><code>path_token.rs</code></a>; boolean IPC bypass rejected.</li>
 </ol>
@@ -322,8 +322,8 @@ ChatView / SettingsPanel ──invoke──► Tauri commands
 <hr>
 <h2 id="suggested-next-steps">Suggested next steps</h2><ol>
 <li>Generate updater signing keys per <a href="UPDATER.md">UPDATER.md</a> and replace the placeholder <code>pubkey</code> in <code>tauri.conf.json</code>.</li>
-<li>Prefer <code>agent_fs</code> + Path Gate over elevated shell for file writes.</li>
-<li>Add integration test for cloud agent turn (mocked) if CI budget allows.</li>
+<li>End-to-end updater test once signing keys are configured.</li>
+<li>Snap / Flatpak manifests (community packaging).</li>
 </ol>
 <hr>
 <h2 id="file-reference">File reference</h2><table>

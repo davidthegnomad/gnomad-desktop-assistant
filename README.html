@@ -227,7 +227,7 @@ body {
           <div class="brand"><span class="brand-icon">🍄</span><h1>Gnomad</h1></div>
           <p class="doc-path">README.md</p>
           <a href="#why-this-exists" class="toc-h2">Why this exists</a>
-<a href="#capabilities-v010-alpha-main" class="toc-h2">Capabilities (v0.1.0-alpha + main)</a>
+<a href="#capabilities-v020-beta1" class="toc-h2">Capabilities (v0.2.0-beta.1)</a>
 <a href="#platforms" class="toc-h2">Platforms</a>
 <a href="#quick-start" class="toc-h2">Quick start</a>
 <a href="#end-users" class="toc-h3">End users</a>
@@ -244,8 +244,8 @@ body {
         <h2>Gnomad Desktop Assistant</h2>
         <p class="formats">Also available: <a href="README.md">Markdown</a> · <a href="README.txt">Plain text</a></p>
       </header>
-      <h1 id="gnomad-desktop-assistant">Gnomad Desktop Assistant</h1><p><a href="https://davidthegnomad.github.io/gnomad-desktop-assistant/"><img src="https://img.shields.io/badge/status-alpha-f0b429" alt="Alpha"></a>
-<a href="https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha"><img src="https://img.shields.io/badge/version-0.1.0--alpha-7c6cf0" alt="Version"></a>
+      <h1 id="gnomad-desktop-assistant">Gnomad Desktop Assistant</h1><p><a href="https://davidthegnomad.github.io/gnomad-desktop-assistant/"><img src="https://img.shields.io/badge/status-beta-7c6cf0" alt="Beta"></a>
+<a href="https://github.com/davidthegnomad/gnomad-desktop-assistant/releases"><img src="https://img.shields.io/badge/version-0.2.0--beta.1-7c6cf0" alt="Version"></a>
 <a href="docs/BUILD_PLATFORMS.md"><img src="https://img.shields.io/badge/platforms-macOS%20%7C%20Windows%20%7C%20Linux-333" alt="Platforms"></a></p>
 <p><strong>Gnomad</strong> is a cross-platform desktop AI assistant that integrates with the operating system—system tray, global shortcut, live window and clipboard context—and executes <strong>real</strong> shell and filesystem work under explicit user approval, not simulated chat output.</p>
 <p>Built with ❤️ by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
@@ -254,7 +254,7 @@ body {
 <h2 id="why-this-exists">Why this exists</h2><p>Desktop knowledge work is fragmented: chat in a browser tab, terminal in another, files elsewhere. Gnomad unifies <strong>conversation</strong>, <strong>OS awareness</strong>, and <strong>action</strong> in a native shell that stays out of the way until invoked—then anchors next to the menu bar or tray with a focused, Gemini-inspired interface.</p>
 <p>The alpha demonstrates end-to-end delivery: multi-platform installers, CI/CD, credential hygiene, agent tooling with human-in-the-loop gates, and documentation suitable for technical review.</p>
 <hr>
-<h2 id="capabilities-v010-alpha-main">Capabilities (v0.1.0-alpha + main)</h2><table>
+<h2 id="capabilities-v020-beta1">Capabilities (v0.2.0-beta.1)</h2><table>
 <thead>
 <tr>
 <th>Area</th>
@@ -267,7 +267,7 @@ body {
 </tr>
 <tr>
 <td><strong>Intelligence</strong></td>
-<td>DeepSeek (cloud), Ollama (local), optional in-process <strong>GGUF</strong> (<code>embedded-llm</code> build)</td>
+<td>DeepSeek (cloud default), <strong>OpenAI-compatible</strong> endpoints, Ollama (local), optional in-process <strong>GGUF</strong></td>
 </tr>
 <tr>
 <td><strong>Agent</strong></td>
@@ -287,7 +287,11 @@ body {
 </tr>
 <tr>
 <td><strong>Memory</strong></td>
-<td>Chat history on disk; knowledge library (skills, agents, uploads)</td>
+<td>Chat history on disk; knowledge library (skills, agents, uploads); <strong>starter skill packs</strong></td>
+</tr>
+<tr>
+<td><strong>Voice</strong></td>
+<td>Opt-in push-to-talk dictation (Web Speech API)</td>
 </tr>
 <tr>
 <td><strong>Updates</strong></td>
@@ -295,7 +299,11 @@ body {
 </tr>
 <tr>
 <td><strong>Platform</strong></td>
-<td>macOS (primary), Windows, Linux (<code>.deb</code>, <code>.rpm</code>, AppImage); Wayland tray improvements</td>
+<td>macOS (primary), Windows, Linux (<code>.deb</code>, <code>.rpm</code>, AppImage; <strong>ARM64</strong> in CI); optional Flatpak/Snap</td>
+</tr>
+<tr>
+<td><strong>Accessibility</strong></td>
+<td>Keyboard shortcuts, focus traps, skip link — <a href="docs/ACCESSIBILITY.md"><code>docs/ACCESSIBILITY.md</code></a></td>
 </tr>
 </tbody></table>
 <hr>
@@ -311,26 +319,26 @@ body {
 <tbody><tr>
 <td><strong>macOS</strong></td>
 <td>Primary</td>
-<td><a href="https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha">.dmg</a></td>
-<td>Menu-bar accessory; overlay title bar</td>
+<td><a href="https://github.com/davidthegnomad/gnomad-desktop-assistant/releases">Releases</a></td>
+<td>Menu-bar accessory; notarization guide for enterprise</td>
 </tr>
 <tr>
 <td><strong>Windows</strong></td>
 <td>Supported</td>
-<td><a href="https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha">.msi</a></td>
+<td><a href="https://github.com/davidthegnomad/gnomad-desktop-assistant/releases">Releases</a></td>
 <td>System tray; <code>Ctrl+Shift+Space</code></td>
 </tr>
 <tr>
 <td><strong>Linux</strong></td>
 <td>Supported</td>
-<td><a href="https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha">.deb · .rpm · AppImage</a></td>
+<td><a href="https://github.com/davidthegnomad/gnomad-desktop-assistant/releases">Releases</a> (<code>.deb</code>, <code>.rpm</code>, AppImage, ARM64)</td>
 <td>See <a href="docs/LINUX_PACKAGES.md">Linux packages</a></td>
 </tr>
 </tbody></table>
 <p>Per-OS build instructions: <a href="docs/BUILD_PLATFORMS.md"><code>docs/BUILD_PLATFORMS.md</code></a><br><strong>Adding features or UI?</strong> Use the <a href="docs/CROSS_PLATFORM_CHECKLIST.md"><code>docs/CROSS_PLATFORM_CHECKLIST.md</code></a> so changes are verified on macOS, Windows, and Linux.</p>
 <hr>
 <h2 id="quick-start">Quick start</h2><h3 id="end-users">End users</h3><ol>
-<li>Download the installer for your OS from <a href="https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha">Releases</a> or the <a href="https://davidthegnomad.github.io/gnomad-desktop-assistant/">project site</a>.</li>
+<li>Download the installer for your OS from <a href="https://github.com/davidthegnomad/gnomad-desktop-assistant/releases">Releases</a> or the <a href="https://davidthegnomad.github.io/gnomad-desktop-assistant/">project site</a>.</li>
 <li>Launch Gnomad; complete the setup wizard (cloud API key <strong>or</strong> local Ollama URL).</li>
 <li>Press <strong>⌘⇧Space</strong> (macOS) or <strong>Ctrl+Shift+Space</strong> (Windows/Linux) to show the assistant.</li>
 <li>Read the full manual: <a href="docs/USER_GUIDE.html"><code>docs/USER_GUIDE.html</code></a> (recommended) or <a href="docs/USER_GUIDE.txt"><code>docs/USER_GUIDE.txt</code></a>.</li>
@@ -432,6 +440,18 @@ npm run tauri:build:win     # Windows (on Windows host)
 <td><a href="docs/UPDATER.txt">docs/UPDATER.txt</a></td>
 </tr>
 <tr>
+<td>Release runbook</td>
+<td><a href="docs/RELEASE_RUNBOOK.md">docs/RELEASE_RUNBOOK.md</a></td>
+<td><a href="docs/RELEASE_RUNBOOK.html">docs/RELEASE_RUNBOOK.html</a></td>
+<td><a href="docs/RELEASE_RUNBOOK.txt">docs/RELEASE_RUNBOOK.txt</a></td>
+</tr>
+<tr>
+<td>Troubleshooting</td>
+<td><a href="docs/TROUBLESHOOTING.md">docs/TROUBLESHOOTING.md</a></td>
+<td><a href="docs/TROUBLESHOOTING.html">docs/TROUBLESHOOTING.html</a></td>
+<td><a href="docs/TROUBLESHOOTING.txt">docs/TROUBLESHOOTING.txt</a></td>
+</tr>
+<tr>
 <td>Privacy</td>
 <td><a href="docs/PRIVACY.md">docs/PRIVACY.md</a></td>
 <td><a href="docs/PRIVACY.html">docs/PRIVACY.html</a></td>
@@ -478,7 +498,10 @@ npm run tauri:build:win     # Windows (on Windows host)
 </ul>
 <p>Alpha software: review <a href="CHANGELOG.md"><code>CHANGELOG.md</code></a> for known limitations before production use.</p>
 <hr>
-<h2 id="ci-releases">CI / releases</h2><p>GitHub Actions builds <strong>macOS</strong>, <strong>Linux</strong>, and <strong>Windows</strong> on every push to <code>main</code> / <code>master</code>. Tagged <code>v*</code> releases attach installers to <a href="https://github.com/davidthegnomad/gnomad-desktop-assistant/releases">GitHub Releases</a>.</p>
+<h2 id="ci-releases">CI / releases</h2><p>GitHub Actions builds <strong>macOS</strong>, <strong>Linux x86_64</strong>, <strong>Linux ARM64</strong>, and <strong>Windows</strong> on every push to <code>main</code> / <code>master</code>. Tagged <code>v*</code> releases attach installers to <a href="https://github.com/davidthegnomad/gnomad-desktop-assistant/releases">GitHub Releases</a>.</p>
+<p>Optional <strong>Flatpak</strong> / <strong>Snap</strong> builds: <code>npm run pack:flatpak</code>, <code>npm run pack:snap</code>, or the <strong>Packaging</strong> GitHub workflow. See <a href="docs/FLATPAK.md"><code>docs/FLATPAK.md</code></a> and <a href="docs/SNAP.md"><code>docs/SNAP.md</code></a>.</p>
+<p>Updater signing: <code>npm run setup:updater-keys</code> · verify with <code>npm run verify:updater</code> — see <a href="docs/UPDATER.md"><code>docs/UPDATER.md</code></a> and <a href="docs/RELEASE_RUNBOOK.md"><code>docs/RELEASE_RUNBOOK.md</code></a>.</p>
+<p>Optional embedded GGUF: <code>npm run download:gguf</code> — see <a href="docs/GGUF_SETUP.md"><code>docs/GGUF_SETUP.md</code></a>.</p>
 <hr>
 <h2 id="license">License</h2><p>Private project — see repository settings. Contact <a href="https://gnomadstudio.org">Gnomad Studio</a> for licensing inquiries.</p>
 <hr>

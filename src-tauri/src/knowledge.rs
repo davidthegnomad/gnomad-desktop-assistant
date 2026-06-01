@@ -304,6 +304,144 @@ pub fn get_agent_context_bundle(app: tauri::AppHandle) -> Result<String, String>
     Ok(out)
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SkillPackInfo {
+    pub id: String,
+    pub name: String,
+    pub description: String,
+    pub skill_count: u32,
+}
+
+#[derive(Debug, Deserialize)]
+struct SkillPackManifest {
+    id: String,
+    name: String,
+    description: String,
+}
+
+fn skill_packs_root(app: &tauri::AppHandle) -> Option<PathBuf> {
+    if let Ok(p) = app.path().resolve("skill-packs", tauri::path::BaseDirectory::Resource) {
+        if p.is_dir() {
+            return Some(p);
+        }
+    }
+    let dev = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("resources")
+        .join("skill-packs");
+    if dev.is_dir() {
+        return Some(dev);
+    }
+    None
+}
+
+fn resolve_pack_dir(app: &tauri::AppHandle, pack_id: &str) -> Result<PathBuf, String> {
+    if pack_id.is_empty()
+        || pack_id.contains("..")
+        || pack_id.contains('/')
+        || pack_id.contains('\\')
+    {
+        return Err("Invalid skill pack id.".into());
+    }
+    let root = skill_packs_root(app).ok_or_else(|| "Skill packs not bundled.".to_string())?;
+    let dir = root.join(pack_id);
+    if dir.is_dir() {
+        Ok(dir)
+    } else {
+        Err(format!("Skill pack not found: {pack_id}"))
+    }
+}
+
+fn read_pack_manifest(pack_dir: &Path) -> Result<SkillPackManifest, String> {
+    let path = pack_dir.join("pack.json");
+    let raw = fs::read_to_string(&path).map_err(|e| format!("pack.json: {e}"))?;
+    serde_json::from_str(&raw).map_err(|e| format!("Invalid pack.json: {e}"))
+}
+
+#[tauri::command]
+pub fn list_skill_packs(app: tauri::AppHandle) -> Result<Vec<SkillPackInfo>, String> {
+    let root = skill_packs_root(&app).ok_or_else(|| "Skill packs not bundled.".to_string())?;
+    let mut packs = Vec::new();
+    for entry in fs::read_dir(&root).map_err(|e| e.to_string())? {
+        let entry = entry.map_err(|e| e.to_string())?;
+        if !entry.file_type().map_err(|e| e.to_string())?.is_dir() {
+            continue;
+        }
+        let pack_dir = entry.path();
+        let manifest = match read_pack_manifest(&pack_dir) {
+            Ok(m) => m,
+            Err(_) => continue,
+        };
+        let skill_count = fs::read_dir(&pack_dir)
+            .map(|rd| {
+                rd.filter_map(|e| e.ok())
+                    .filter(|e| {
+                        e.path()
+                            .extension()
+                            .and_then(|x| x.to_str())
+                            .map(|x| x.eq_ignore_ascii_case("md"))
+                            .unwrap_or(false)
+                    })
+                    .count() as u32
+            })
+            .unwrap_or(0);
+        packs.push(SkillPackInfo {
+            id: manifest.id,
+            name: manifest.name,
+            description: manifest.description,
+            skill_count,
+        });
+    }
+    packs.sort_by(|a, b| a.name.cmp(&b.name));
+    Ok(packs)
+}
+
+#[tauri::command]
+pub fn install_skill_pack(
+    app: tauri::AppHandle,
+    pack_id: String,
+) -> Result<Vec<KnowledgeFileEntry>, String> {
+    let pack_dir = resolve_pack_dir(&app, &pack_id)?;
+    let manifest = read_pack_manifest(&pack_dir)?;
+    let root = init_knowledge_store(&app)?;
+    let dest_dir = root.join("skills");
+    fs::create_dir_all(&dest_dir).map_err(|e| e.to_string())?;
+
+    let mut manifest_store = load_manifest(&root)?;
+    let mut imported = Vec::new();
+
+    for entry in fs::read_dir(&pack_dir).map_err(|e| e.to_string())? {
+        let entry = entry.map_err(|e| e.to_string())?;
+        let path = entry.path();
+        if !path.is_file() {
+            continue;
+        }
+        if path.extension().and_then(|e| e.to_str()) != Some("md") {
+            continue;
+        }
+        let file_name = path
+            .file_name()
+            .and_then(|n| n.to_str())
+            .map(sanitize_filename)
+            .unwrap_or_else(|| "skill.md".into());
+        let dest = dest_dir.join(&file_name);
+        fs::copy(&path, &dest).map_err(|e| e.to_string())?;
+        let file_entry = register_file(&mut manifest_store, "skills", &dest);
+        imported.push(file_entry);
+    }
+
+    save_manifest(&root, &manifest_store)?;
+    touch_index(
+        &root,
+        &format!(
+            "Installed skill pack `{}` ({} skills)",
+            manifest.name,
+            imported.len()
+        ),
+    )?;
+    Ok(imported)
+}
+
 fn now_iso() -> String {
     let secs = SystemTime::now()
         .duration_since(UNIX_EPOCH)

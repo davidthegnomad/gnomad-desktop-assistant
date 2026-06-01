@@ -6,6 +6,8 @@ import {
 } from "lucide-react";
 import { ApiKeysSettings } from "./ApiKeysSettings";
 import { AgentAccessSettings } from "./AgentAccessSettings";
+import { CloudApiSettings } from "./CloudApiSettings";
+import { PrivacySettings } from "./PrivacySettings";
 import { UpdateSettings } from "./UpdateSettings";
 import { StudioLink } from "./StudioLink";
 import { APP_NAME, MUSHROOM, VERSION } from "../lib/brand";
@@ -101,22 +103,31 @@ export function SettingsPanel({
             <>
               <div className="settings-row">
                 <span className="settings-label">Model</span>
-                <select
-                  className="settings-select"
-                  value={headerModelValue}
-                  onChange={(e) => onModelChange(e.target.value)}
-                  disabled={cloudModelOptions.length === 0}
-                >
-                  {cloudModelOptions.length > 0 ? (
-                    cloudModelOptions.map((m) => (
-                      <option key={m.value} value={m.value}>
-                        {m.label}
-                      </option>
-                    ))
-                  ) : (
-                    <option value="">Add a DeepSeek API key (API keys section)</option>
-                  )}
-                </select>
+                {llmAvailability.cloudUsesCustomEndpoint ? (
+                  <input
+                    className="settings-input"
+                    value={headerModelValue}
+                    onChange={(e) => onModelChange(e.target.value)}
+                    placeholder="gpt-4o-mini"
+                  />
+                ) : (
+                  <select
+                    className="settings-select"
+                    value={headerModelValue}
+                    onChange={(e) => onModelChange(e.target.value)}
+                    disabled={cloudModelOptions.length === 0}
+                  >
+                    {cloudModelOptions.length > 0 ? (
+                      cloudModelOptions.map((m) => (
+                        <option key={m.value} value={m.value}>
+                          {m.label}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="">Add a cloud API key (API keys section)</option>
+                    )}
+                  </select>
+                )}
               </div>
               <button type="button" className="btn secondary" onClick={onRerunOnboarding}>
                 Re-run setup wizard
@@ -145,8 +156,10 @@ export function SettingsPanel({
         </div>
 
         <ApiKeysSettings onKeysChanged={onKeysChanged} />
+        <CloudApiSettings onChanged={onKeysChanged} />
         <AgentAccessSettings onSettingsChanged={onAgentSettingsChanged} />
         <UpdateSettings />
+        <PrivacySettings />
 
         <div className="settings-section">
           <h4 className="section-title">

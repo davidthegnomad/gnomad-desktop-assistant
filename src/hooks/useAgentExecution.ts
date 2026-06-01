@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import type { AgentSettings } from "../lib/agentSettings";
 import { tryPlanInvalidCommand } from "../lib/commandPlanner";
-import { executionFailedLabel, parseInvokeError } from "../lib/errors";
+import { executionFailedLabel, maybeLogAgentError, parseInvokeError } from "../lib/errors";
 import { issueHitlApprovalToken, type HitlScope } from "../lib/hitlToken";
 import { issuePathGateToken, type PathScope } from "../lib/pathToken";
 import { isValidShellCommand } from "../lib/agentShell";
@@ -20,6 +20,7 @@ export function useAgentExecution(options: {
   const [sudoGateOpen, setSudoGateOpen] = useState(false);
   const [sudoGateCommand, setSudoGateCommand] = useState("");
   const [sudoGateReason, setSudoGateReason] = useState("");
+  const [sudoGateHint, setSudoGateHint] = useState<string | null>(null);
   const [pathGateOpen, setPathGateOpen] = useState(false);
   const [pathGateTarget, setPathGateTarget] = useState("");
   const [pathGateReason, setPathGateReason] = useState("");
@@ -77,6 +78,7 @@ export function useAgentExecution(options: {
       };
       setSudoGateCommand(command);
       setSudoGateReason(reason);
+      setSudoGateHint(null);
       setSudoGateOpen(true);
     });
   }, [mintApprovalToken]);
@@ -98,6 +100,11 @@ export function useAgentExecution(options: {
       if (safety.requires_hitl_approval) {
         setSudoGateCommand(command);
         setSudoGateReason(safety.danger_reason || "Safety review requested.");
+        setSudoGateHint(
+          safety.suggest_agent_fs
+            ? "This looks like a file write. Prefer the agent fs_write tool (with Path Gate) instead of shell redirects."
+            : null
+        );
         setSudoGateOpen(true);
 
         return new Promise<{
@@ -241,6 +248,7 @@ export function useAgentExecution(options: {
             },
           ];
         } catch (err: unknown) {
+          void maybeLogAgentError(err, "shell");
           next = [
             ...next,
             {
@@ -263,6 +271,7 @@ export function useAgentExecution(options: {
     sudoGateOpen,
     sudoGateCommand,
     sudoGateReason,
+    sudoGateHint,
     pathGateOpen,
     pathGateTarget,
     pathGateReason,

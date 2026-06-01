@@ -200,7 +200,7 @@ Design (platform-specific)
   OS       |  Mechanism                                      |  Notes                                                                                                                                
   macOS    |  sandbox-exec with dynamic profile per session  |  Profile allows: workspace R/W, temp dir, deny network optional, deny ~/.ssh etc. Fragile across macOS versions — needs version matrix
   Linux    |  bubblewrap / user namespaces                   |  Mount minimal FS; require optional dep (LINUX_PACKAGES.md)                                                                           
-  Windows  |  AppContainer or restricted token               |  Hardest parity; may ship “YOLO FS only, shell Standard” on Windows v1                                                                
+  Windows  |  Workspace-scoped init (yolo-shell-init.cmd)    |  TEMP + cwd scoped to workspace; network not blocked — full AppContainer deferred                                                     
 
 Principle: Sandbox wraps shell execution path only; agent_fs already path-gated — optionally route YOLO shell through bwrap helper binary shipped with app.
 

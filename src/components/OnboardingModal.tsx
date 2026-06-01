@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import { getEnvLlmConfig } from "../lib/envConfig";
 import { Lock } from "lucide-react";
 import { GnomadLogo } from "./GnomadLogo";
@@ -6,6 +6,7 @@ import { APP_NAME, MUSHROOM } from "../lib/brand";
 import type { ProviderMode } from "../lib/preferences";
 import { DEEPSEEK_MODELS, normalizeCloudModel } from "../lib/models";
 import { storeApiKey, DEEPSEEK_API_KEY_SLOT } from "../lib/apiKeys";
+import { useFocusTrap } from "../hooks/useFocusTrap";
 import {
   saveCredential,
   setOnboardingComplete,
@@ -24,6 +25,9 @@ interface OnboardingModalProps {
 }
 
 export function OnboardingModal({ onComplete }: OnboardingModalProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef, true);
+
   const [step, setStep] = useState<1 | 2>(1);
   const [provider, setProvider] = useState<ProviderMode>("cloud");
   const [apiKeyDraft, setApiKeyDraft] = useState("");
@@ -46,7 +50,7 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
   const finish = async () => {
     setError("");
     if (provider === "cloud" && !apiKeyDraft.trim() && !envKeyConfigured) {
-      setError("Enter your API key or add DeepSeek_API_KEY to .env");
+      setError("Enter your API key or add OPENAI_API_KEY / DeepSeek_API_KEY to .env");
       return;
     }
     if (provider === "local" && !ollamaUrl.trim()) {
@@ -81,30 +85,40 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
   };
 
   return (
-    <div className="modal-overlay onboarding-overlay">
-      <div className="onboarding-card">
+    <div className="modal-overlay onboarding-overlay" role="presentation">
+      <div
+        ref={dialogRef}
+        className="onboarding-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="onboarding-title"
+      >
         <div className="onboarding-spark">
           <GnomadLogo size="lg" />
         </div>
-        <h2 className="onboarding-title">Welcome to {APP_NAME}</h2>
+        <h2 id="onboarding-title" className="onboarding-title">
+          Welcome to {APP_NAME}
+        </h2>
         <p className="onboarding-subtitle">
-          Connect a cloud API or a local model to get started. You can change this anytime in settings.
+          Connect a cloud API (DeepSeek, OpenAI-compatible) or a local Ollama model. Change anytime in Settings.
         </p>
 
         {step === 1 && (
-          <div className="provider-cards">
+          <div className="provider-cards" role="group" aria-label="Choose provider">
             <button
               type="button"
               className={`provider-card ${provider === "cloud" ? "selected" : ""}`}
+              aria-pressed={provider === "cloud"}
               onClick={() => setProvider("cloud")}
             >
               <span className="provider-card-emoji" aria-hidden>{MUSHROOM}</span>
               <span className="provider-card-title">Cloud API</span>
-              <span className="provider-card-desc">DeepSeek cloud models</span>
+              <span className="provider-card-desc">OpenAI-compatible endpoints</span>
             </button>
             <button
               type="button"
               className={`provider-card ${provider === "local" ? "selected" : ""}`}
+              aria-pressed={provider === "local"}
               onClick={() => setProvider("local")}
             >
               <span className="provider-card-emoji" aria-hidden>🖥️</span>
@@ -120,9 +134,7 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
               <>
                 <p className="onboarding-hint api-key-env-note">
                   <Lock size={14} aria-hidden />
-                  DeepSeek API key is already configured via{" "}
-                  <code>DeepSeek_API_KEY</code> in your project <code>.env</code>.
-                  The value is not shown here.
+                  Cloud API key is configured via <code>.env</code>. The value is not shown here.
                 </p>
               </>
             ) : (
@@ -136,18 +148,21 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
                   className="settings-input"
                   value={apiKeyDraft}
                   onChange={(e) => setApiKeyDraft(e.target.value)}
-                  placeholder="Paste your DeepSeek API key"
+                  placeholder="Paste your cloud API key"
                   autoComplete="off"
                   autoFocus
                   spellCheck={false}
                 />
                 <p className="onboarding-hint">
-                  Saved to your system keychain. You can add or replace keys later in Settings → API keys.
+                  Saved to your system keychain. Add or replace keys in Settings → API keys; endpoint in Cloud API.
                 </p>
               </>
             )}
-            <label className="settings-label">Default model</label>
+            <label className="settings-label" htmlFor="onboarding-cloud-model">
+              Default model
+            </label>
             <select
+              id="onboarding-cloud-model"
               className="settings-select"
               value={cloudModel}
               onChange={(e) => setCloudModel(e.target.value)}
@@ -163,26 +178,38 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
 
         {step === 2 && provider === "local" && (
           <div className="onboarding-form">
-            <label className="settings-label">Ollama server URL</label>
+            <label className="settings-label" htmlFor="onboarding-ollama-url">
+              Ollama server URL
+            </label>
             <input
+              id="onboarding-ollama-url"
               className="settings-input"
               value={ollamaUrl}
               onChange={(e) => setOllamaUrl(e.target.value)}
               placeholder="http://localhost:11434"
               autoFocus
             />
-            <label className="settings-label">Model name</label>
+            <label className="settings-label" htmlFor="onboarding-local-model">
+              Model name
+            </label>
             <input
+              id="onboarding-local-model"
               className="settings-input"
               value={localModel}
               onChange={(e) => setLocalModel(e.target.value)}
               placeholder="llama3.2"
             />
-            <p className="onboarding-hint">Run <code>ollama pull {localModel || "llama3.2"}</code> if the model is not installed yet.</p>
+            <p className="onboarding-hint">
+              Run <code>ollama pull {localModel || "llama3.2"}</code> if the model is not installed yet.
+            </p>
           </div>
         )}
 
-        {error && <p className="onboarding-error">{error}</p>}
+        {error && (
+          <p className="onboarding-error" role="alert">
+            {error}
+          </p>
+        )}
 
         <div className="onboarding-actions">
           {step === 2 && (
@@ -195,7 +222,7 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
               Continue
             </button>
           ) : (
-            <button type="button" className="btn primary" onClick={finish} disabled={saving}>
+            <button type="button" className="btn primary" onClick={() => void finish()} disabled={saving}>
               {saving ? "Saving…" : "Get started"}
             </button>
           )}

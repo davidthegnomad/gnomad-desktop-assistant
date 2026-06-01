@@ -1,0 +1,82 @@
+# Optional Linux packaging (Flatpak / Snap) — manual workflow
+name: Packaging
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Packaging target
+        required: true
+        type: choice
+        options:
+          - flatpak
+          - snap
+
+jobs:
+  package:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install frontend deps
+        run: npm ci
+
+      - name: Install Linux system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev \
+            librsvg2-dev patchelf rpm
+
+      - name: Build Tauri .deb (for snap)
+        if: inputs.target == 'snap'
+        run: npm run tauri:build:linux:deb
+
+      - name: Install snapcraft
+        if: inputs.target == 'snap'
+        run: sudo snap install snapcraft --classic
+
+      - name: Build snap
+        if: inputs.target == 'snap'
+        run: bash packaging/snap/build.sh
+
+      - name: Upload snap artifact
+        if: inputs.target == 'snap'
+        uses: actions/upload-artifact@v4
+        with:
+          name: gnomad-snap
+          path: packaging/snap/gnomad.snap
+          if-no-files-found: error
+
+      - name: Install Flatpak tooling
+        if: inputs.target == 'flatpak'
+        run: |
+          sudo apt-get install -y flatpak flatpak-builder
+          flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+          flatpak install -y flathub org.freedesktop.Platform//23.08 org.freedesktop.Sdk//23.08 \
+            org.freedesktop.Sdk.Extension.node20//23.08 org.freedesktop.Sdk.Extension.rust-stable//23.08
+
+      - name: Build Flatpak
+        if: inputs.target == 'flatpak'
+        run: bash packaging/flatpak/build.sh
+
+      - name: Export Flatpak bundle
+        if: inputs.target == 'flatpak'
+        run: flatpak build-bundle packaging/flatpak/repo gnomad.flatpak com.gnomadstudio.Gnomad
+
+      - name: Upload Flatpak artifact
+        if: inputs.target == 'flatpak'
+        uses: actions/upload-artifact@v4
+        with:
+          name: gnomad-flatpak
+          path: gnomad.flatpak
+          if-no-files-found: error

@@ -228,6 +228,8 @@ body {
           <p class="doc-path">CHANGELOG.md</p>
           <a href="#unreleased-main-branch" class="toc-h2">[Unreleased] — main branch</a>
 <a href="#added" class="toc-h3">Added</a>
+<a href="#020-beta1-2026-05-31" class="toc-h2">[0.2.0-beta.1] — 2026-05-31</a>
+<a href="#added" class="toc-h3">Added</a>
 <a href="#changed" class="toc-h3">Changed</a>
 <a href="#known-limitations" class="toc-h3">Known limitations</a>
 <a href="#010-alpha-2026-05-31" class="toc-h2">[0.1.0-alpha] — 2026-05-31</a>
@@ -239,30 +241,50 @@ body {
         <h2>Changelog</h2>
         <p class="formats">Also available: <a href="CHANGELOG.md">Markdown</a> · <a href="CHANGELOG.txt">Plain text</a></p>
       </header>
-      <h1 id="changelog">Changelog</h1><h2 id="unreleased-main-branch">[Unreleased] — main branch</h2><p>Post–v0.1.0-alpha hardening: Wave B systems, v0.2 beta readiness, and documentation refresh.</p>
+      <h1 id="changelog">Changelog</h1><h2 id="unreleased-main-branch">[Unreleased] — main branch</h2><h3 id="added">Added</h3><p>(nothing yet)</p>
+<hr>
+<h2 id="020-beta1-2026-05-31">[0.2.0-beta.1] — 2026-05-31</h2><p>Beta readiness release: v0.2 hardening, v0.3 reach features, documentation portfolio, and GitHub Pages auto-deploy.</p>
 <h3 id="added">Added</h3><ul>
-<li><strong>Wave B1 — Cryptographic HITL tokens</strong> (<code>hitl_token.rs</code>): signed approval for risky shell; rejects bare <code>hitl_approved: true</code></li>
-<li><strong>Wave B2 — In-process GGUF</strong> (<code>local_inference.rs</code>, optional <code>embedded-llm</code> feature): command planner + optional local chat without Ollama</li>
-<li><strong>Wave B3 — xterm.js terminal</strong> (<code>LiveTerminal.tsx</code>): live PTY stream while thinking; replay on command cards</li>
-<li><strong>Wave B4 — YOLO micro-sandbox</strong> (<code>shell_sandbox.rs</code>): macOS <code>sandbox-exec</code> / Linux <code>bwrap</code> when YOLO + experimental flag</li>
-<li><strong>Path Gate tokens</strong> (<code>path_token.rs</code>): signed approval for out-of-workspace filesystem access</li>
-<li><strong>Structured errors</strong> (<code>error.rs</code>): JSON <code>GnomadError</code> payloads on LLM, planner, chat history, and agent paths</li>
-<li><strong>Tauri auto-updater</strong> (Settings → Updates): stable/beta channels; see <a href="docs/UPDATER.md"><code>docs/UPDATER.md</code></a></li>
-<li><strong>Linux Wayland tray</strong> improvements: left-click menu on Wayland; session hint in Settings</li>
-<li><strong>Vitest</strong> (<code>npm run test</code>): unit tests for <code>parseInvokeError</code>; runs in CI</li>
-<li><strong>App decomposition</strong>: hooks (<code>useAgentExecution</code>, <code>useChatSubmit</code>, …), <code>ChatView</code>, gate modals</li>
-<li>Docs: <a href="docs/WAVE_B_ROADMAP.md"><code>WAVE_B_ROADMAP.md</code></a>, <a href="docs/UPDATER.md"><code>UPDATER.md</code></a>, expanded <a href="docs/DOCS_INDEX.md"><code>DOCS_INDEX.md</code></a></li>
+<li><strong>Voice input (beta)</strong> — opt-in push-to-talk via Web Speech API; Settings → Privacy</li>
+<li><strong>Security review checklist</strong> — <a href="docs/SECURITY_REVIEW.md">SECURITY_REVIEW.md</a></li>
+<li><strong>Accessibility statement</strong> — <a href="docs/ACCESSIBILITY_STATEMENT.md">ACCESSIBILITY_STATEMENT.md</a></li>
+<li><strong>GitHub Pages workflow</strong> — auto-publish docs on push to <code>main</code></li>
+<li><strong>Onboarding a11y</strong> — focus trap, <code>role=&quot;dialog&quot;</code>, OpenAI-compatible copy</li>
+<li><strong>Enterprise deployment guide</strong> — <a href="docs/ENTERPRISE.md">ENTERPRISE.md</a></li>
+<li><strong>CONTRIBUTING.md</strong> — dev setup and PR checklist</li>
+<li><strong>GGUF download helper</strong> — <code>npm run download:gguf</code> + <a href="docs/GGUF_SETUP.md">GGUF_SETUP.md</a></li>
+<li><strong>Updater verify script</strong> — <code>npm run verify:updater</code> detects placeholder pubkey</li>
+<li><strong>Skip link (windowed mode)</strong> — jump to main chat content</li>
+<li><strong>Terminal aria-live</strong> — debounced screen reader summaries for xterm output</li>
+<li><strong>macOS notarization guide</strong> — <a href="docs/MACOS_NOTARIZATION.md">MACOS_NOTARIZATION.md</a> + <code>npm run notarize:macos</code></li>
+<li><strong>Test strategy</strong> — <a href="docs/TEST_STRATEGY.md">TEST_STRATEGY.md</a></li>
+<li><strong>P0 shell IPC hardening</strong> — removed legacy <code>execute_shell_command</code>; all shell via <code>shell_session_run</code> + HITL</li>
+<li><strong>Keyboard accessibility</strong> — global shortcuts (⌘K composer, ⌘, settings, ⌘N new chat, Escape); focus traps on gate modals; <code>:focus-visible</code> styles — <a href="docs/ACCESSIBILITY.md">ACCESSIBILITY.md</a></li>
+<li><strong>Starter skill packs</strong> — bundled <code>starter</code> pack (4 skills); <code>list_skill_packs</code> / <code>install_skill_pack</code>; Knowledge UI</li>
+<li><strong>OpenAI-compatible cloud router</strong> — Settings → Cloud API endpoint; env <code>OPENAI_API_KEY</code> / <code>CLOUD_API_BASE_URL</code></li>
+<li><strong>Windows YOLO sandbox (workspace-scoped)</strong> — TEMP + cwd limited to workspace</li>
+<li><strong>Flatpak / Snap packaging</strong> — manifests + build scripts + CI workflow</li>
+<li><strong>Updater key script</strong> — <code>npm run setup:updater-keys</code></li>
+<li><strong>RELEASE_RUNBOOK.md</strong>, <strong>TROUBLESHOOTING.md</strong></li>
+<li><strong>Agent loop integration tests</strong> — Vitest mocks cloud turn + <code>shell_run</code> round trip</li>
+<li><strong>Shell audit metadata</strong> — <code>sandboxed</code> and <code>success</code> on shell runs</li>
+<li><strong>File-write safety hint</strong> — Sudo Gate suggests <code>fs_write</code></li>
+<li><strong>Local error log (opt-in)</strong> — Settings → Diagnostics</li>
+<li><strong>Startup update check (opt-in)</strong> — Settings → Updates</li>
+<li><strong>Wave B</strong> — HITL tokens, GGUF, xterm PTY, YOLO sandbox, Path Gate tokens, structured errors, auto-updater, Wayland tray, Vitest</li>
 </ul>
 <h3 id="changed">Changed</h3><ul>
+<li>Version <strong>0.2.0-beta.1</strong> across <code>package.json</code>, Tauri config, and UI</li>
 <li><code>App.tsx</code> slimmed; agent orchestration moved to hooks</li>
-<li>Local provider availability includes embedded GGUF when built with <code>embedded-llm</code></li>
-<li>Release workflow uploads <code>latest.json</code> for in-app updates (requires signing keys in CI)</li>
+<li>Release workflow: optional macOS notarization when Apple secrets set</li>
+<li>Docs site regenerated (33+ documents, HTML + TXT)</li>
 </ul>
 <h3 id="known-limitations">Known limitations</h3><ul>
-<li>Updater requires generated minisign keys (placeholder pubkey in <code>tauri.conf.json</code> until replaced)</li>
-<li>Embedded GGUF not in default CI builds (<code>--features embedded-llm</code> for local dev)</li>
-<li>Windows sandbox not implemented (YOLO FS only on Windows)</li>
-<li>Bundled GGUF model not shipped (user supplies <code>.gguf</code> path)</li>
+<li>Updater requires generated minisign keys (placeholder pubkey until replaced)</li>
+<li>Embedded GGUF not in default CI builds</li>
+<li>Windows sandbox is workspace-scoped only</li>
+<li>External pen test and full WCAG audit pending v1.0 GA</li>
+<li>Team workspace sync deferred post–v1.0</li>
 </ul>
 <hr>
 <h2 id="010-alpha-2026-05-31">[0.1.0-alpha] — 2026-05-31</h2><p>First public alpha.</p>

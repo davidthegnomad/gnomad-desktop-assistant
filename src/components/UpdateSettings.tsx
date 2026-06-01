@@ -2,13 +2,16 @@ import { useCallback, useState } from "react";
 import { Download } from "lucide-react";
 import { checkForUpdates, installUpdate, type UpdateCheckResult } from "../lib/updater";
 import {
+  getStoredAutoCheckUpdates,
   getStoredUpdateChannel,
+  setStoredAutoCheckUpdates,
   setStoredUpdateChannel,
   type UpdateChannel,
 } from "../lib/preferences";
 
 export function UpdateSettings() {
   const [channel, setChannel] = useState<UpdateChannel>(getStoredUpdateChannel());
+  const [autoCheck, setAutoCheck] = useState(getStoredAutoCheckUpdates());
   const [status, setStatus] = useState<string | null>(null);
   const [result, setResult] = useState<UpdateCheckResult | null>(null);
   const [busy, setBusy] = useState(false);
@@ -18,6 +21,11 @@ export function UpdateSettings() {
     setStoredUpdateChannel(next);
     setResult(null);
     setStatus(null);
+  };
+
+  const onAutoCheckChange = (enabled: boolean) => {
+    setAutoCheck(enabled);
+    setStoredAutoCheckUpdates(enabled);
   };
 
   const runCheck = useCallback(async () => {
@@ -83,6 +91,16 @@ export function UpdateSettings() {
           </span>
         </label>
       </div>
+      <label className="agent-trust-option">
+        <input
+          type="checkbox"
+          checked={autoCheck}
+          onChange={(e) => onAutoCheckChange(e.target.checked)}
+        />
+        <span>
+          <strong>Check for updates on startup</strong> — silent background check when the app opens
+        </span>
+      </label>
       <div className="settings-row update-actions">
         <button type="button" className="btn-secondary btn-sm" disabled={busy} onClick={() => void runCheck()}>
           Check for updates

@@ -5,8 +5,11 @@ import {
   pickAndImportKnowledge,
   deleteKnowledgeFile,
   getKnowledgeRoot,
+  listSkillPacks,
+  installSkillPack,
   type KnowledgeCategory,
   type KnowledgeFileEntry,
+  type SkillPackInfo,
 } from "../lib/knowledge";
 import { MUSHROOM } from "../lib/brand";
 
@@ -23,6 +26,8 @@ export function KnowledgePanel() {
   const [root, setRoot] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [packs, setPacks] = useState<SkillPackInfo[]>([]);
+  const [installingPack, setInstallingPack] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -44,6 +49,26 @@ export function KnowledgePanel() {
   useEffect(() => {
     refresh();
   }, [refresh]);
+
+  useEffect(() => {
+    void listSkillPacks()
+      .then(setPacks)
+      .catch(() => setPacks([]));
+  }, []);
+
+  const handleInstallPack = async (packId: string) => {
+    setInstallingPack(packId);
+    setError("");
+    try {
+      await installSkillPack(packId);
+      setCategory("skills");
+      await refresh();
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setInstallingPack(null);
+    }
+  };
 
   const handleAdd = async () => {
     setError("");
@@ -71,11 +96,38 @@ export function KnowledgePanel() {
         <code>INDEX.md</code> and <code>user-preferences.md</code> as you work.
       </p>
 
-      <div className="knowledge-tabs">
+      {packs.length > 0 && (
+        <div className="knowledge-skill-packs">
+          <h4 className="knowledge-packs-title">Starter packs</h4>
+          <ul className="knowledge-packs-list">
+            {packs.map((p) => (
+              <li key={p.id} className="knowledge-pack-item">
+                <div>
+                  <strong>{p.name}</strong>
+                  <p className="knowledge-muted">{p.description}</p>
+                  <span className="knowledge-muted">{p.skillCount} skills</span>
+                </div>
+                <button
+                  type="button"
+                  className="btn secondary btn-sm"
+                  disabled={installingPack !== null}
+                  onClick={() => void handleInstallPack(p.id)}
+                >
+                  {installingPack === p.id ? "Installing…" : "Install"}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <div className="knowledge-tabs" role="tablist" aria-label="Knowledge categories">
         {CATEGORIES.map((c) => (
           <button
             key={c.id}
             type="button"
+            role="tab"
+            aria-selected={category === c.id}
             className={`knowledge-tab ${category === c.id ? "active" : ""}`}
             onClick={() => setCategory(c.id)}
           >

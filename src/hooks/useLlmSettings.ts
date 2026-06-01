@@ -29,6 +29,7 @@ export function useLlmSettings() {
     localConfigured: false,
     cloudModels: [],
     localModels: [],
+    cloudUsesCustomEndpoint: false,
   });
   const [localModel, setLocalModel] = useState("llama3.2");
   const [ollamaUrl, setOllamaUrl] = useState("http://localhost:11434");
@@ -42,7 +43,11 @@ export function useLlmSettings() {
       setLlmAvailability(availability);
 
       const storedModel = getStoredModel();
-      const cloudModel = normalizeCloudModel(storedModel, availability.cloudModels);
+      const cloudModel = normalizeCloudModel(
+        storedModel,
+        availability.cloudModels,
+        availability.cloudUsesCustomEndpoint
+      );
       if (cloudModel !== storedModel) {
         setSelectedModel(cloudModel);
         setStoredModel(cloudModel);
@@ -93,7 +98,11 @@ export function useLlmSettings() {
 
     const availability = await resolveLlmAvailability({ ollamaUrl: url });
     setLlmAvailability(availability);
-    const cloudModel = normalizeCloudModel(getStoredModel(), availability.cloudModels);
+    const cloudModel = normalizeCloudModel(
+      getStoredModel(),
+      availability.cloudModels,
+      availability.cloudUsesCustomEndpoint
+    );
     setSelectedModel(cloudModel);
     setStoredModel(cloudModel);
 
@@ -131,7 +140,12 @@ export function useLlmSettings() {
   const handleModelChange = (model: string) => {
     if (!model) return;
     if (apiType === "cloud") {
-      if (!llmAvailability.cloudModels.some((m) => m.value === model)) return;
+      if (
+        !llmAvailability.cloudUsesCustomEndpoint &&
+        !llmAvailability.cloudModels.some((m) => m.value === model)
+      ) {
+        return;
+      }
       setSelectedModel(model);
       setStoredModel(model);
       void appendUserPreference(`Cloud model: ${model}`, "settings");

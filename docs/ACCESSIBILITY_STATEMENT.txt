@@ -1,0 +1,78 @@
+════════════════════════════════════════════════════════════════════════
+  ACCESSIBILITY STATEMENT
+  Gnomad Desktop Assistant · docs/ACCESSIBILITY_STATEMENT.md
+════════════════════════════════════════════════════════════════════════
+
+ACCESSIBILITY STATEMENT — GNOMAD DESKTOP ASSISTANT
+==================================================
+
+Version: 0.2.0-beta.1  
+Last updated: June 2026  
+Standard: Working toward WCAG 2.2 Level AA
+
+────────────────────────────────────────
+
+COMMITMENT
+----------
+
+Gnomad Studio aims to make Gnomad Desktop Assistant usable with keyboard and assistive technologies. This is a beta product; a full third-party WCAG audit is planned before v1.0 general availability.
+
+────────────────────────────────────────
+
+CONFORMANCE STATUS
+------------------
+
+Partially conformant — some content does not yet meet WCAG 2.2 AA (contrast audit incomplete; terminal output summarized via aria-live rather than full narration).
+
+────────────────────────────────────────
+
+SUPPORTED FEATURES (BETA)
+-------------------------
+
+  • Keyboard shortcuts for show/hide, composer focus, settings, new chat, and Escape to close overlays
+  • Visible focus indicators (:focus-visible) on interactive controls
+  • Modal dialogs with focus traps and role="dialog"
+  • Skip link to main content in windowed and fullscreen modes
+  • Labeled form controls and composer (aria-label, stable ids)
+  • Debounced aria-live announcements for terminal activity
+
+See ACCESSIBILITY.md for the full shortcut list and testing checklist.
+
+────────────────────────────────────────
+
+KNOWN LIMITATIONS
+-----------------
+
+  • Color contrast not yet certified to WCAG AA across all themes
+  • Limited testing with VoiceOver, NVDA, and Orca
+  • xterm.js canvas is not directly readable; summaries are announced periodically
+  • Voice dictation depends on OS/browser speech services
+
+────────────────────────────────────────
+
+FEEDBACK
+--------
+
+Report accessibility barriers:
+
+  • GitHub Issues (label: accessibility)
+  • Gnomad Studio
+
+We aim to respond within 10 business days.
+
+────────────────────────────────────────
+
+RELATED
+-------
+
+  • ACCESSIBILITY.md — developer checklist
+  • USER_GUIDE.md
+
+────────────────────────────────────────
+
+Built with ❤️ by Gnomad Studio 🦙
+
+════════════════════════════════════════════════════════════════════════
+Built with ❤️ by Gnomad Studio 🦙
+https://gnomadstudio.org
+════════════════════════════════════════════════════════════════════════

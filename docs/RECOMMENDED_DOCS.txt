@@ -27,6 +27,17 @@ SHIPPED IN THIS REPOSITORY
   BUILD_PLATFORMS.md           |  Build commands                              
   WAVE_B_ROADMAP.md            |  HITL, GGUF, xterm, sandbox (shipped on main)
   UPDATER.md                   |  Auto-update keys and channels               
+  RELEASE_RUNBOOK.md           |  Tag → CI → release checklist                
+  TROUBLESHOOTING.md           |  Support guide                               
+  FLATPAK.md                   |  Optional Flatpak packaging                  
+  SNAP.md                      |  Optional Snap packaging                     
+  ACCESSIBILITY.md             |  Keyboard shortcuts and a11y status          
+  ENTERPRISE.md                |  MDM, proxy, enterprise deploy               
+  GGUF_SETUP.md                |  Download and configure embedded GGUF        
+  MACOS_NOTARIZATION.md        |  Apple notarization for enterprise macOS     
+  TEST_STRATEGY.md             |  Unit, integration, and QA layers            
+  SECURITY_REVIEW.md           |  Pre-release security checklist              
+  ACCESSIBILITY_STATEMENT.md   |  Formal WCAG statement (beta)                
   CROSS_PLATFORM_CHECKLIST.md  |  Per-OS dev verification                     
   MACOS_PERMISSIONS.md         |  macOS privacy matrix                        
   KNOWLEDGE.md                 |  Knowledge base layout                       
@@ -36,13 +47,17 @@ SHIPPED IN THIS REPOSITORY
 STILL RECOMMENDED (NOT YET WRITTEN)
 -----------------------------------
 
-  Document                    |  Priority     |  Notes                                  
-  RELEASE_RUNBOOK.md          |  Production   |  Tag → CI → GitHub Release checklist    
-  TROUBLESHOOTING.md          |  Support      |  Top issues consolidated from USER_GUIDE
-  CONTRIBUTING.md             |  Open source  |  If repo goes public                    
-  TEST_STRATEGY.md            |  Engineering  |  Unit/E2E plan                          
-  ADR folder (docs/adr/)      |  Engineering  |  Decision records                       
-  ACCESSIBILITY_STATEMENT.md  |  GA           |  WCAG goals                             
+  Document                    |  Priority     |  Notes                       
+  CONTRIBUTING.md             |  Open source  |  ✓ Root CONTRIBUTING.md      
+  TEST_STRATEGY.md            |  Engineering  |  ✓ TEST_STRATEGY.md          
+  ADR folder (docs/adr/)      |  Engineering  |  Decision records            
+  ACCESSIBILITY_STATEMENT.md  |  GA           |  ✓ ACCESSIBILITY_STATEMENT.md
+
+Recently added
+
+  Document            |  Purpose                            
+  RELEASE_RUNBOOK.md  |  Tag → CI → GitHub Release checklist
+  TROUBLESHOOTING.md  |  Consolidated support guide         
 
 ────────────────────────────────────────
 

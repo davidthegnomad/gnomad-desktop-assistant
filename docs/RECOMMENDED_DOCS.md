@@ -21,6 +21,17 @@
 | [BUILD_PLATFORMS.md](BUILD_PLATFORMS.md) | Build commands |
 | [WAVE_B_ROADMAP.md](WAVE_B_ROADMAP.md) | HITL, GGUF, xterm, sandbox (shipped on main) |
 | [UPDATER.md](UPDATER.md) | Auto-update keys and channels |
+| [RELEASE_RUNBOOK.md](RELEASE_RUNBOOK.md) | Tag → CI → release checklist |
+| [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Support guide |
+| [FLATPAK.md](FLATPAK.md) | Optional Flatpak packaging |
+| [SNAP.md](SNAP.md) | Optional Snap packaging |
+| [ACCESSIBILITY.md](ACCESSIBILITY.md) | Keyboard shortcuts and a11y status |
+| [ENTERPRISE.md](ENTERPRISE.md) | MDM, proxy, enterprise deploy |
+| [GGUF_SETUP.md](GGUF_SETUP.md) | Download and configure embedded GGUF |
+| [MACOS_NOTARIZATION.md](MACOS_NOTARIZATION.md) | Apple notarization for enterprise macOS |
+| [TEST_STRATEGY.md](TEST_STRATEGY.md) | Unit, integration, and QA layers |
+| [SECURITY_REVIEW.md](SECURITY_REVIEW.md) | Pre-release security checklist |
+| [ACCESSIBILITY_STATEMENT.md](ACCESSIBILITY_STATEMENT.md) | Formal WCAG statement (beta) |
 | [CROSS_PLATFORM_CHECKLIST.md](CROSS_PLATFORM_CHECKLIST.md) | Per-OS dev verification |
 | [MACOS_PERMISSIONS.md](MACOS_PERMISSIONS.md) | macOS privacy matrix |
 | [KNOWLEDGE.md](KNOWLEDGE.md) | Knowledge base layout |
@@ -31,12 +42,17 @@
 
 | Document | Priority | Notes |
 |----------|----------|-------|
-| **RELEASE_RUNBOOK.md** | Production | Tag → CI → GitHub Release checklist |
-| **TROUBLESHOOTING.md** | Support | Top issues consolidated from USER_GUIDE |
-| **CONTRIBUTING.md** | Open source | If repo goes public |
-| **TEST_STRATEGY.md** | Engineering | Unit/E2E plan |
+| **CONTRIBUTING.md** | Open source | ✓ Root [CONTRIBUTING.md](../CONTRIBUTING.md) |
+| **TEST_STRATEGY.md** | Engineering | ✓ [TEST_STRATEGY.md](TEST_STRATEGY.md) |
 | **ADR folder** (`docs/adr/`) | Engineering | Decision records |
-| **ACCESSIBILITY_STATEMENT.md** | GA | WCAG goals |
+| **ACCESSIBILITY_STATEMENT.md** | GA | ✓ [ACCESSIBILITY_STATEMENT.md](ACCESSIBILITY_STATEMENT.md) |
+
+### Recently added
+
+| Document | Purpose |
+|----------|---------|
+| [RELEASE_RUNBOOK.md](RELEASE_RUNBOOK.md) | Tag → CI → GitHub Release checklist |
+| [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Consolidated support guide |
 
 ---
 

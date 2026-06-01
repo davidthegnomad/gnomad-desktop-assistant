@@ -6,7 +6,7 @@
 GNOMAD DESKTOP ASSISTANT
 ========================
 
-Alpha
+Beta
 Version
 Platforms
 
@@ -27,29 +27,31 @@ The alpha demonstrates end-to-end delivery: multi-platform installers, CI/CD, cr
 
 ────────────────────────────────────────
 
-CAPABILITIES (V0.1.0-ALPHA + MAIN)
-----------------------------------
+CAPABILITIES (V0.2.0-BETA.1)
+----------------------------
 
-  Area          |  What you get                                                                                            
-  Access        |  Menu bar / system tray, global shortcut, four window modes (panel, pop-out, windowed, fullscreen)       
-  Intelligence  |  DeepSeek (cloud), Ollama (local), optional in-process GGUF (embedded-llm build)                         
-  Agent         |  Multi-step tool loop (shell + filesystem), command planner, persistent PTY shell                        
-  Safety        |  Cryptographic Sudo Gate (HITL) and Path Gate tokens; Standard vs YOLO trust; optional YOLO shell sandbox
-  Terminal      |  xterm.js live stream + replay on command cards                                                          
-  Context       |  Active application, window title, clipboard snippet in the footer                                       
-  Memory        |  Chat history on disk; knowledge library (skills, agents, uploads)                                       
-  Updates       |  In-app check (stable/beta) via Tauri updater — see docs/UPDATER.md                                      
-  Platform      |  macOS (primary), Windows, Linux (.deb, .rpm, AppImage); Wayland tray improvements                       
+  Area           |  What you get                                                                                            
+  Access         |  Menu bar / system tray, global shortcut, four window modes (panel, pop-out, windowed, fullscreen)       
+  Intelligence   |  DeepSeek (cloud default), OpenAI-compatible endpoints, Ollama (local), optional in-process GGUF         
+  Agent          |  Multi-step tool loop (shell + filesystem), command planner, persistent PTY shell                        
+  Safety         |  Cryptographic Sudo Gate (HITL) and Path Gate tokens; Standard vs YOLO trust; optional YOLO shell sandbox
+  Terminal       |  xterm.js live stream + replay on command cards                                                          
+  Context        |  Active application, window title, clipboard snippet in the footer                                       
+  Memory         |  Chat history on disk; knowledge library (skills, agents, uploads); starter skill packs                  
+  Voice          |  Opt-in push-to-talk dictation (Web Speech API)                                                          
+  Updates        |  In-app check (stable/beta) via Tauri updater — see docs/UPDATER.md                                      
+  Platform       |  macOS (primary), Windows, Linux (.deb, .rpm, AppImage; ARM64 in CI); optional Flatpak/Snap              
+  Accessibility  |  Keyboard shortcuts, focus traps, skip link — docs/ACCESSIBILITY.md                                      
 
 ────────────────────────────────────────
 
 PLATFORMS
 ---------
 
-  Platform  |  Status     |  Install                 |  Notes                                
-  macOS     |  Primary    |  .dmg                    |  Menu-bar accessory; overlay title bar
-  Windows   |  Supported  |  .msi                    |  System tray; Ctrl+Shift+Space        
-  Linux     |  Supported  |  .deb · .rpm · AppImage  |  See Linux packages                   
+  Platform  |  Status     |  Install                                 |  Notes                                                
+  macOS     |  Primary    |  Releases                                |  Menu-bar accessory; notarization guide for enterprise
+  Windows   |  Supported  |  Releases                                |  System tray; Ctrl+Shift+Space                        
+  Linux     |  Supported  |  Releases (.deb, .rpm, AppImage, ARM64)  |  See Linux packages                                   
 
 Per-OS build instructions: docs/BUILD_PLATFORMS.md  
 Adding features or UI? Use the docs/CROSS_PLATFORM_CHECKLIST.md so changes are verified on macOS, Windows, and Linux.
@@ -129,6 +131,8 @@ All docs ship as Markdown (source), HTML (browser), and TXT (Notepad/Word). Full
   Security Model    |  docs/SECURITY_MODEL.md   |  docs/SECURITY_MODEL.html   |  docs/SECURITY_MODEL.txt 
   Wave B Roadmap    |  docs/WAVE_B_ROADMAP.md   |  docs/WAVE_B_ROADMAP.html   |  docs/WAVE_B_ROADMAP.txt 
   Auto-updater      |  docs/UPDATER.md          |  docs/UPDATER.html          |  docs/UPDATER.txt        
+  Release runbook   |  docs/RELEASE_RUNBOOK.md  |  docs/RELEASE_RUNBOOK.html  |  docs/RELEASE_RUNBOOK.txt
+  Troubleshooting   |  docs/TROUBLESHOOTING.md  |  docs/TROUBLESHOOTING.html  |  docs/TROUBLESHOOTING.txt
   Privacy           |  docs/PRIVACY.md          |  docs/PRIVACY.html          |  docs/PRIVACY.txt        
   Roadmap           |  docs/ROADMAP.md          |  docs/ROADMAP.html          |  docs/ROADMAP.txt        
   Demo Script       |  docs/DEMO_SCRIPT.md      |  docs/DEMO_SCRIPT.html      |  docs/DEMO_SCRIPT.txt    
@@ -154,7 +158,13 @@ Alpha software: review CHANGELOG.md for known limitations before production use.
 CI / RELEASES
 -------------
 
-GitHub Actions builds macOS, Linux, and Windows on every push to main / master. Tagged v* releases attach installers to GitHub Releases.
+GitHub Actions builds macOS, Linux x86_64, Linux ARM64, and Windows on every push to main / master. Tagged v* releases attach installers to GitHub Releases.
+
+Optional Flatpak / Snap builds: npm run pack:flatpak, npm run pack:snap, or the Packaging GitHub workflow. See docs/FLATPAK.md and docs/SNAP.md.
+
+Updater signing: npm run setup:updater-keys · verify with npm run verify:updater — see docs/UPDATER.md and docs/RELEASE_RUNBOOK.md.
+
+Optional embedded GGUF: npm run download:gguf — see docs/GGUF_SETUP.md.
 
 ────────────────────────────────────────
 

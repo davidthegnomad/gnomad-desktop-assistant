@@ -228,10 +228,11 @@ body {
           <p class="doc-path">docs/ROADMAP.md</p>
           <a href="#vision" class="toc-h2">Vision</a>
 <a href="#released-v010-alpha" class="toc-h2">Released — v0.1.0-alpha ✓</a>
-<a href="#v02-beta-readiness" class="toc-h2">v0.2 — Beta readiness</a>
-<a href="#wave-b-state-of-the-art-v03" class="toc-h2">Wave B — State-of-the-art (v0.3+)</a>
-<a href="#v03-broader-reach" class="toc-h2">v0.3 — Broader reach</a>
-<a href="#v10-general-availability" class="toc-h2">v1.0 — General availability</a>
+<a href="#v02-beta-readiness" class="toc-h2">v0.2 — Beta readiness ✓</a>
+<a href="#wave-b-state-of-the-art" class="toc-h2">Wave B — State-of-the-art ✓</a>
+<a href="#v03-broader-reach" class="toc-h2">v0.3 — Broader reach ✓</a>
+<a href="#v10-general-availability-in-progress" class="toc-h2">v1.0 — General availability (in progress)</a>
+<a href="#operational-before-ga-tag" class="toc-h3">Operational before GA tag</a>
 <a href="#non-goals-current" class="toc-h2">Non-goals (current)</a>
 <a href="#how-priorities-are-set" class="toc-h2">How priorities are set</a>
         </nav>
@@ -240,7 +241,7 @@ body {
         <h2>Product Roadmap</h2>
         <p class="formats">Also available: <a href="ROADMAP.md">Markdown</a> · <a href="ROADMAP.txt">Plain text</a></p>
       </header>
-      <h1 id="product-roadmap-gnomad-desktop-assistant">Product Roadmap — Gnomad Desktop Assistant</h1><p><strong>Version:</strong> 0.1.0-alpha<br><strong>Last updated:</strong> June 2026<br><strong>Horizon:</strong> 6–12 months (indicative)</p>
+      <h1 id="product-roadmap-gnomad-desktop-assistant">Product Roadmap — Gnomad Desktop Assistant</h1><p><strong>Version:</strong> 0.2.0-beta.1<br><strong>Last updated:</strong> June 2026<br><strong>Horizon:</strong> v1.0 GA (indicative)</p>
 <hr>
 <h2 id="vision">Vision</h2><p>Gnomad becomes the <strong>default desktop agent surface</strong>: always available, OS-aware, trustworthy by default, and capable of real work through shell and files—without surrendering control to opaque automation.</p>
 <hr>
@@ -281,7 +282,7 @@ body {
 </tr>
 </tbody></table>
 <hr>
-<h2 id="v02-beta-readiness">v0.2 — Beta readiness</h2><p><strong>Target:</strong> Hardening and supportability</p>
+<h2 id="v02-beta-readiness">v0.2 — Beta readiness ✓</h2><p><strong>Status:</strong> Shipped on <code>main</code> as <strong>0.2.0-beta.1</strong></p>
 <table>
 <thead>
 <tr>
@@ -293,49 +294,49 @@ body {
 <tbody><tr>
 <td>Server-side safety on all shell paths</td>
 <td>P0</td>
-<td>Close IPC bypass class</td>
+<td>✓ Legacy <code>execute_shell_command</code> removed</td>
 </tr>
 <tr>
-<td><strong>Cryptographic HITL tokens (Wave B1)</strong></td>
+<td>Cryptographic HITL tokens (Wave B1)</td>
 <td>P0</td>
-<td>✓ Shipped — <a href="../src-tauri/src/hitl_token.rs">hitl_token.rs</a></td>
+<td>✓ <a href="../src-tauri/src/hitl_token.rs">hitl_token.rs</a></td>
 </tr>
 <tr>
-<td>Wave B error migration (<code>llm</code>, planner, chat history)</td>
+<td>Wave B error migration</td>
 <td>P1</td>
-<td>✓ Shipped — JSON <code>GnomadError</code> on LLM + chat store paths</td>
+<td>✓ JSON <code>GnomadError</code> on LLM + chat paths</td>
 </tr>
 <tr>
-<td>Rust unit tests (<code>privilege</code>, parsers, <code>error</code>)</td>
+<td>Rust unit tests</td>
 <td>P0</td>
-<td>CI gate ✓ (<code>cargo test</code> in build workflow)</td>
+<td>✓ CI gate (<code>cargo test</code>)</td>
 </tr>
 <tr>
-<td>Refresh CODE_REVIEW / TEST_NOTES</td>
+<td>CODE_REVIEW / TEST_NOTES refresh</td>
 <td>P1</td>
-<td>Match shipped agent ✓</td>
+<td>✓</td>
 </tr>
 <tr>
-<td>Auto-update channel (Tauri updater)</td>
+<td>Auto-update channel</td>
 <td>P1</td>
-<td>✓ Shipped — Settings → Updates; see <a href="UPDATER.md">UPDATER.md</a></td>
+<td>✓ Settings → Updates; <a href="UPDATER.md">UPDATER.md</a></td>
 </tr>
 <tr>
-<td>Improved Linux Wayland tray</td>
+<td>Linux Wayland tray</td>
 <td>P1</td>
-<td>✓ Left-click menu on Wayland; session hint in Settings</td>
+<td>✓</td>
 </tr>
 <tr>
-<td>Error telemetry (opt-in, local-first)</td>
+<td>Error telemetry (opt-in)</td>
 <td>P2</td>
-<td>Crash logs only</td>
+<td>✓ Local <code>error-log.jsonl</code></td>
 </tr>
 </tbody></table>
 <hr>
-<h2 id="wave-b-state-of-the-art-v03">Wave B — State-of-the-art (v0.3+)</h2><p>Detailed design for four evaluation follow-ups: <strong>HITL tokens</strong>, <strong>in-process LLM</strong>, <strong>Xterm.js PTY</strong>, <strong>YOLO micro-sandboxing</strong>.</p>
-<p>→ <strong><a href="WAVE_B_ROADMAP.md">WAVE_B_ROADMAP.md</a></strong> (phasing, acceptance criteria, risks)</p>
+<h2 id="wave-b-state-of-the-art">Wave B — State-of-the-art ✓</h2><p>→ <strong><a href="WAVE_B_ROADMAP.md">WAVE_B_ROADMAP.md</a></strong> — HITL tokens, GGUF, xterm PTY, YOLO sandbox (shipped)</p>
 <hr>
-<h2 id="v03-broader-reach">v0.3 — Broader reach</h2><table>
+<h2 id="v03-broader-reach">v0.3 — Broader reach ✓</h2><p><strong>Status:</strong> Shipped on <code>main</code> as <strong>0.2.0-beta.1</strong></p>
+<table>
 <thead>
 <tr>
 <th>Item</th>
@@ -346,31 +347,31 @@ body {
 <tbody><tr>
 <td>Linux ARM64 builds</td>
 <td>P1</td>
-<td>Apple Silicon Linux devices</td>
+<td>✓ CI <code>ubuntu-24.04-arm</code></td>
 </tr>
 <tr>
 <td>Snap / Flatpak</td>
 <td>P2</td>
-<td>Community demand</td>
+<td>✓ <a href="FLATPAK.md">FLATPAK.md</a>, <a href="SNAP.md">SNAP.md</a></td>
 </tr>
 <tr>
 <td>Additional cloud providers</td>
 <td>P2</td>
-<td>OpenAI-compatible router</td>
+<td>✓ OpenAI-compatible endpoint</td>
 </tr>
 <tr>
 <td>Plugin/skills marketplace (local)</td>
 <td>P2</td>
-<td>Curated skill packs</td>
+<td>✓ Starter skill packs</td>
 </tr>
 <tr>
 <td>Voice input (push-to-talk)</td>
 <td>P3</td>
-<td>Platform STT APIs</td>
+<td>✓ Beta — Web Speech API; Settings → Privacy</td>
 </tr>
 </tbody></table>
 <hr>
-<h2 id="v10-general-availability">v1.0 — General availability</h2><table>
+<h2 id="v10-general-availability-in-progress">v1.0 — General availability (in progress)</h2><table>
 <thead>
 <tr>
 <th>Item</th>
@@ -381,29 +382,35 @@ body {
 <tbody><tr>
 <td>Signed + notarized macOS</td>
 <td>P0</td>
-<td>Enterprise trust</td>
+<td>Script + optional CI — <a href="MACOS_NOTARIZATION.md">MACOS_NOTARIZATION.md</a>; needs Apple secrets</td>
 </tr>
 <tr>
 <td>Security review / pen test</td>
 <td>P0</td>
-<td>External or structured internal</td>
+<td>✓ Internal checklist — <a href="SECURITY_REVIEW.md">SECURITY_REVIEW.md</a>; external pen test before GA</td>
 </tr>
 <tr>
 <td>WCAG accessibility pass</td>
 <td>P1</td>
-<td>Keyboard nav, contrast</td>
+<td>✓ Partial + <a href="ACCESSIBILITY_STATEMENT.md">ACCESSIBILITY_STATEMENT.md</a>; full audit pending</td>
 </tr>
 <tr>
 <td>Enterprise deployment guide</td>
 <td>P2</td>
-<td>MDM, proxy, key escrow</td>
+<td>✓ <a href="ENTERPRISE.md">ENTERPRISE.md</a></td>
 </tr>
 <tr>
 <td>Team workspace sync (optional)</td>
 <td>P3</td>
-<td>E2E encrypted</td>
+<td>Deferred post–v1.0</td>
 </tr>
 </tbody></table>
+<h3 id="operational-before-ga-tag">Operational before GA tag</h3><ol>
+<li>Replace updater placeholder pubkey — <code>npm run setup:updater-keys</code> → <code>verify:updater</code></li>
+<li>Configure Apple Developer ID + notarization secrets</li>
+<li>Run <a href="SECURITY_REVIEW.md">SECURITY_REVIEW.md</a> sign-off</li>
+<li>Full WCAG contrast + screen reader pass</li>
+</ol>
 <hr>
 <h2 id="non-goals-current">Non-goals (current)</h2><ul>
 <li>Mobile iOS/Android clients  </li>

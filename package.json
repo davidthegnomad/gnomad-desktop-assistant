@@ -1,7 +1,7 @@
 {
   "name": "gnomad",
   "private": true,
-  "version": "0.1.0-alpha",
+  "version": "0.2.0-beta.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -18,6 +18,13 @@
     "tauri:build:linux:deb": "tauri build --bundles deb",
     "tauri:build:linux:rpm": "tauri build --bundles rpm",
     "tauri:build:linux:appimage": "tauri build --bundles appimage",
+    "tauri:build:linux:arm64": "tauri build --bundles deb,appimage --target aarch64-unknown-linux-gnu",
+    "pack:flatpak": "bash packaging/flatpak/build.sh",
+    "pack:snap": "bash packaging/snap/build.sh",
+    "setup:updater-keys": "bash scripts/setup-updater-keys.sh",
+    "verify:updater": "bash scripts/verify-updater-pubkey.sh",
+    "download:gguf": "bash scripts/download-gguf-model.sh",
+    "notarize:macos": "bash scripts/notarize-macos.sh",
     "tauri:build:win": "tauri build --bundles msi,nsis",
     "docs:export": "node scripts/export-docs.mjs"
   },

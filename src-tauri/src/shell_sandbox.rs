@@ -2,20 +2,35 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use tauri::Manager;
 
-/// Whether sandboxed shell is requested and supported on this OS.
-pub fn sandbox_shell_available() -> bool {
+/// `full` — network blocked (macOS sandbox-exec / Linux bwrap).
+/// `workspace` — cwd + temp scoped to workspace (Windows).
+/// `none` — sandbox not available on this OS / config.
+pub fn sandbox_level() -> &'static str {
     #[cfg(target_os = "macos")]
     {
-        return true;
+        return "full";
     }
     #[cfg(target_os = "linux")]
     {
-        return command_exists("bwrap");
+        return if command_exists("bwrap") {
+            "full"
+        } else {
+            "none"
+        };
     }
-    #[cfg(not(any(target_os = "macos", target_os = "linux")))]
+    #[cfg(target_os = "windows")]
     {
-        false
+        return "workspace";
     }
+    #[cfg(not(any(target_os = "macos", target_os = "linux", target_os = "windows")))]
+    {
+        "none"
+    }
+}
+
+/// Whether sandboxed shell is requested and supported on this OS.
+pub fn sandbox_shell_available() -> bool {
+    sandbox_level() != "none"
 }
 
 fn command_exists(name: &str) -> bool {
@@ -35,18 +50,28 @@ fn escape_sb_path(path: &str) -> String {
     path.replace('\\', "\\\\").replace('"', "\\\"")
 }
 
-/// Write a sandbox-exec profile for YOLO shell sessions (macOS).
-#[cfg(target_os = "macos")]
-pub fn write_macos_sandbox_profile(
-    app: &tauri::AppHandle,
-    workspace: &Path,
-) -> Result<PathBuf, String> {
+/// Escape a path for use inside a Windows batch file.
+pub fn escape_windows_batch_path(path: &str) -> String {
+    path.replace('%', "%%").replace('"', "\"\"")
+}
+
+fn sandbox_data_dir(app: &tauri::AppHandle) -> Result<PathBuf, String> {
     let base = app
         .path()
         .app_data_dir()
         .map_err(|e| format!("app data dir: {e}"))?;
     let dir = base.join("gnomad");
     std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+    Ok(dir)
+}
+
+/// Write a sandbox-exec profile for YOLO shell sessions (macOS).
+#[cfg(target_os = "macos")]
+pub fn write_macos_sandbox_profile(
+    app: &tauri::AppHandle,
+    workspace: &Path,
+) -> Result<PathBuf, String> {
+    let dir = sandbox_data_dir(app)?;
     let profile_path = dir.join("yolo-shell.sb");
 
     let ws = escape_sb_path(&workspace.to_string_lossy());
@@ -81,7 +106,57 @@ pub fn write_macos_sandbox_profile(
     Err("macOS sandbox profile is only used on macOS.".into())
 }
 
-/// Wrap default shell invocation for a sandboxed PTY (macOS sandbox-exec or Linux bwrap).
+/// Workspace-scoped init script for YOLO shell on Windows (temp + cwd; no network block).
+#[cfg(target_os = "windows")]
+pub fn write_windows_sandbox_init(
+    app: &tauri::AppHandle,
+    workspace: &Path,
+    shell: &str,
+    shell_args: &[String],
+) -> Result<PathBuf, String> {
+    let dir = sandbox_data_dir(app)?;
+    let init_path = dir.join("yolo-shell-init.cmd");
+
+    let ws = workspace
+        .canonicalize()
+        .unwrap_or_else(|_| workspace.to_path_buf());
+    let ws_s = escape_windows_batch_path(&ws.to_string_lossy());
+    let tmp = escape_windows_batch_path(
+        &ws.join(".gnomad-sandbox-tmp")
+            .to_string_lossy()
+            .to_string(),
+    );
+
+    let mut shell_cmd = format!("\"{}\"", escape_windows_batch_path(shell));
+    for arg in shell_args {
+        shell_cmd.push(' ');
+        shell_cmd.push_str(&format!("\"{}\"", escape_windows_batch_path(arg)));
+    }
+
+    let script = format!(
+        "@echo off\r\n\
+         cd /d \"{ws_s}\"\r\n\
+         set \"TEMP={tmp}\"\r\n\
+         set \"TMP={tmp}\"\r\n\
+         if not exist \"{tmp}\" mkdir \"{tmp}\"\r\n\
+         {shell_cmd}\r\n"
+    );
+
+    std::fs::write(&init_path, script).map_err(|e| e.to_string())?;
+    Ok(init_path)
+}
+
+#[cfg(not(target_os = "windows"))]
+pub fn write_windows_sandbox_init(
+    _app: &tauri::AppHandle,
+    _workspace: &Path,
+    _shell: &str,
+    _shell_args: &[String],
+) -> Result<PathBuf, String> {
+    Err("Windows sandbox init is only used on Windows.".into())
+}
+
+/// Wrap default shell invocation for a sandboxed PTY (macOS sandbox-exec, Linux bwrap, Windows workspace init).
 pub fn sandboxed_shell_command(
     app: &tauri::AppHandle,
     workspace: &Path,
@@ -156,7 +231,16 @@ pub fn sandboxed_shell_command(
         return Ok(("bwrap".to_string(), args));
     }
 
-    #[cfg(not(any(target_os = "macos", target_os = "linux")))]
+    #[cfg(target_os = "windows")]
+    {
+        let init = write_windows_sandbox_init(app, workspace, shell, shell_args)?;
+        return Ok((
+            "cmd.exe".to_string(),
+            vec!["/k".to_string(), init.to_string_lossy().to_string()],
+        ));
+    }
+
+    #[cfg(not(any(target_os = "macos", target_os = "linux", target_os = "windows")))]
     {
         let _ = (app, workspace, shell, shell_args);
         Err("Sandboxed shell is not supported on this platform.".into())
@@ -170,5 +254,16 @@ mod tests {
     #[test]
     fn escape_sb_path_quotes() {
         assert!(escape_sb_path("/tmp/foo").contains("/tmp/foo"));
+    }
+
+    #[test]
+    fn escape_windows_batch_path_percent() {
+        assert_eq!(escape_windows_batch_path("C:\\work\\%TEMP%"), "C:\\work\\%%TEMP%%");
+    }
+
+    #[test]
+    fn sandbox_level_is_defined() {
+        let level = sandbox_level();
+        assert!(matches!(level, "full" | "workspace" | "none"));
     }
 }

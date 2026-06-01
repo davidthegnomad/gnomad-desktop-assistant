@@ -7,8 +7,9 @@ Gnomad uses the [Tauri updater plugin](https://v2.tauri.app/plugin/updater/) wit
 1. Generate a key pair (keep the private key secret):
 
 ```bash
-cd src-tauri
-npx tauri signer generate -w ~/.tauri/gnomad-updater.key
+npm run setup:updater-keys
+# or manually:
+cd src-tauri && npx tauri signer generate -w ~/.tauri/gnomad-updater.key
 ```
 
 2. Copy the **public** key contents into `src-tauri/tauri.conf.json` → `plugins.updater.pubkey` (full string, not a file path).
@@ -30,5 +31,11 @@ npx tauri signer generate -w ~/.tauri/gnomad-updater.key
 Users choose the channel in **Settings → Updates**. The release workflow uploads `latest.json` when `includeUpdaterJson: true`.
 
 ## Verify locally
+
+Before tagging a release:
+
+```bash
+npm run verify:updater
+```
 
 After a tagged release, install the previous version and use **Check for updates** in Settings. Updates only install when the artifact signature matches the embedded public key.

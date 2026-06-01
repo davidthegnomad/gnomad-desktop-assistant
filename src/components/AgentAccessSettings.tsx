@@ -265,7 +265,11 @@ export function AgentAccessSettings({
             </label>
             <label
               className="agent-trust-option"
-              title="When YOLO mode is on, wrap shell sessions in sandbox-exec (macOS) or bubblewrap (Linux). Network is blocked; writes limited to workspace + temp."
+              title={
+                settings.sandboxLevel === "workspace"
+                  ? "Windows: scopes TEMP and cwd to workspace. Network is not blocked — use Standard trust for stricter FS policy."
+                  : "When YOLO mode is on, wrap shell sessions in sandbox-exec (macOS) or bubblewrap (Linux). Network is blocked; writes limited to workspace + temp."
+              }
             >
               <input
                 type="checkbox"
@@ -278,6 +282,8 @@ export function AgentAccessSettings({
               <span>
                 <strong>Sandbox shell in YOLO mode</strong>
                 {settings.trustMode !== "yolo" ? " (enable YOLO first)" : ""}
+                {settings.sandboxLevel === "workspace" ? " — workspace-scoped on Windows" : ""}
+                {settings.sandboxLevel === "none" ? " — install bubblewrap on Linux" : ""}
               </span>
             </label>
           </div>

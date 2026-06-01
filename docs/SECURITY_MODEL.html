@@ -336,7 +336,7 @@ body {
 <li>Flags known-dangerous patterns</li>
 <li>Returns <code>requires_hitl_approval</code>, <code>requires_admin</code>, <code>danger_reason</code></li>
 </ul>
-<p><strong>Alpha gap:</strong> All invoke paths must call safety checks; treat direct <code>execute_shell_command</code> without checks as a finding in review.</p>
+<p><strong>Shell execution:</strong> All agent shell traffic goes through <code>shell_session_run</code> with HITL tokens, validation, and optional sandbox. The legacy <code>execute_shell_command</code> IPC command was <strong>removed</strong> (no bypass path).</p>
 <hr>
 <h2 id="secrets-handling">Secrets handling</h2><table>
 <thead>

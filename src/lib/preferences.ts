@@ -9,6 +9,9 @@ const LS_PROVIDER = "omni_provider";
 const LS_MODEL = "omni_model";
 const LS_LOCAL_MODEL = "omni_local_model";
 const LS_UPDATE_CHANNEL = "omni_update_channel";
+const LS_AUTO_CHECK_UPDATES = "omni_auto_check_updates";
+const LS_ERROR_LOG = "omni_error_log";
+const LS_VOICE_INPUT = "omni_voice_input";
 
 export type UpdateChannel = "stable" | "beta";
 
@@ -60,6 +63,30 @@ export function getStoredUpdateChannel(): UpdateChannel {
 
 export function setStoredUpdateChannel(channel: UpdateChannel) {
   localStorage.setItem(LS_UPDATE_CHANNEL, channel);
+}
+
+export function getStoredAutoCheckUpdates(): boolean {
+  return localStorage.getItem(LS_AUTO_CHECK_UPDATES) === "true";
+}
+
+export function setStoredAutoCheckUpdates(enabled: boolean) {
+  localStorage.setItem(LS_AUTO_CHECK_UPDATES, enabled ? "true" : "false");
+}
+
+export function getErrorLogEnabled(): boolean {
+  return localStorage.getItem(LS_ERROR_LOG) === "true";
+}
+
+export function setErrorLogEnabled(enabled: boolean) {
+  localStorage.setItem(LS_ERROR_LOG, enabled ? "true" : "false");
+}
+
+export function getVoiceInputEnabled(): boolean {
+  return localStorage.getItem(LS_VOICE_INPUT) === "true";
+}
+
+export function setVoiceInputEnabled(enabled: boolean) {
+  localStorage.setItem(LS_VOICE_INPUT, enabled ? "true" : "false");
 }
 
 export function resolveTheme(mode: ThemeMode): "light" | "dark" {

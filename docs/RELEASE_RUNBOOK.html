@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Release Runbook — Gnomad Desktop Assistant</title>
+  <meta name="description" content="Release Runbook documentation for Gnomad Desktop Assistant." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>:root {
+  --bg-base: #0a0a0a;
+  --bg-panel: rgba(18, 18, 20, 0.92);
+  --bg-elevated: rgba(30, 30, 35, 0.95);
+  --border: rgba(255, 255, 255, 0.1);
+  --text: #f3f4f6;
+  --muted: #9ca3af;
+  --accent: #8ab4f8;
+  --accent-secondary: #c58af9;
+  --success: #34a853;
+  --warning: #f9ab00;
+  --danger: #ea4335;
+  --pill-radius: 999px;
+  --radius: 16px;
+  --mesh:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(66, 133, 244, 0.2), transparent 65%),
+    radial-gradient(ellipse 60% 40% at 10% 30%, rgba(168, 85, 247, 0.12), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 95% 40%, rgba(242, 139, 130, 0.1), transparent 50%);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: "Google Sans Flex", "Roboto", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--bg-base);
+  min-height: 100vh;
+}
+
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: var(--mesh);
+  z-index: 0;
+}
+
+.layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 1.5rem 1.25rem;
+  background: var(--bg-panel);
+  backdrop-filter: blur(24px);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.brand-icon { font-size: 1.5rem; }
+.brand h1 { font-size: 1rem; font-weight: 600; }
+
+.doc-path {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  word-break: break-all;
+}
+
+.sidebar a {
+  display: block;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar a.toc-h3 { padding-left: 1.1rem; font-size: 0.78rem; }
+.sidebar a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.sidebar a.active { color: var(--accent); background: rgba(138,180,248,0.12); }
+
+.content {
+  padding: 2rem 2.5rem 3rem;
+  max-width: 760px;
+}
+
+.hero { margin-bottom: 1.5rem; }
+.hero h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.formats { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+.formats a { color: var(--accent); }
+
+.doc-body h1 { font-size: 1.5rem; margin: 1.5rem 0 0.75rem; }
+.doc-body h2 {
+  font-size: 1.25rem;
+  margin: 2rem 0 0.65rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.doc-body h3 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; color: var(--accent); }
+.doc-body h4 { font-size: 0.95rem; margin: 1rem 0 0.4rem; }
+
+.doc-body p { margin-bottom: 0.85rem; }
+.doc-body ul, .doc-body ol { margin: 0 0 1rem 1.25rem; color: var(--muted); }
+.doc-body li { margin-bottom: 0.35rem; }
+.doc-body li strong { color: var(--text); }
+
+.doc-body a { color: var(--accent); }
+.doc-body code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85em;
+  background: rgba(255,255,255,0.08);
+  padding: 0.12em 0.35em;
+  border-radius: 6px;
+  color: var(--accent-secondary);
+}
+
+.doc-body pre {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.doc-body pre code {
+  background: none;
+  padding: 0;
+  color: var(--text);
+}
+
+.doc-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1rem 0;
+}
+
+.doc-body th, .doc-body td {
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-body th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.doc-body blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 0.6rem 1rem;
+  margin: 1rem 0;
+  background: rgba(138,180,248,0.08);
+  border-radius: 0 12px 12px 0;
+  color: var(--muted);
+}
+
+.doc-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+.doc-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.doc-footer a { color: var(--accent); text-decoration: none; }
+.doc-footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="mesh-bg" aria-hidden="true"></div>
+  <div class="layout">
+    <nav class="sidebar" aria-label="Table of contents">
+          <div class="brand"><span class="brand-icon">🍄</span><h1>Gnomad</h1></div>
+          <p class="doc-path">docs/RELEASE_RUNBOOK.md</p>
+          <a href="#overview" class="toc-h2">Overview</a>
+<a href="#pre-release-checklist" class="toc-h2">Pre-release checklist</a>
+<a href="#cut-a-release" class="toc-h2">Cut a release</a>
+<a href="#1-merge-to-main" class="toc-h3">1. Merge to main</a>
+<a href="#2-create-and-push-a-tag" class="toc-h3">2. Create and push a tag</a>
+<a href="#3-monitor-ci" class="toc-h3">3. Monitor CI</a>
+<a href="#4-verify-github-release" class="toc-h3">4. Verify GitHub Release</a>
+<a href="#5-post-release-verification" class="toc-h3">5. Post-release verification</a>
+<a href="#hotfix-workflow" class="toc-h2">Hotfix workflow</a>
+<a href="#rollback" class="toc-h2">Rollback</a>
+<a href="#ci-secrets-reference" class="toc-h2">CI secrets reference</a>
+<a href="#related-docs" class="toc-h2">Related docs</a>
+        </nav>
+    <main class="content doc-body">
+      <header class="hero">
+        <h2>Release Runbook</h2>
+        <p class="formats">Also available: <a href="RELEASE_RUNBOOK.md">Markdown</a> · <a href="RELEASE_RUNBOOK.txt">Plain text</a></p>
+      </header>
+      <h1 id="release-runbook-gnomad-desktop-assistant">Release Runbook — Gnomad Desktop Assistant</h1><p><strong>Audience:</strong> Maintainers cutting alpha/beta releases<br><strong>Last updated:</strong> June 2026</p>
+<hr>
+<h2 id="overview">Overview</h2><p>Releases are <strong>tag-driven</strong>. Pushing a <code>v*</code> tag (or using workflow dispatch) runs <a href="../.github/workflows/release.yml"><code>.github/workflows/release.yml</code></a>, builds installers for all platforms, and attaches them to a GitHub Release.</p>
+<table>
+<thead>
+<tr>
+<th>Platform</th>
+<th>Artifacts</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>macOS</td>
+<td>Universal <code>.dmg</code></td>
+</tr>
+<tr>
+<td>Linux x86_64</td>
+<td><code>.deb</code>, <code>.rpm</code>, <code>.AppImage</code></td>
+</tr>
+<tr>
+<td>Linux ARM64</td>
+<td><code>.deb</code>, <code>.AppImage</code></td>
+</tr>
+<tr>
+<td>Windows</td>
+<td><code>.msi</code>, NSIS <code>.exe</code></td>
+</tr>
+</tbody></table>
+<p>In-app updates require signed artifacts — see <a href="UPDATER.md">UPDATER.md</a>.</p>
+<hr>
+<h2 id="pre-release-checklist">Pre-release checklist</h2><ol>
+<li><strong>Version bump</strong> — align <code>package.json</code>, <code>src-tauri/tauri.conf.json</code>, and <code>src/lib/brand.ts</code> (if applicable).</li>
+<li><strong>CHANGELOG</strong> — move <code>[Unreleased]</code> items under the new version heading.</li>
+<li><strong>Docs</strong> — <code>npm run docs:export</code> after any doc edits; verify <a href="https://davidthegnomad.github.io/gnomad-desktop-assistant/">GitHub Pages</a> links.</li>
+<li><strong>Local QA</strong> — <code>npm run test</code>, <code>cd src-tauri &amp;&amp; cargo test</code>, <code>npm run build</code>.</li>
+<li><strong>Manual smoke</strong> (see <a href="QA_CHECKLIST.md">QA_CHECKLIST.md</a>):<ul>
+<li>Cloud + local chat</li>
+<li>Agent shell + fs tools</li>
+<li>Sudo Gate / Path Gate tokens</li>
+<li>Settings → Updates (check only; full install needs signed release)</li>
+</ul>
+</li>
+<li><strong>Updater keys</strong> — run <code>npm run verify:updater</code> (must pass before tagging); placeholder <code>pubkey</code> in <code>tauri.conf.json</code> must be replaced; CI secrets <code>TAURI_SIGNING_PRIVATE_KEY</code> and <code>TAURI_SIGNING_PRIVATE_KEY_PASSWORD</code> set.</li>
+</ol>
+<hr>
+<h2 id="cut-a-release">Cut a release</h2><h3 id="1-merge-to-main">1. Merge to <code>main</code></h3><p>All release work should be on <code>main</code> (or the branch your workflows watch).</p>
+<h3 id="2-create-and-push-a-tag">2. Create and push a tag</h3><pre><code class="language-bash">git tag -a v0.2.0-beta.1 -m &quot;Gnomad v0.2.0-beta.1&quot;
+git push origin v0.2.0-beta.1
+</code></pre>
+<p>Or use <strong>Actions → Release → Run workflow</strong> with a tag name (creates/updates the release for that tag).</p>
+<h3 id="3-monitor-ci">3. Monitor CI</h3><p>Open the <strong>Release</strong> workflow run. Expect four matrix jobs:</p>
+<ul>
+<li><code>macos-latest</code> — universal DMG</li>
+<li><code>ubuntu-22.04</code> — Linux x86_64 deb/rpm/AppImage</li>
+<li><code>ubuntu-24.04-arm</code> — Linux ARM64 deb/AppImage</li>
+<li><code>windows-latest</code> — MSI + NSIS</li>
+</ul>
+<p>Each job uploads assets via <code>tauri-action</code> with <code>includeUpdaterJson: true</code>.</p>
+<h3 id="4-verify-github-release">4. Verify GitHub Release</h3><ul>
+<li>Assets named <code>gnomad-[name]-[version]-[platform][ext]</code></li>
+<li><code>latest.json</code> present (updater manifest)</li>
+<li>Release notes readable; mark <strong>pre-release</strong> for alpha/beta</li>
+</ul>
+<h3 id="5-post-release-verification">5. Post-release verification</h3><table>
+<thead>
+<tr>
+<th>Check</th>
+<th>How</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>macOS install</td>
+<td>Open DMG, drag to Applications, launch</td>
+</tr>
+<tr>
+<td>Linux x86_64</td>
+<td><code>sudo dpkg -i gnomad_*.deb</code> or run AppImage</td>
+</tr>
+<tr>
+<td>Linux ARM64</td>
+<td>Same on ARM board / VM</td>
+</tr>
+<tr>
+<td>Windows</td>
+<td>Run MSI or setup.exe</td>
+</tr>
+<tr>
+<td>Updater</td>
+<td>Install previous build → Settings → Updates → Install (requires valid signing keys)</td>
+</tr>
+</tbody></table>
+<p>Document results in <a href="QA_CHECKLIST.md">QA_CHECKLIST.md</a> or a release issue.</p>
+<hr>
+<h2 id="hotfix-workflow">Hotfix workflow</h2><ol>
+<li>Branch from the release tag or <code>main</code>.</li>
+<li>Fix + tests + CHANGELOG entry.</li>
+<li>Merge to <code>main</code>.</li>
+<li>Tag patch version (<code>v0.2.0-beta.2</code>).</li>
+</ol>
+<p>Do <strong>not</strong> force-push tags that users may already have installed.</p>
+<hr>
+<h2 id="rollback">Rollback</h2><p>GitHub Releases cannot be “un-published” cleanly for users who already downloaded. For a bad build:</p>
+<ol>
+<li>Mark the release as <strong>pre-release</strong> or add a prominent warning in release notes.</li>
+<li>Publish a new patch tag with the fix.</li>
+<li>If updater keys were compromised, rotate minisign keys and update <code>pubkey</code> in <code>tauri.conf.json</code> (users on old builds will not auto-update until they install manually once).</li>
+</ol>
+<hr>
+<h2 id="ci-secrets-reference">CI secrets reference</h2><table>
+<thead>
+<tr>
+<th>Secret</th>
+<th>Required for</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>GITHUB_TOKEN</code></td>
+<td>All releases</td>
+<td>Provided by Actions</td>
+</tr>
+<tr>
+<td><code>TAURI_SIGNING_PRIVATE_KEY</code></td>
+<td>Signed updates</td>
+<td>Minisign private key contents</td>
+</tr>
+<tr>
+<td><code>TAURI_SIGNING_PRIVATE_KEY_PASSWORD</code></td>
+<td>Signed updates</td>
+<td>Empty string if no password</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="related-docs">Related docs</h2><ul>
+<li><a href="UPDATER.md">UPDATER.md</a> — key generation and channels</li>
+<li><a href="BUILD_PLATFORMS.md">BUILD_PLATFORMS.md</a> — local build commands</li>
+<li><a href="LINUX_PACKAGES.md">LINUX_PACKAGES.md</a> — install and ARM64 notes</li>
+<li><a href="QA_CHECKLIST.md">QA_CHECKLIST.md</a> — sign-off matrix</li>
+</ul>
+<hr>
+<p>Built with ❤️ by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+
+      <footer class="doc-footer">
+        <p>Built with <span aria-label="love">❤️</span> by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+      </footer>
+    </main>
+  </div>
+  <script>
+    const links = document.querySelectorAll(".sidebar a[href^='#']");
+    const sections = [...links].map((a) => document.querySelector(a.getAttribute("href")));
+    const onScroll = () => {
+      let cur = 0;
+      sections.forEach((s, i) => { if (s && s.getBoundingClientRect().top <= 120) cur = i; });
+      links.forEach((l, i) => l.classList.toggle("active", i === cur));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  </script>
+</body>
+</html>

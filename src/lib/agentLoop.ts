@@ -48,6 +48,7 @@ export type SafetyCheck = {
   requires_hitl_approval: boolean;
   requires_admin: boolean;
   danger_reason?: string;
+  suggest_agent_fs?: boolean;
 };
 
 export interface AgentLoopCallbacks {

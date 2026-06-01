@@ -1,6 +1,7 @@
 # Test Notes — Gnomad Desktop Assistant
 
 **Run date:** 2026-05-31  
+**Version:** 0.2.0-beta.1  
 **Environment:** macOS (darwin), project path with spaces
 
 ## Automated runs
@@ -8,10 +9,11 @@
 | Command | Result | Notes |
 |---------|--------|-------|
 | `npm run build` | **PASS** | `tsc` + Vite 7 |
-| `npm run test` | **PASS** | Vitest — 7 tests (`parseInvokeError`, error formatting) |
-| `cargo test` (src-tauri) | **PASS (13 tests)** | error, hitl_token, path_token, privilege, shell_session, shell_sandbox |
+| `npm run test` | **PASS (16)** | Vitest — errors, models, agent loop |
+| `cargo test` (src-tauri) | **PASS (18)** | error, env_config, hitl_token, path_token, privilege, shell_session, shell_sandbox |
 | `cargo build` (src-tauri) | **PASS** | Debug profile; default features (no `embedded-llm`) |
-| CI (`build.yml`) | **PASS** | macOS, Ubuntu, Windows matrix on push to main |
+| `npm run docs:export` | **PASS** | 35+ documents → HTML + TXT |
+| CI (`build.yml`) | **Expected PASS** | macOS, Linux x86_64, Linux ARM64, Windows on push to main |
 
 ### Embedded LLM (optional)
 
@@ -22,6 +24,14 @@ npm run tauri:dev:embedded
 
 Not run in default CI to keep matrix fast.
 
+## Vitest coverage (frontend)
+
+| File | What it tests |
+|------|----------------|
+| `errors.test.ts` | `parseInvokeError`, formatting helpers |
+| `models.test.ts` | `normalizeCloudModel`, cloud API presets |
+| `agentLoop.test.ts` | Mocked cloud turn → `shell_run` → completion; HITL deny path |
+
 ## Not run in this session (GUI / OS)
 
 These require an interactive session and are **manual**:
@@ -30,6 +40,7 @@ These require an interactive session and are **manual**:
 |------|-----|
 | App launch | `npm run tauri dev` |
 | Overlay toggle | ⌘⇧Space / Ctrl+Shift+Space |
+| Voice dictation | Settings → Privacy → enable mic; composer mic button |
 | Tray menu | Show Gnomad / Settings / Quit |
 | Wayland tray (Linux) | Left-click tray icon → menu |
 | Sudo Gate + HITL token | Approve risky cmd → signed token path |
@@ -37,6 +48,8 @@ These require an interactive session and are **manual**:
 | xterm replay | Expand command card → Terminal view |
 | Updates | Settings → Updates → Check for updates |
 | YOLO sandbox | YOLO + experimental sandbox; verify blocked network reads |
+| Linux ARM64 install | Install CI `.deb` on ARM board |
+| Skip link | Windowed mode → Tab to skip link |
 
 ## Manual checklist (copy for QA)
 
@@ -48,13 +61,10 @@ These require an interactive session and are **manual**:
 [ ] Path Gate: unsigned bypass rejected; approve mints token
 [ ] Standard mode: workspace fs works; outside path gated
 [ ] Settings → Updates: check returns message (even if no new release)
+[ ] Voice input: mic button appends transcript when enabled
 [ ] npm run test && cargo test pass locally
 ```
 
-## Known test gaps
+---
 
-- No headless E2E (Tauri WebDriver not configured)
-- No mocked cloud agent integration test in CI yet
-- Updater install path requires signed release artifacts + real pubkey
-
-See also [`QA_CHECKLIST.md`](QA_CHECKLIST.md) and [`CODE_REVIEW.md`](CODE_REVIEW.md).
+Built with ❤️ by [Gnomad Studio](https://gnomadstudio.org) 🦙

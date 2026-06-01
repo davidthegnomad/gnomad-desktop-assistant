@@ -239,8 +239,9 @@ body {
 <h2 id="one-time-setup">One-time setup</h2><ol>
 <li>Generate a key pair (keep the private key secret):</li>
 </ol>
-<pre><code class="language-bash">cd src-tauri
-npx tauri signer generate -w ~/.tauri/gnomad-updater.key
+<pre><code class="language-bash">npm run setup:updater-keys
+# or manually:
+cd src-tauri &amp;&amp; npx tauri signer generate -w ~/.tauri/gnomad-updater.key
 </code></pre>
 <ol start="2">
 <li><p>Copy the <strong>public</strong> key contents into <code>src-tauri/tauri.conf.json</code> → <code>plugins.updater.pubkey</code> (full string, not a file path).</p>
@@ -281,7 +282,10 @@ npx tauri signer generate -w ~/.tauri/gnomad-updater.key
 </tr>
 </tbody></table>
 <p>Users choose the channel in <strong>Settings → Updates</strong>. The release workflow uploads <code>latest.json</code> when <code>includeUpdaterJson: true</code>.</p>
-<h2 id="verify-locally">Verify locally</h2><p>After a tagged release, install the previous version and use <strong>Check for updates</strong> in Settings. Updates only install when the artifact signature matches the embedded public key.</p>
+<h2 id="verify-locally">Verify locally</h2><p>Before tagging a release:</p>
+<pre><code class="language-bash">npm run verify:updater
+</code></pre>
+<p>After a tagged release, install the previous version and use <strong>Check for updates</strong> in Settings. Updates only install when the artifact signature matches the embedded public key.</p>
 
       <footer class="doc-footer">
         <p>Built with <span aria-label="love">❤️</span> by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>

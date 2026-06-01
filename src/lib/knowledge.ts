@@ -59,6 +59,21 @@ export async function getAgentContextBundle(): Promise<string> {
   return invoke<string>("get_agent_context_bundle");
 }
 
+export interface SkillPackInfo {
+  id: string;
+  name: string;
+  description: string;
+  skillCount: number;
+}
+
+export async function listSkillPacks(): Promise<SkillPackInfo[]> {
+  return invoke<SkillPackInfo[]>("list_skill_packs");
+}
+
+export async function installSkillPack(packId: string): Promise<KnowledgeFileEntry[]> {
+  return invoke<KnowledgeFileEntry[]>("install_skill_pack", { packId });
+}
+
 /** Trim knowledge bundle so it fits in the model context window. */
 export function trimContextBundle(bundle: string, maxChars = 12_000): string {
   const trimmed = bundle.trim();

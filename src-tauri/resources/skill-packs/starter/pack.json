@@ -1,0 +1,4 @@
+manifest_version: 1
+id: starter
+name: Starter skills
+description: Git, file organization, shell safety, and markdown writing guides for new users.

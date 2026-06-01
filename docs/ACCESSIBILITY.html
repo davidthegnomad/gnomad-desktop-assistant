@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Accessibility — Gnomad Desktop Assistant</title>
+  <meta name="description" content="Accessibility documentation for Gnomad Desktop Assistant." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>:root {
+  --bg-base: #0a0a0a;
+  --bg-panel: rgba(18, 18, 20, 0.92);
+  --bg-elevated: rgba(30, 30, 35, 0.95);
+  --border: rgba(255, 255, 255, 0.1);
+  --text: #f3f4f6;
+  --muted: #9ca3af;
+  --accent: #8ab4f8;
+  --accent-secondary: #c58af9;
+  --success: #34a853;
+  --warning: #f9ab00;
+  --danger: #ea4335;
+  --pill-radius: 999px;
+  --radius: 16px;
+  --mesh:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(66, 133, 244, 0.2), transparent 65%),
+    radial-gradient(ellipse 60% 40% at 10% 30%, rgba(168, 85, 247, 0.12), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 95% 40%, rgba(242, 139, 130, 0.1), transparent 50%);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: "Google Sans Flex", "Roboto", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--bg-base);
+  min-height: 100vh;
+}
+
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: var(--mesh);
+  z-index: 0;
+}
+
+.layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 1.5rem 1.25rem;
+  background: var(--bg-panel);
+  backdrop-filter: blur(24px);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.brand-icon { font-size: 1.5rem; }
+.brand h1 { font-size: 1rem; font-weight: 600; }
+
+.doc-path {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  word-break: break-all;
+}
+
+.sidebar a {
+  display: block;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar a.toc-h3 { padding-left: 1.1rem; font-size: 0.78rem; }
+.sidebar a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.sidebar a.active { color: var(--accent); background: rgba(138,180,248,0.12); }
+
+.content {
+  padding: 2rem 2.5rem 3rem;
+  max-width: 760px;
+}
+
+.hero { margin-bottom: 1.5rem; }
+.hero h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.formats { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+.formats a { color: var(--accent); }
+
+.doc-body h1 { font-size: 1.5rem; margin: 1.5rem 0 0.75rem; }
+.doc-body h2 {
+  font-size: 1.25rem;
+  margin: 2rem 0 0.65rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.doc-body h3 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; color: var(--accent); }
+.doc-body h4 { font-size: 0.95rem; margin: 1rem 0 0.4rem; }
+
+.doc-body p { margin-bottom: 0.85rem; }
+.doc-body ul, .doc-body ol { margin: 0 0 1rem 1.25rem; color: var(--muted); }
+.doc-body li { margin-bottom: 0.35rem; }
+.doc-body li strong { color: var(--text); }
+
+.doc-body a { color: var(--accent); }
+.doc-body code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85em;
+  background: rgba(255,255,255,0.08);
+  padding: 0.12em 0.35em;
+  border-radius: 6px;
+  color: var(--accent-secondary);
+}
+
+.doc-body pre {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.doc-body pre code {
+  background: none;
+  padding: 0;
+  color: var(--text);
+}
+
+.doc-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1rem 0;
+}
+
+.doc-body th, .doc-body td {
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-body th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.doc-body blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 0.6rem 1rem;
+  margin: 1rem 0;
+  background: rgba(138,180,248,0.08);
+  border-radius: 0 12px 12px 0;
+  color: var(--muted);
+}
+
+.doc-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+.doc-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.doc-footer a { color: var(--accent); text-decoration: none; }
+.doc-footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="mesh-bg" aria-hidden="true"></div>
+  <div class="layout">
+    <nav class="sidebar" aria-label="Table of contents">
+          <div class="brand"><span class="brand-icon">🍄</span><h1>Gnomad</h1></div>
+          <p class="doc-path">docs/ACCESSIBILITY.md</p>
+          <a href="#keyboard-shortcuts" class="toc-h2">Keyboard shortcuts</a>
+<a href="#implemented-alpha" class="toc-h2">Implemented (alpha)</a>
+<a href="#known-gaps-v10" class="toc-h2">Known gaps (v1.0)</a>
+<a href="#testing-checklist" class="toc-h2">Testing checklist</a>
+<a href="#related" class="toc-h2">Related</a>
+        </nav>
+    <main class="content doc-body">
+      <header class="hero">
+        <h2>Accessibility</h2>
+        <p class="formats">Also available: <a href="ACCESSIBILITY.md">Markdown</a> · <a href="ACCESSIBILITY.txt">Plain text</a></p>
+      </header>
+      <h1 id="accessibility-gnomad-desktop-assistant">Accessibility — Gnomad Desktop Assistant</h1><p><strong>Status:</strong> Alpha improvements (June 2026) — not a full WCAG 2.2 audit<br><strong>Target:</strong> v1.0 general availability pass</p>
+<hr>
+<h2 id="keyboard-shortcuts">Keyboard shortcuts</h2><table>
+<thead>
+<tr>
+<th>Shortcut</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>⌘⇧Space</strong> / <strong>Ctrl+Shift+Space</strong></td>
+<td>Show/hide Gnomad (global, OS-level)</td>
+</tr>
+<tr>
+<td><strong>Escape</strong></td>
+<td>Close topmost overlay (gate modal → about → onboarding → settings → knowledge)</td>
+</tr>
+<tr>
+<td><strong>⌘K</strong> / <strong>Ctrl+K</strong> or <strong>⌘L</strong> / <strong>Ctrl+L</strong></td>
+<td>Focus message composer</td>
+</tr>
+<tr>
+<td><strong>⌘,</strong> / <strong>Ctrl+,</strong></td>
+<td>Open Settings</td>
+</tr>
+<tr>
+<td><strong>⌘N</strong> / <strong>Ctrl+N</strong></td>
+<td>New chat</td>
+</tr>
+</tbody></table>
+<p>Shortcuts are disabled while typing in inputs unless combined with ⌘/Ctrl. Gate modals (Sudo / Path) only handle <strong>Escape</strong>.</p>
+<hr>
+<h2 id="implemented-alpha">Implemented (alpha)</h2><ul>
+<li><strong>Focus visible</strong> — <code>:focus-visible</code> ring on interactive controls</li>
+<li><strong>Composer</strong> — <code>aria-label=&quot;Message Gnomad&quot;</code>, stable <code>#gnomad-composer-input</code> id</li>
+<li><strong>Modals</strong> — <code>role=&quot;dialog&quot;</code>, <code>aria-modal=&quot;true&quot;</code>, focus trap on Sudo Gate, Path Gate, About, <strong>Onboarding</strong></li>
+<li><strong>Skip link</strong> — windowed/fullscreen: “Skip to main content” jumps to <code>#gnomad-main-content</code></li>
+<li><strong>Terminal</strong> — debounced <code>aria-live</code> summaries for xterm output (full stream not read line-by-line)</li>
+<li><strong>Knowledge tabs</strong> — <code>role=&quot;tablist&quot;</code> / <code>role=&quot;tab&quot;</code> / <code>aria-selected</code></li>
+<li><strong>Existing labels</strong> — provider/model selects, send button, tray actions (see component <code>aria-label</code> attributes)</li>
+</ul>
+<hr>
+<h2 id="known-gaps-v10">Known gaps (v1.0)</h2><ul>
+<li>Full WCAG 2.2 AA contrast audit not complete</li>
+<li>Screen reader testing limited (VoiceOver / NVDA / Orca)</li>
+<li>Live terminal: debounced summaries only (not full stream narration)</li>
+</ul>
+<hr>
+<h2 id="testing-checklist">Testing checklist</h2><pre><code>[ ] Tab through Settings without mouse
+[ ] Escape closes settings and knowledge overlay
+[ ] ⌘K focuses composer from chat view
+[ ] Sudo Gate: Tab cycles Deny / Approve; Escape denies
+[ ] Focus ring visible on buttons and tabs (keyboard only)
+[ ] Onboarding: Tab through provider cards and form fields
+[ ] Windowed mode: Tab to “Skip to main content” → main chat
+</code></pre>
+<hr>
+<h2 id="related">Related</h2><ul>
+<li><a href="USER_GUIDE.md">USER_GUIDE.md</a></li>
+<li><a href="ROADMAP.md">ROADMAP.md</a> — v1.0 WCAG pass</li>
+<li><a href="CROSS_PLATFORM_CHECKLIST.md">CROSS_PLATFORM_CHECKLIST.md</a></li>
+</ul>
+<hr>
+<p>Built with ❤️ by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+
+      <footer class="doc-footer">
+        <p>Built with <span aria-label="love">❤️</span> by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+      </footer>
+    </main>
+  </div>
+  <script>
+    const links = document.querySelectorAll(".sidebar a[href^='#']");
+    const sections = [...links].map((a) => document.querySelector(a.getAttribute("href")));
+    const onScroll = () => {
+      let cur = 0;
+      sections.forEach((s, i) => { if (s && s.getBoundingClientRect().top <= 120) cur = i; });
+      links.forEach((l, i) => l.classList.toggle("active", i === cur));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  </script>
+</body>
+</html>

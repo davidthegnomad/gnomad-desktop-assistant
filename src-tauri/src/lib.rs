@@ -1,6 +1,7 @@
 mod path_token;
 mod updater;
 mod error;
+mod error_log;
 mod hitl_token;
 mod local_inference;
 mod context;
@@ -8,7 +9,6 @@ mod privilege;
 mod keychain;
 mod attachments;
 mod automation;
-mod shell_executor;
 mod shell_sandbox;
 mod shell_session;
 mod agent_settings;
@@ -334,7 +334,6 @@ pub fn run() {
             automation::capture_screen,
             automation::simulate_click,
             automation::simulate_typing,
-            shell_executor::execute_shell_command,
             shell_session::shell_session_run,
             shell_session::shell_session_reset,
             shell_session::shell_session_status,
@@ -352,6 +351,7 @@ pub fn run() {
             agent_fs::agent_fs_search,
             agent_runtime::agent_execute_tool,
             agent_audit::append_agent_audit,
+            error_log::append_error_log,
             llm::chat_completion_turn,
             window_manager::set_window_mode,
             window_manager::get_window_mode,
@@ -364,6 +364,9 @@ pub fn run() {
             knowledge::delete_knowledge_file,
             knowledge::append_user_preference,
             knowledge::get_agent_context_bundle,
+            knowledge::list_skill_packs,
+            knowledge::install_skill_pack,
+            env_config::get_cloud_api_config,
             env_config::get_env_llm_config,
             platform::get_platform_info,
             env_config::get_cloud_api_key_source,

@@ -1,3 +1,6 @@
+import { invoke } from "@tauri-apps/api/core";
+import { getErrorLogEnabled } from "./preferences";
+
 export interface AgentErrorPayload {
   code: string;
   message: string;
@@ -48,4 +51,23 @@ export function executionFailedLabel(err: unknown): string {
     return payload.message;
   }
   return `Execution failed: ${err instanceof Error ? err.message : String(err)}`;
+}
+
+export async function maybeLogAgentError(
+  err: unknown,
+  source: string
+): Promise<void> {
+  if (!getErrorLogEnabled()) return;
+  const payload = parseInvokeError(err);
+  if (!payload) return;
+  try {
+    await invoke("append_error_log", {
+      code: payload.code,
+      message: payload.message,
+      detail: payload.detail ?? null,
+      source,
+    });
+  } catch {
+    /* best-effort local log */
+  }
 }

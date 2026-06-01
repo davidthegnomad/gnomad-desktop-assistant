@@ -1,0 +1,110 @@
+════════════════════════════════════════════════════════════════════════
+  TROUBLESHOOTING
+  Gnomad Desktop Assistant · docs/TROUBLESHOOTING.md
+════════════════════════════════════════════════════════════════════════
+
+TROUBLESHOOTING — GNOMAD DESKTOP ASSISTANT
+==========================================
+
+Quick fixes for common issues. For full usage, see USER_GUIDE.md.
+
+────────────────────────────────────────
+
+CHAT & LLM
+----------
+
+  Symptom                              |  Likely cause                         |  Fix                                                                                
+  Cloud provider disabled in Settings  |  No API key                           |  Add key under Settings → API keys, or set DeepSeek_API_KEY / OPENAI_API_KEY in .env
+  “Cloud LLM API error (401)”          |  Invalid or expired key               |  Regenerate key at your provider; update keychain entry                             
+  “Cloud LLM request failed”           |  Network / wrong endpoint             |  Check connectivity; Settings → Cloud API endpoint matches your provider            
+  Local provider disabled              |  Ollama URL empty                     |  Set Ollama URL in Settings; run ollama serve                                       
+  Ollama errors                        |  Server down or wrong model           |  curl http://localhost:11434/api/tags; pull model with ollama pull llama3.2         
+  Embedded GGUF unavailable            |  Built without feature                |  Use npm run tauri:dev:embedded; set GGUF path in Agent settings                    
+  Agent stops after one tool           |  Max steps or LLM returned text only  |  Normal for simple tasks; check command output in chat                              
+
+────────────────────────────────────────
+
+AGENT, SHELL & SAFETY
+---------------------
+
+  Symptom                           |  Likely cause                    |  Fix                                                                       
+  Command blocked at Sudo Gate      |  Risky or admin command          |  Review command; approve only if intended; prefer fs_write for file changes
+  “Command blocked by user”         |  Denied at gate                  |  Re-run and approve, or rephrase request                                   
+  Path Gate modal                   |  File outside workspace          |  Approve once (signed token) or move file into workspace                   
+  “Not a valid shell command”       |  Model sent prose not CLI        |  Enable command planner in Agent settings; retry                           
+  Shell timeout / stalled           |  Long-running command            |  Interrupt; run shorter commands; reset shell in Settings                  
+  Elevated command fails (Windows)  |  Elevation not supported in-app  |  Run in elevated PowerShell manually                                       
+  YOLO sandbox blocks network       |  Expected in sandbox mode        |  Disable sandbox in experimental flags or use Standard trust               
+
+────────────────────────────────────────
+
+TRAY, WINDOW & SHORTCUTS
+------------------------
+
+  Symptom                            |  Likely cause                 |  Fix                                                        
+  Shortcut does nothing              |  App not running or OS focus  |  Launch from tray; check ⌘⇧Space / Ctrl+Shift+Space         
+  No tray icon (Linux)               |  Missing AppIndicator         |  sudo apt install libayatana-appindicator3-1 (Debian/Ubuntu)
+  Tray click does nothing (Wayland)  |  Wayland limitation           |  Left-click tray icon (hint in Settings on Wayland)         
+  Window off-screen                  |  Multi-monitor change         |  Use tray Show Gnomad; switch window mode in toolbar        
+  macOS Accessibility denied         |  Permission revoked           |  System Settings → Privacy → Accessibility → enable Gnomad  
+
+────────────────────────────────────────
+
+CONTEXT PILLS (ACTIVE APP / CLIPBOARD)
+--------------------------------------
+
+  Symptom                      |  Likely cause            |  Fix                                                
+  Empty active window (Linux)  |  Missing tools           |  Install xdotool (X11) or use Wayland-native tools  
+  Clipboard empty              |  Permission or headless  |  Grant permissions; copy text before sending message
+
+────────────────────────────────────────
+
+UPDATES
+-------
+
+  Symptom                             |  Likely cause                   |  Fix                                                    
+  “Update check failed”               |  No network or no releases      |  Check GitHub access; verify tag exists                 
+  Update available but install fails  |  Unsigned / placeholder pubkey  |  Maintainer must configure keys per UPDATER.md          
+  Wrong channel                       |  Stable vs beta                 |  Settings → Updates — pick channel matching release type
+
+────────────────────────────────────────
+
+LINUX INSTALL
+-------------
+
+  Symptom                       |  Likely cause           |  Fix                                                
+  GLIBC_2.xx not found          |  Built on newer distro  |  Use CI-built .deb/AppImage or build on Ubuntu 22.04
+  RPM won’t install on Ubuntu   |  Wrong package family   |  Use .deb or AppImage, not .rpm                     
+  WebKit errors                 |  Missing library        |  sudo apt install libwebkit2gtk-4.1-0               
+  ARM64 device, x86_64 package  |  Wrong architecture     |  Download ARM64 .deb or AppImage from Releases      
+
+See LINUX_PACKAGES.md for install commands.
+
+────────────────────────────────────────
+
+DIAGNOSTICS (LOCAL)
+-------------------
+
+  Feature          |  Location                         |  File (app data)         
+  Agent audit log  |  Always on (shell/fs tools)       |  gnomad/agent-audit.jsonl
+  Error log        |  Settings → Diagnostics (opt-in)  |  gnomad/error-log.jsonl  
+
+App data path: macOS ~/Library/Application Support/…, Linux ~/.local/share/…, Windows %APPDATA%.
+
+────────────────────────────────────────
+
+STILL STUCK?
+------------
+
+  1. Run npm run test and cargo test if building from source.
+  2. Check GitHub Issues.
+  3. Include OS version, Gnomad version, and redacted error text (no API keys).
+
+────────────────────────────────────────
+
+Built with ❤️ by Gnomad Studio 🦙
+
+════════════════════════════════════════════════════════════════════════
+Built with ❤️ by Gnomad Studio 🦙
+https://gnomadstudio.org
+════════════════════════════════════════════════════════════════════════

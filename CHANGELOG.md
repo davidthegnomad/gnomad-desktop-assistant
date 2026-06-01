@@ -2,34 +2,60 @@
 
 ## [Unreleased] — main branch
 
-Post–v0.1.0-alpha hardening: Wave B systems, v0.2 beta readiness, and documentation refresh.
+### Added
+
+(nothing yet)
+
+---
+
+## [0.2.0-beta.1] — 2026-05-31
+
+Beta readiness release: v0.2 hardening, v0.3 reach features, documentation portfolio, and GitHub Pages auto-deploy.
 
 ### Added
 
-- **Wave B1 — Cryptographic HITL tokens** (`hitl_token.rs`): signed approval for risky shell; rejects bare `hitl_approved: true`
-- **Wave B2 — In-process GGUF** (`local_inference.rs`, optional `embedded-llm` feature): command planner + optional local chat without Ollama
-- **Wave B3 — xterm.js terminal** (`LiveTerminal.tsx`): live PTY stream while thinking; replay on command cards
-- **Wave B4 — YOLO micro-sandbox** (`shell_sandbox.rs`): macOS `sandbox-exec` / Linux `bwrap` when YOLO + experimental flag
-- **Path Gate tokens** (`path_token.rs`): signed approval for out-of-workspace filesystem access
-- **Structured errors** (`error.rs`): JSON `GnomadError` payloads on LLM, planner, chat history, and agent paths
-- **Tauri auto-updater** (Settings → Updates): stable/beta channels; see [`docs/UPDATER.md`](docs/UPDATER.md)
-- **Linux Wayland tray** improvements: left-click menu on Wayland; session hint in Settings
-- **Vitest** (`npm run test`): unit tests for `parseInvokeError`; runs in CI
-- **App decomposition**: hooks (`useAgentExecution`, `useChatSubmit`, …), `ChatView`, gate modals
-- Docs: [`WAVE_B_ROADMAP.md`](docs/WAVE_B_ROADMAP.md), [`UPDATER.md`](docs/UPDATER.md), expanded [`DOCS_INDEX.md`](docs/DOCS_INDEX.md)
+- **Voice input (beta)** — opt-in push-to-talk via Web Speech API; Settings → Privacy
+- **Security review checklist** — [SECURITY_REVIEW.md](docs/SECURITY_REVIEW.md)
+- **Accessibility statement** — [ACCESSIBILITY_STATEMENT.md](docs/ACCESSIBILITY_STATEMENT.md)
+- **GitHub Pages workflow** — auto-publish docs on push to `main`
+- **Onboarding a11y** — focus trap, `role="dialog"`, OpenAI-compatible copy
+- **Enterprise deployment guide** — [ENTERPRISE.md](docs/ENTERPRISE.md)
+- **CONTRIBUTING.md** — dev setup and PR checklist
+- **GGUF download helper** — `npm run download:gguf` + [GGUF_SETUP.md](docs/GGUF_SETUP.md)
+- **Updater verify script** — `npm run verify:updater` detects placeholder pubkey
+- **Skip link (windowed mode)** — jump to main chat content
+- **Terminal aria-live** — debounced screen reader summaries for xterm output
+- **macOS notarization guide** — [MACOS_NOTARIZATION.md](docs/MACOS_NOTARIZATION.md) + `npm run notarize:macos`
+- **Test strategy** — [TEST_STRATEGY.md](docs/TEST_STRATEGY.md)
+- **P0 shell IPC hardening** — removed legacy `execute_shell_command`; all shell via `shell_session_run` + HITL
+- **Keyboard accessibility** — global shortcuts (⌘K composer, ⌘, settings, ⌘N new chat, Escape); focus traps on gate modals; `:focus-visible` styles — [ACCESSIBILITY.md](docs/ACCESSIBILITY.md)
+- **Starter skill packs** — bundled `starter` pack (4 skills); `list_skill_packs` / `install_skill_pack`; Knowledge UI
+- **OpenAI-compatible cloud router** — Settings → Cloud API endpoint; env `OPENAI_API_KEY` / `CLOUD_API_BASE_URL`
+- **Windows YOLO sandbox (workspace-scoped)** — TEMP + cwd limited to workspace
+- **Flatpak / Snap packaging** — manifests + build scripts + CI workflow
+- **Updater key script** — `npm run setup:updater-keys`
+- **RELEASE_RUNBOOK.md**, **TROUBLESHOOTING.md**
+- **Agent loop integration tests** — Vitest mocks cloud turn + `shell_run` round trip
+- **Shell audit metadata** — `sandboxed` and `success` on shell runs
+- **File-write safety hint** — Sudo Gate suggests `fs_write`
+- **Local error log (opt-in)** — Settings → Diagnostics
+- **Startup update check (opt-in)** — Settings → Updates
+- **Wave B** — HITL tokens, GGUF, xterm PTY, YOLO sandbox, Path Gate tokens, structured errors, auto-updater, Wayland tray, Vitest
 
 ### Changed
 
+- Version **0.2.0-beta.1** across `package.json`, Tauri config, and UI
 - `App.tsx` slimmed; agent orchestration moved to hooks
-- Local provider availability includes embedded GGUF when built with `embedded-llm`
-- Release workflow uploads `latest.json` for in-app updates (requires signing keys in CI)
+- Release workflow: optional macOS notarization when Apple secrets set
+- Docs site regenerated (33+ documents, HTML + TXT)
 
 ### Known limitations
 
-- Updater requires generated minisign keys (placeholder pubkey in `tauri.conf.json` until replaced)
-- Embedded GGUF not in default CI builds (`--features embedded-llm` for local dev)
-- Windows sandbox not implemented (YOLO FS only on Windows)
-- Bundled GGUF model not shipped (user supplies `.gguf` path)
+- Updater requires generated minisign keys (placeholder pubkey until replaced)
+- Embedded GGUF not in default CI builds
+- Windows sandbox is workspace-scoped only
+- External pen test and full WCAG audit pending v1.0 GA
+- Team workspace sync deferred post–v1.0
 
 ---
 

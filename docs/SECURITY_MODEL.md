@@ -77,7 +77,7 @@ Implementation: [`src-tauri/src/hitl_token.rs`](../src-tauri/src/hitl_token.rs),
 - Flags known-dangerous patterns
 - Returns `requires_hitl_approval`, `requires_admin`, `danger_reason`
 
-**Alpha gap:** All invoke paths must call safety checks; treat direct `execute_shell_command` without checks as a finding in review.
+**Shell execution:** All agent shell traffic goes through `shell_session_run` with HITL tokens, validation, and optional sandbox. The legacy `execute_shell_command` IPC command was **removed** (no bypass path).
 
 ---
 

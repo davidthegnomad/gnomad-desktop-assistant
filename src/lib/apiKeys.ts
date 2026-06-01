@@ -23,9 +23,9 @@ export interface ApiKeyStatus {
 export const DEEPSEEK_API_KEY_SLOT: ApiKeySlot = {
   id: "deepseek",
   credentialKey: "llm_api_key",
-  name: "DeepSeek API",
-  description: "Cloud chat via DeepSeek (deepseek-chat, deepseek-reasoner).",
-  envHint: "DeepSeek_API_KEY",
+  name: "Cloud LLM API",
+  description: "OpenAI-compatible API key (DeepSeek default; also OpenAI, Groq, Together, etc.).",
+  envHint: "DeepSeek_API_KEY or OPENAI_API_KEY",
 };
 
 export const MANAGED_API_KEY_SLOTS: ApiKeySlot[] = [DEEPSEEK_API_KEY_SLOT];

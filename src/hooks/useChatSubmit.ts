@@ -14,7 +14,7 @@ import {
   formatAttachmentsForPrompt,
   type ChatAttachment,
 } from "../lib/attachments";
-import { executionFailedLabel, parseInvokeError } from "../lib/errors";
+import { executionFailedLabel, maybeLogAgentError, parseInvokeError } from "../lib/errors";
 import { getAgentContextBundle, trimContextBundle } from "../lib/knowledge";
 import { chatCompletion } from "../lib/llm";
 import { MUSHROOM } from "../lib/brand";
@@ -114,6 +114,7 @@ export function useChatSubmit(options: {
           options.setMessages(nextMessages);
           await options.persistCurrentChat(nextMessages);
         } catch (err: unknown) {
+          void maybeLogAgentError(err, "direct_command");
           const nextMessages: Message[] = [
             ...options.messages,
             userMessage,
@@ -242,6 +243,7 @@ ${AGENT_SYSTEM_TOOLS}`;
         options.setMessages(nextMessages);
         await options.persistCurrentChat(nextMessages);
       } catch (err: unknown) {
+        void maybeLogAgentError(err, "chat");
         const errMessages: Message[] = [
           ...options.messages,
           {
@@ -292,6 +294,7 @@ ${AGENT_SYSTEM_TOOLS}`;
         },
       ]);
     } catch (err: unknown) {
+      void maybeLogAgentError(err, "command");
       options.setIsThinking(false);
       options.setThinkingText("");
       options.setMessages((prev) => [

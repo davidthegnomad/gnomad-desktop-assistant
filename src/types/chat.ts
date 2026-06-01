@@ -28,6 +28,7 @@ export interface SafetyCheck {
   requires_hitl_approval: boolean;
   requires_admin: boolean;
   danger_reason: string | null;
+  suggest_agent_fs?: boolean;
 }
 
 export const WELCOME_ONLY =

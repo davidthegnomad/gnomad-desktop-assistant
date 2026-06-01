@@ -12,3 +12,5 @@ Files live in the app data folder: `gnomad/knowledge/`.
 `INDEX.md` is updated automatically when files are added or removed.
 
 Use the **book icon** in the header or **Knowledge & skills** in the left sidebar → **Add files** to import documents. Uploaded skills and agent briefs are included in chat via `get_agent_context_bundle`.
+
+**Starter packs:** In Knowledge → **Starter packs** → **Install** copies bundled skills (git basics, file organizer, shell safety, markdown writer) from `src-tauri/resources/skill-packs/starter/` into `skills/`.

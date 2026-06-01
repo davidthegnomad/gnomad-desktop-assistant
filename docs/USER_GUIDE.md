@@ -1,6 +1,6 @@
 # User Guide — Gnomad Desktop Assistant
 
-**Version:** 0.1.0-alpha
+**Version:** 0.2.0-beta.1
 
 Project site: [davidthegnomad.github.io/gnomad-desktop-assistant](https://davidthegnomad.github.io/gnomad-desktop-assistant/)  
 Studio: [gnomadstudio.org](https://gnomadstudio.org)
@@ -212,6 +212,16 @@ Sessions stored locally on disk.
 
 ---
 
+## Voice input (beta)
+
+1. **Settings → Privacy → Enable microphone dictation**
+2. Click the **mic** button in the composer (push-to-talk — click again to stop)
+3. Speech is converted to text by your OS/browser engine and appended to the message
+
+Audio may be processed by Apple, Google, or another vendor depending on platform — not sent to Gnomad servers. Disable anytime in Settings.
+
+---
+
 ## Keyboard shortcuts
 
 | Shortcut | Action |
@@ -235,11 +245,13 @@ Sessions stored locally on disk.
 
 ## Troubleshooting
 
+See **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** for the full guide. Quick fixes:
+
 | Issue | Fix |
 |-------|-----|
-| Cloud disabled | Add DeepSeek API key or `.env` |
+| Cloud disabled | Add API key, or set `DeepSeek_API_KEY` / `OPENAI_API_KEY` in `.env` |
 | Local disabled | Set Ollama URL; run `ollama serve` |
-| Chat errors | Check network or `curl` Ollama URL |
+| Chat errors | Check network, cloud endpoint in Settings, or `curl` Ollama URL |
 | No tray (Linux) | Install appindicator packages |
 | Empty context (Linux) | Install clipboard/window tools |
 | macOS permissions | Re-grant Accessibility after updates |

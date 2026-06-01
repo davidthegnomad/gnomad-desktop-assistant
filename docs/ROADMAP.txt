@@ -6,9 +6,9 @@
 PRODUCT ROADMAP — GNOMAD DESKTOP ASSISTANT
 ==========================================
 
-Version: 0.1.0-alpha  
+Version: 0.2.0-beta.1  
 Last updated: June 2026  
-Horizon: 6–12 months (indicative)
+Horizon: v1.0 GA (indicative)
 
 ────────────────────────────────────────
 
@@ -33,53 +33,60 @@ RELEASED — V0.1.0-ALPHA ✓
 
 ────────────────────────────────────────
 
-V0.2 — BETA READINESS
----------------------
+V0.2 — BETA READINESS ✓
+-----------------------
 
-Target: Hardening and supportability
+Status: Shipped on main as 0.2.0-beta.1
 
-  Item                                                 |  Priority  |  Notes                                                 
-  Server-side safety on all shell paths                |  P0        |  Close IPC bypass class                                
-  Cryptographic HITL tokens (Wave B1)                  |  P0        |  ✓ Shipped — hitl_token.rs                             
-  Wave B error migration (llm, planner, chat history)  |  P1        |  ✓ Shipped — JSON GnomadError on LLM + chat store paths
-  Rust unit tests (privilege, parsers, error)          |  P0        |  CI gate ✓ (cargo test in build workflow)              
-  Refresh CODE_REVIEW / TEST_NOTES                     |  P1        |  Match shipped agent ✓                                 
-  Auto-update channel (Tauri updater)                  |  P1        |  ✓ Shipped — Settings → Updates; see UPDATER.md        
-  Improved Linux Wayland tray                          |  P1        |  ✓ Left-click menu on Wayland; session hint in Settings
-  Error telemetry (opt-in, local-first)                |  P2        |  Crash logs only                                       
-
-────────────────────────────────────────
-
-WAVE B — STATE-OF-THE-ART (V0.3+)
----------------------------------
-
-Detailed design for four evaluation follow-ups: HITL tokens, in-process LLM, Xterm.js PTY, YOLO micro-sandboxing.
-
-→ WAVE_B_ROADMAP.md (phasing, acceptance criteria, risks)
+  Item                                   |  Priority  |  Notes                                 
+  Server-side safety on all shell paths  |  P0        |  ✓ Legacy execute_shell_command removed
+  Cryptographic HITL tokens (Wave B1)    |  P0        |  ✓ hitl_token.rs                       
+  Wave B error migration                 |  P1        |  ✓ JSON GnomadError on LLM + chat paths
+  Rust unit tests                        |  P0        |  ✓ CI gate (cargo test)                
+  CODE_REVIEW / TEST_NOTES refresh       |  P1        |  ✓                                     
+  Auto-update channel                    |  P1        |  ✓ Settings → Updates; UPDATER.md      
+  Linux Wayland tray                     |  P1        |  ✓                                     
+  Error telemetry (opt-in)               |  P2        |  ✓ Local error-log.jsonl               
 
 ────────────────────────────────────────
 
-V0.3 — BROADER REACH
---------------------
-
-  Item                               |  Priority  |  Notes                      
-  Linux ARM64 builds                 |  P1        |  Apple Silicon Linux devices
-  Snap / Flatpak                     |  P2        |  Community demand           
-  Additional cloud providers         |  P2        |  OpenAI-compatible router   
-  Plugin/skills marketplace (local)  |  P2        |  Curated skill packs        
-  Voice input (push-to-talk)         |  P3        |  Platform STT APIs          
-
-────────────────────────────────────────
-
-V1.0 — GENERAL AVAILABILITY
+WAVE B — STATE-OF-THE-ART ✓
 ---------------------------
 
-  Item                            |  Priority  |  Notes                          
-  Signed + notarized macOS        |  P0        |  Enterprise trust               
-  Security review / pen test      |  P0        |  External or structured internal
-  WCAG accessibility pass         |  P1        |  Keyboard nav, contrast         
-  Enterprise deployment guide     |  P2        |  MDM, proxy, key escrow         
-  Team workspace sync (optional)  |  P3        |  E2E encrypted                  
+→ WAVE_B_ROADMAP.md — HITL tokens, GGUF, xterm PTY, YOLO sandbox (shipped)
+
+────────────────────────────────────────
+
+V0.3 — BROADER REACH ✓
+----------------------
+
+Status: Shipped on main as 0.2.0-beta.1
+
+  Item                               |  Priority  |  Notes                                      
+  Linux ARM64 builds                 |  P1        |  ✓ CI ubuntu-24.04-arm                      
+  Snap / Flatpak                     |  P2        |  ✓ FLATPAK.md, SNAP.md                      
+  Additional cloud providers         |  P2        |  ✓ OpenAI-compatible endpoint               
+  Plugin/skills marketplace (local)  |  P2        |  ✓ Starter skill packs                      
+  Voice input (push-to-talk)         |  P3        |  ✓ Beta — Web Speech API; Settings → Privacy
+
+────────────────────────────────────────
+
+V1.0 — GENERAL AVAILABILITY (IN PROGRESS)
+-----------------------------------------
+
+  Item                            |  Priority  |  Notes                                                                 
+  Signed + notarized macOS        |  P0        |  Script + optional CI — MACOS_NOTARIZATION.md; needs Apple secrets     
+  Security review / pen test      |  P0        |  ✓ Internal checklist — SECURITY_REVIEW.md; external pen test before GA
+  WCAG accessibility pass         |  P1        |  ✓ Partial + ACCESSIBILITY_STATEMENT.md; full audit pending            
+  Enterprise deployment guide     |  P2        |  ✓ ENTERPRISE.md                                                       
+  Team workspace sync (optional)  |  P3        |  Deferred post–v1.0                                                    
+
+Operational before GA tag
+
+  1. Replace updater placeholder pubkey — npm run setup:updater-keys → verify:updater
+  2. Configure Apple Developer ID + notarization secrets
+  3. Run SECURITY_REVIEW.md sign-off
+  4. Full WCAG contrast + screen reader pass
 
 ────────────────────────────────────────
 

@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Gnomad",
-  "version": "0.1.0-alpha",
+  "version": "0.2.0-beta.1",
   "identifier": "com.gnomadstudio.gnomad",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -49,6 +49,9 @@
     "createUpdaterArtifacts": true,
     "copyright": "Built with ❤️ by Gnomad Studio 🦙",
     "targets": "all",
+    "resources": {
+      "resources/": "resources/"
+    },
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

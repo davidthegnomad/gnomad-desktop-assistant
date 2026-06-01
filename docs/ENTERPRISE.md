@@ -1,0 +1,136 @@
+# Enterprise deployment — Gnomad Desktop Assistant
+
+**Audience:** IT admins, MDM operators, security reviewers  
+**Status:** Alpha guidance (June 2026)
+
+---
+
+## Overview
+
+Gnomad is a **single-user desktop agent** — not a multi-tenant SaaS. Enterprise deployment means packaging the installer, controlling updates, and optionally pre-configuring LLM endpoints and secrets via managed profiles.
+
+| Concern | Approach |
+|---------|----------|
+| Install | Platform installers from GitHub Releases or internal mirror |
+| Updates | Tauri in-app updater (signed) or MDM-managed reinstall |
+| Secrets | OS keychain, or `.env` / managed config for cloud keys |
+| Network | HTTPS to cloud LLM APIs; optional HTTP(S) proxy via env |
+| Audit | Local JSONL logs (`agent-audit.jsonl`, optional `error-log.jsonl`) |
+| Agent risk | HITL gates + Standard trust mode recommended for locked-down fleets |
+
+---
+
+## Install artifacts
+
+| OS | Artifact | Silent install notes |
+|----|----------|----------------------|
+| macOS | `.dmg` / `.app` | Drag to `/Applications`; notarize with [MACOS_NOTARIZATION.md](MACOS_NOTARIZATION.md) before enterprise rollout |
+| Windows | `.msi` / NSIS `.exe` | MSI supports `/quiet` (verify with your build) |
+| Linux | `.deb`, `.rpm`, AppImage | `dpkg -i`, `rpm -i`, or AppImage to user home |
+
+See [RELEASE_RUNBOOK.md](RELEASE_RUNBOOK.md) and [BUILD_PLATFORMS.md](BUILD_PLATFORMS.md).
+
+---
+
+## Pre-configuring LLM access
+
+### Option A — Environment variables (recommended for MDM)
+
+Deploy a read-only `.env` or launch wrapper that sets:
+
+| Variable | Purpose |
+|----------|---------|
+| `DeepSeek_API_KEY` / `OPENAI_API_KEY` | Cloud API key (never commit to git) |
+| `CLOUD_API_BASE_URL` | OpenAI-compatible endpoint |
+| `OLLAMA_URL` | Not env-native today — use keychain or first-run Settings |
+
+Place `.env` next to the app bundle only for **dev-style** installs; for production prefer MDM **environment variables** on the user session or a signed config profile.
+
+### Option B — Keychain / Credential Manager
+
+Users complete onboarding once; keys live in:
+
+- macOS Keychain  
+- Windows Credential Manager  
+- Linux Secret Service  
+
+No central escrow — align with your org’s secret-management policy.
+
+---
+
+## HTTP proxy
+
+Cloud LLM requests use Rust `reqwest`. Set standard proxy env vars for the Gnomad process:
+
+```bash
+export HTTPS_PROXY=https://proxy.corp.example:8080
+export NO_PROXY=localhost,127.0.0.1,.corp.example
+```
+
+Verify with a test chat after deploy. Local Ollama stays on `localhost` unless proxied intentionally.
+
+---
+
+## Updates
+
+1. Generate signing keys: `npm run setup:updater-keys` — see [UPDATER.md](UPDATER.md)
+2. CI secrets: `TAURI_SIGNING_PRIVATE_KEY`, `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`
+3. Users: **Settings → Updates** (stable/beta) or disable auto-check via policy (no central policy API yet — document user preference)
+
+For **air-gapped** environments: disable update checks; distribute new installers via MDM.
+
+Verify config before release:
+
+```bash
+npm run verify:updater
+```
+
+---
+
+## Trust and agent policy
+
+| Setting | Enterprise recommendation |
+|---------|-------------------------|
+| **Trust mode** | **Standard** (Path Gate for out-of-workspace FS) |
+| **YOLO + sandbox** | Off unless power users explicitly need it |
+| **Command planner** | Optional; increases local LLM surface |
+| **Knowledge library** | Pre-seed with [starter skill pack](KNOWLEDGE.md) via `install_skill_pack` |
+
+Audit logs: `{app_data}/gnomad/agent-audit.jsonl` — collect with your endpoint agent if required.
+
+---
+
+## MDM checklist
+
+```
+[ ] Installer signed / internal mirror hash verified
+[ ] Cloud API key via MDM env or user keychain workflow documented
+[ ] HTTPS_PROXY set if required
+[ ] Updater signing keys in CI OR updates disabled for air-gap
+[ ] Standard trust mode documented for end users
+[ ] Accessibility: global shortcut documented (⌘⇧Space / Ctrl+Shift+Space)
+[ ] Support path: TROUBLESHOOTING.md + internal help desk
+```
+
+---
+
+## Data residency
+
+- Chat history and knowledge: **local disk** under app data  
+- Cloud prompts: sent to configured provider (DeepSeek, OpenAI, etc.) per their terms  
+- No Gnomad-hosted backend in default configuration  
+
+See [PRIVACY.md](PRIVACY.md) and [SECURITY_MODEL.md](SECURITY_MODEL.md).
+
+---
+
+## Related
+
+- [UPDATER.md](UPDATER.md)  
+- [RELEASE_RUNBOOK.md](RELEASE_RUNBOOK.md)  
+- [MACOS_PERMISSIONS.md](MACOS_PERMISSIONS.md)  
+- [ACCESSIBILITY.md](ACCESSIBILITY.md)
+
+---
+
+Built with ❤️ by [Gnomad Studio](https://gnomadstudio.org) 🦙

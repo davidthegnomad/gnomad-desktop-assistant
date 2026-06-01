@@ -13,6 +13,8 @@ export interface AgentSettings {
   commandPlannerGgufPath: string;
   useGgufForLocalChat: boolean;
   sandboxShellInYolo: boolean;
+  /** Platform sandbox: full | workspace | none */
+  sandboxLevel?: string;
 }
 
 export interface CommandPlannerPatch {

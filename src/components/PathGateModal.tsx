@@ -1,4 +1,6 @@
+import { useRef } from "react";
 import { ShieldAlert } from "lucide-react";
+import { useFocusTrap } from "../hooks/useFocusTrap";
 
 interface PathGateModalProps {
   open: boolean;
@@ -15,11 +17,20 @@ export function PathGateModal({
   onDeny,
   onApprove,
 }: PathGateModalProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef, open);
+
   if (!open) return null;
   return (
-    <div className="modal-overlay">
-      <div className="danger-modal">
-        <h3 className="danger-title">
+    <div className="modal-overlay" role="presentation">
+      <div
+        ref={dialogRef}
+        className="danger-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="path-gate-title"
+      >
+        <h3 id="path-gate-title" className="danger-title">
           <ShieldAlert size={20} />
           Access path outside workspace
         </h3>

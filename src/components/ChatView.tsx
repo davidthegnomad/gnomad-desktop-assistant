@@ -4,6 +4,7 @@ import {
   ChevronRight,
   Clipboard,
   Cpu,
+  Mic,
   RefreshCw,
   Sparkles,
   Terminal,
@@ -22,6 +23,8 @@ import type { ChatAttachment } from "../lib/attachments";
 import type { LlmAvailability } from "../lib/models";
 import type { ProviderMode } from "../lib/preferences";
 import type { Message } from "../types/chat";
+import { useVoiceInput } from "../hooks/useVoiceInput";
+import { getVoiceInputEnabled } from "../lib/preferences";
 
 interface ChatViewProps {
   messages: Message[];
@@ -88,6 +91,14 @@ export function ChatView({
 
   const cloudModelOptions = llmAvailability.cloudModels;
   const localModelOptions = llmAvailability.localModels;
+
+  const voiceEnabled = getVoiceInputEnabled();
+  const voice = useVoiceInput({
+    enabled: voiceEnabled && !isThinking,
+    onFinalTranscript: (text) => {
+      onInputChange(input.trim() ? `${input.trim()} ${text}` : text);
+    },
+  });
 
   return (
     <>
@@ -179,6 +190,7 @@ export function ChatView({
             disabled={isThinking}
           />
           <input
+            id="gnomad-composer-input"
             className="composer-input"
             value={input}
             onChange={(e) => onInputChange(e.target.value)}
@@ -188,6 +200,8 @@ export function ChatView({
                 : "Ask Gnomad anything…"
             }
             disabled={isThinking}
+            aria-label="Message Gnomad"
+            autoComplete="off"
           />
           <div className="composer-bar">
             <div className="composer-bar-left">
@@ -205,6 +219,19 @@ export function ChatView({
                   title="Run as shell command"
                 >
                   <Terminal size={16} />
+                </button>
+              )}
+              {voiceEnabled && voice.supported && !isTrayCompact && (
+                <button
+                  type="button"
+                  className={`composer-tool-btn${voice.listening ? " voice-listening" : ""}`}
+                  onClick={voice.toggle}
+                  disabled={isThinking}
+                  title={voice.listening ? "Stop dictation" : "Dictate message (push-to-talk)"}
+                  aria-label={voice.listening ? "Stop dictation" : "Start dictation"}
+                  aria-pressed={voice.listening}
+                >
+                  <Mic size={16} />
                 </button>
               )}
             </div>

@@ -1,0 +1,42 @@
+# Snap manifest — classic confinement for shell agent + tray.
+# Run from repo root: bash packaging/snap/build.sh
+name: gnomad
+base: core22
+version: "0.1.0-alpha"
+summary: Desktop AI assistant with OS context and agent tools
+description: |
+  Gnomad is a cross-platform desktop AI assistant. It provides tray access,
+  cloud and local LLM chat, and an agent that runs shell and filesystem tools
+  with human-in-the-loop safety gates.
+
+grade: devel
+confinement: classic
+
+apps:
+  gnomad:
+    command: usr/bin/gnomad
+    environment:
+      DISABLE_WAYLAND: "0"
+
+parts:
+  gnomad:
+    plugin: nil
+    source: .
+    override-build: |
+      set -eux
+      DEB="$(ls "$SNAPCRAFT_PROJECT_DIR"/../../src-tauri/target/release/bundle/deb/*.deb 2>/dev/null | head -1)"
+      if [ -z "$DEB" ]; then
+        echo "No .deb found. From repo root run: npm run tauri:build:linux:deb"
+        exit 1
+      fi
+      dpkg-deb -x "$DEB" "$SNAPCRAFT_PART_INSTALL"
+      mkdir -p "$SNAPCRAFT_PART_INSTALL/usr/bin"
+      BIN="$(find "$SNAPCRAFT_PART_INSTALL" -type f -name gnomad 2>/dev/null | head -1)"
+      if [ -z "$BIN" ]; then
+        BIN="$(find "$SNAPCRAFT_PART_INSTALL" -type f -name omni-taskbar-ai 2>/dev/null | head -1)"
+      fi
+      if [ -z "$BIN" ]; then
+        echo "Could not locate gnomad binary inside .deb"
+        exit 1
+      fi
+      ln -sf "$BIN" "$SNAPCRAFT_PART_INSTALL/usr/bin/gnomad"

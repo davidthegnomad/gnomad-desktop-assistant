@@ -34,6 +34,13 @@ pub struct AgentSettingsDto {
     pub use_gguf_for_local_chat: bool,
     #[serde(default)]
     pub sandbox_shell_in_yolo: bool,
+    /// `full` | `workspace` | `none` — platform sandbox capability (read-only).
+    #[serde(default = "default_sandbox_level")]
+    pub sandbox_level: String,
+}
+
+fn default_sandbox_level() -> String {
+    crate::shell_sandbox::sandbox_level().to_string()
 }
 
 pub struct AgentSettingsState {
@@ -143,6 +150,7 @@ fn settings_to_dto(s: &AgentSettings) -> AgentSettingsDto {
         command_planner_gguf_path: s.command_planner_gguf_path.clone(),
         use_gguf_for_local_chat: s.use_gguf_for_local_chat,
         sandbox_shell_in_yolo: s.sandbox_shell_in_yolo,
+        sandbox_level: crate::shell_sandbox::sandbox_level().to_string(),
     }
 }
 

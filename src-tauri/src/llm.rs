@@ -139,16 +139,23 @@ pub fn agent_tool_definitions() -> Vec<serde_json::Value> {
 }
 
 fn cloud_api_key() -> Result<String, String> {
-    if let Some(key) = crate::env_config::deepseek_api_key_from_env() {
+    if let Some(key) = crate::env_config::cloud_api_key_from_env() {
         return Ok(key);
     }
     let key = crate::keychain::get_credential_value("llm_api_key")?;
     if key.trim().is_empty() {
         return Err(into_invoke_err(GnomadError::Keychain {
-            message: "No cloud API key configured. Add DeepSeek_API_KEY to .env or set a key in Settings.".into(),
+            message: "No cloud API key configured. Add an API key to .env or set one in Settings.".into(),
         }));
     }
     Ok(key)
+}
+
+fn cloud_chat_url() -> String {
+    format!(
+        "{}/chat/completions",
+        crate::env_config::resolved_cloud_api_base_url()
+    )
 }
 
 fn ollama_base(url: Option<String>) -> String {
@@ -284,7 +291,7 @@ async fn gguf_local_chat(
     Ok(content.trim().to_string())
 }
 
-async fn deepseek_chat_turn(
+async fn openai_compat_chat_turn(
     api_key: &str,
     model: &str,
     api_messages: Vec<serde_json::Value>,
@@ -310,26 +317,27 @@ async fn deepseek_chat_turn(
         body["tool_choice"] = serde_json::json!("auto");
     }
 
+    let url = cloud_chat_url();
     let response = client
-        .post("https://api.deepseek.com/chat/completions")
+        .post(&url)
         .bearer_auth(api_key)
         .json(&body)
         .send()
         .await
-        .map_err(|e| llm_err("DeepSeek request failed.", Some(e.to_string())))?;
+        .map_err(|e| llm_err("Cloud LLM request failed.", Some(e.to_string())))?;
 
     let status = response.status();
     let text = response
         .text()
         .await
-        .map_err(|e| llm_err("Failed to read DeepSeek response.", Some(e.to_string())))?;
+        .map_err(|e| llm_err("Failed to read cloud LLM response.", Some(e.to_string())))?;
 
     if !status.is_success() {
-        return Err(deepseek_api_error(status.as_u16(), &text));
+        return Err(cloud_api_error(status.as_u16(), &text));
     }
 
     let parsed: serde_json::Value = serde_json::from_str(&text).map_err(|e| {
-        llm_err("Invalid DeepSeek JSON.", Some(format!("{e}; body: {}", text.chars().take(200).collect::<String>())))
+        llm_err("Invalid cloud LLM JSON.", Some(format!("{e}; body: {}", text.chars().take(200).collect::<String>())))
     })?;
 
     let message = &parsed["choices"][0]["message"];
@@ -356,7 +364,7 @@ async fn deepseek_chat_turn(
     })
 }
 
-async fn deepseek_chat(
+async fn openai_compat_chat(
     api_key: &str,
     model: &str,
     api_messages: Vec<serde_json::Value>,
@@ -377,26 +385,27 @@ async fn deepseek_chat(
         "stream": false
     });
 
+    let url = cloud_chat_url();
     let response = client
-        .post("https://api.deepseek.com/chat/completions")
+        .post(&url)
         .bearer_auth(api_key)
         .json(&body)
         .send()
         .await
-        .map_err(|e| llm_err("DeepSeek request failed.", Some(e.to_string())))?;
+        .map_err(|e| llm_err("Cloud LLM request failed.", Some(e.to_string())))?;
 
     let status = response.status();
     let text = response
         .text()
         .await
-        .map_err(|e| llm_err("Failed to read DeepSeek response.", Some(e.to_string())))?;
+        .map_err(|e| llm_err("Failed to read cloud LLM response.", Some(e.to_string())))?;
 
     if !status.is_success() {
-        return Err(deepseek_api_error(status.as_u16(), &text));
+        return Err(cloud_api_error(status.as_u16(), &text));
     }
 
     let parsed: serde_json::Value = serde_json::from_str(&text).map_err(|e| {
-        llm_err("Invalid DeepSeek JSON.", Some(format!("{e}; body: {}", text.chars().take(200).collect::<String>())))
+        llm_err("Invalid cloud LLM JSON.", Some(format!("{e}; body: {}", text.chars().take(200).collect::<String>())))
     })?;
 
     parsed["choices"][0]["message"]["content"]
@@ -404,7 +413,7 @@ async fn deepseek_chat(
         .map(|s| s.to_string())
         .ok_or_else(|| {
             llm_err(
-                "Unexpected DeepSeek response shape.",
+                "Unexpected cloud LLM response shape.",
                 Some(text.chars().take(200).collect()),
             )
         })
@@ -472,14 +481,14 @@ async fn ollama_chat(
         })
 }
 
-fn deepseek_api_error(status: u16, body: &str) -> String {
+fn cloud_api_error(status: u16, body: &str) -> String {
     if let Ok(v) = serde_json::from_str::<serde_json::Value>(body) {
         if let Some(msg) = v["error"]["message"].as_str() {
-            return llm_err(format!("DeepSeek API error ({status}): {msg}"), None);
+            return llm_err(format!("Cloud LLM API error ({status}): {msg}"), None);
         }
     }
     llm_err(
-        format!("DeepSeek API error ({status})."),
+        format!("Cloud LLM API error ({status})."),
         Some(body.chars().take(300).collect()),
     )
 }
@@ -533,7 +542,7 @@ pub async fn chat_completion(
         } else {
             req.model
         };
-        deepseek_chat(&api_key, &model, api_messages).await?
+        openai_compat_chat(&api_key, &model, api_messages).await?
     };
 
     Ok(ChatCompletionResponse { content })
@@ -592,5 +601,5 @@ pub async fn chat_completion_turn(
     } else {
         model
     };
-    deepseek_chat_turn(&api_key, &model, api_messages, use_tools).await
+    openai_compat_chat_turn(&api_key, &model, api_messages, use_tools).await
 }

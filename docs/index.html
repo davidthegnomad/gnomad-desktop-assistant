@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Gnomad Desktop Assistant — Alpha</title>
+    <title>Gnomad Desktop Assistant — Beta</title>
     <meta
       name="description"
       content="Cross-platform AI desktop assistant by Gnomad Studio. macOS, Linux, and Windows — alpha release."
@@ -184,7 +184,7 @@
   <body>
     <div class="glow" aria-hidden="true"></div>
     <main class="wrap">
-      <p class="badge">Alpha preview</p>
+      <p class="badge">Beta preview</p>
       <h1>
         <span class="emoji">🦙</span> Gnomad
         <span class="emoji">🍄</span>
@@ -193,15 +193,16 @@
         Cross-platform desktop AI assistant — tray-first on macOS, native menus on
         Linux and Windows, Gemini-style chat, and local knowledge.
       </p>
-      <p class="version">Current release: <strong>v0.1.0-alpha</strong></p>
+      <p class="version">Current version: <strong>v0.2.0-beta.1</strong> (main branch)</p>
 
       <div class="alpha-note">
-        <strong>Alpha software.</strong> Expect rough edges, API key setup, and
-        changing features. Feedback welcome via GitHub Issues.
+        <strong>Beta software.</strong> v0.2 hardening and v0.3 reach features are on
+        <code>main</code>. Installers on Releases update when a new tag is published.
+        Feedback welcome via GitHub Issues.
       </div>
 
       <section style="margin-top: 2rem">
-        <h2>Downloads — v0.1.0-alpha</h2>
+        <h2>Downloads</h2>
         <div class="cards" id="download-cards">
           <a class="card disabled" id="dl-macos" href="#" download>
             <strong>macOS</strong>
@@ -287,13 +288,57 @@
             <strong>Linux packages</strong>
             <span>deb, rpm, AppImage, Wayland</span>
           </a>
+          <a class="card" href="FLATPAK.html">
+            <strong>Flatpak</strong>
+            <span>Optional sandboxed packaging</span>
+          </a>
+          <a class="card" href="SNAP.html">
+            <strong>Snap</strong>
+            <span>Classic confinement build</span>
+          </a>
           <a class="card" href="UPDATER.html">
             <strong>Auto-updater</strong>
             <span>Signing keys and channels</span>
           </a>
+          <a class="card" href="RELEASE_RUNBOOK.html">
+            <strong>Release runbook</strong>
+            <span>Tag → CI → GitHub Release</span>
+          </a>
+          <a class="card" href="TROUBLESHOOTING.html">
+            <strong>Troubleshooting</strong>
+            <span>Common issues and fixes</span>
+          </a>
+          <a class="card" href="ACCESSIBILITY.html">
+            <strong>Accessibility</strong>
+            <span>Keyboard shortcuts and focus</span>
+          </a>
+          <a class="card" href="ENTERPRISE.html">
+            <strong>Enterprise</strong>
+            <span>MDM, proxy, and deployment</span>
+          </a>
+          <a class="card" href="GGUF_SETUP.html">
+            <strong>GGUF setup</strong>
+            <span>Embedded local model path</span>
+          </a>
+          <a class="card" href="MACOS_NOTARIZATION.html">
+            <strong>macOS notarization</strong>
+            <span>Gatekeeper-ready releases</span>
+          </a>
+          <a class="card" href="TEST_STRATEGY.html">
+            <strong>Test strategy</strong>
+            <span>Automated and manual QA</span>
+          </a>
+          <a class="card" href="SECURITY_REVIEW.html">
+            <strong>Security review</strong>
+            <span>Pre-release checklist</span>
+          </a>
+          <a class="card" href="ACCESSIBILITY_STATEMENT.html">
+            <strong>Accessibility statement</strong>
+            <span>WCAG commitment (beta)</span>
+          </a>
           <a class="card" href="ROADMAP.html">
             <strong>Roadmap</strong>
-            <span>v0.2 beta → v1.0 GA</span>
+            <span>v0.2 beta → v1.0 GA (v0.2/v0.3 complete on main)</span>
           </a>
           <a class="card" href="DEMO_SCRIPT.html">
             <strong>Demo script</strong>
@@ -341,10 +386,18 @@
     </main>
     <script>
       (function () {
-        const TAG = "v0.1.0-alpha";
-        const BASE =
-          "https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/download/" +
-          TAG + "/";
+        const PREFERRED_TAG = "v0.2.0-beta.1";
+        const FALLBACK_TAG = "v0.1.0-alpha";
+
+        function releaseBase(tag) {
+          return (
+            "https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/download/" +
+            tag +
+            "/"
+          );
+        }
+
+        let BASE = releaseBase(FALLBACK_TAG);
 
         const slots = [
           { id: "dl-macos", status: "dl-macos-status", match: (n) => /\.dmg$/i.test(n) },
@@ -378,13 +431,19 @@
 
         fetch(
           "https://api.github.com/repos/davidthegnomad/gnomad-desktop-assistant/releases/tags/" +
-            TAG
+            PREFERRED_TAG
         )
           .then((r) => {
-            if (!r.ok) throw new Error("release not found");
-            return r.json();
+            if (!r.ok) {
+              BASE = releaseBase(FALLBACK_TAG);
+              return fetch(
+                "https://api.github.com/repos/davidthegnomad/gnomad-desktop-assistant/releases/tags/" +
+                  FALLBACK_TAG
+              );
+            }
+            BASE = releaseBase(PREFERRED_TAG);
+            return r;
           })
-          .then((release) => {
             const names = (release.assets || []).map((a) => a.name);
             slots.forEach((slot) => {
               const file = names.find(slot.match);

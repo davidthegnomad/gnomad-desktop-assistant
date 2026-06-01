@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { BookOpen, X } from "lucide-react";
 import { AboutModal } from "./components/AboutModal";
@@ -24,7 +24,8 @@ import {
   type ChatAttachment,
 } from "./lib/attachments";
 import { getPlatformInfo, type PlatformInfo } from "./lib/platform";
-import { setStoredLocalModel, setStoredModel, setStoredProvider, type ProviderMode } from "./lib/preferences";
+import { getStoredAutoCheckUpdates, getStoredUpdateChannel, setStoredLocalModel, setStoredModel, setStoredProvider, type ProviderMode } from "./lib/preferences";
+import { checkForUpdates } from "./lib/updater";
 import { pickRandomSuggestions } from "./lib/suggestionPrompts";
 import { getStoredSidebarSide, type SidebarSide } from "./lib/sidebarLayout";
 import {
@@ -37,6 +38,7 @@ import {
   subscribeWindowMode,
   type WindowDisplayMode,
 } from "./lib/windowMode";
+import { useAppKeyboard, focusComposerInput } from "./hooks/useAppKeyboard";
 
 function App() {
   const { themeMode, resolved, cycleTheme } = useTheme();
@@ -141,6 +143,11 @@ function App() {
     const init = async () => {
       await llm.initLlmPrefs();
       await chat.initChatStore();
+      if (getStoredAutoCheckUpdates()) {
+        checkForUpdates(getStoredUpdateChannel()).catch(() => {
+          /* silent startup check */
+        });
+      }
     };
     void init();
   }, []);
@@ -216,6 +223,54 @@ function App() {
     }
   };
 
+  const handleEscape = useCallback(() => {
+    if (agent.sudoGateOpen) {
+      agent.resolveSudoGate(false);
+      return;
+    }
+    if (agent.pathGateOpen) {
+      agent.resolvePathGate(false);
+      return;
+    }
+    if (aboutOpen) {
+      setAboutOpen(false);
+      return;
+    }
+    if (llm.showOnboarding) {
+      llm.setShowOnboarding(false);
+      return;
+    }
+    if (settingsOpen) {
+      setSettingsOpen(false);
+      return;
+    }
+    if (knowledgeOpen) {
+      setKnowledgeOpen(false);
+    }
+  }, [
+    agent,
+    aboutOpen,
+    llm.showOnboarding,
+    llm.setShowOnboarding,
+    settingsOpen,
+    knowledgeOpen,
+  ]);
+
+  useAppKeyboard({
+    onEscape: handleEscape,
+    onFocusComposer: focusComposerInput,
+    onOpenSettings: () => {
+      setSettingsOpen(true);
+      setKnowledgeOpen(false);
+    },
+    onNewChat: () => void onNewChat(),
+    allowShortcuts:
+      !agent.sudoGateOpen &&
+      !agent.pathGateOpen &&
+      !llm.showOnboarding &&
+      !aboutOpen,
+  });
+
   const handleRemoveAttachment = (id: string) => {
     setPendingAttachments((prev) => {
       const removed = prev.find((a) => a.id === id);
@@ -249,6 +304,12 @@ function App() {
     >
       <CursorBloomBackground />
 
+      {(windowMode === "windowed" || windowMode === "fullscreen") && (
+        <a href="#gnomad-main-content" className="skip-link">
+          Skip to main content
+        </a>
+      )}
+
       {llm.showOnboarding && <OnboardingModal onComplete={handleOnboardingComplete} />}
       {aboutOpen && <AboutModal onClose={() => setAboutOpen(false)} />}
 
@@ -256,6 +317,7 @@ function App() {
         open={agent.sudoGateOpen}
         command={agent.sudoGateCommand}
         reason={agent.sudoGateReason}
+        hint={agent.sudoGateHint}
         onDeny={() => agent.resolveSudoGate(false)}
         onApprove={() => agent.resolveSudoGate(true)}
       />
@@ -305,7 +367,7 @@ function App() {
           }}
           onSideChange={setRailSide}
         />
-        <div className="content-pane">
+        <div id="gnomad-main-content" className="content-pane" tabIndex={-1}>
           <ChatView
             messages={chat.messages}
             activeSessionId={chat.activeSessionId}

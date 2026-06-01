@@ -1,18 +1,25 @@
+import { useRef } from "react";
 import { GnomadLogo } from "./GnomadLogo";
 import { APP_NAME, VERSION } from "../lib/brand";
 import { StudioLink } from "./StudioLink";
+import { useFocusTrap } from "../hooks/useFocusTrap";
 
 interface AboutModalProps {
   onClose: () => void;
 }
 
 export function AboutModal({ onClose }: AboutModalProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef, true);
+
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onClick={onClose} role="presentation">
       <div
+        ref={dialogRef}
         className="onboarding-card about-card"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
+        aria-modal="true"
         aria-labelledby="about-title"
       >
         <GnomadLogo size="lg" />

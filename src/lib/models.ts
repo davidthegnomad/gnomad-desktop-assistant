@@ -1,4 +1,5 @@
 import { getEnvLlmConfig } from "./envConfig";
+import { getCloudApiConfig } from "./cloudApi";
 import { getAgentSettings } from "./agentSettings";
 import { getEmbeddedLlmStatus } from "./embeddedLlm";
 import { hasCredential, loadCredential } from "./preferences";
@@ -27,15 +28,23 @@ export const EMBEDDED_GGUF_MODEL: ModelOption = {
   label: "Embedded GGUF (local file)",
 };
 
+/** Common OpenAI-compatible model IDs when not on DeepSeek. */
+export const OPENAI_COMPAT_MODELS: ModelOption[] = [
+  { value: "gpt-4o-mini", label: "gpt-4o-mini" },
+  { value: "gpt-4o", label: "gpt-4o" },
+  { value: "llama-3.3-70b-versatile", label: "llama-3.3-70b (Groq)" },
+];
+
 export interface LlmAvailability {
   cloudConfigured: boolean;
   localConfigured: boolean;
   cloudModels: ModelOption[];
   localModels: ModelOption[];
+  cloudUsesCustomEndpoint: boolean;
 }
 
-export function isCloudModelValue(value: string): boolean {
-  return DEEPSEEK_MODELS.some((m) => m.value === value);
+export function isCloudModelValue(value: string, models: ModelOption[]): boolean {
+  return models.some((m) => m.value === value);
 }
 
 export function pickDefaultCloudModel(models: ModelOption[]): string {
@@ -44,9 +53,12 @@ export function pickDefaultCloudModel(models: ModelOption[]): string {
 
 export function normalizeCloudModel(
   stored: string,
-  available: ModelOption[]
+  available: ModelOption[],
+  allowCustom = false
 ): string {
-  if (available.some((m) => m.value === stored)) return stored;
+  if (stored.trim() && (allowCustom || available.some((m) => m.value === stored))) {
+    return stored;
+  }
   return pickDefaultCloudModel(available);
 }
 
@@ -55,6 +67,7 @@ export async function resolveLlmAvailability(options?: {
   ollamaUrl?: string;
 }): Promise<LlmAvailability> {
   const env = await getEnvLlmConfig();
+  const cloudConfig = await getCloudApiConfig();
   const keychainKeySet = await hasCredential("llm_api_key");
   const cloudConfigured = env.deepseek_configured || keychainKeySet;
 
@@ -83,10 +96,18 @@ export async function resolveLlmAvailability(options?: {
     localModels.push(...OLLAMA_MODELS);
   }
 
+  const cloudUsesCustomEndpoint = cloudConfigured && !cloudConfig.isDefaultDeepseek;
+  const cloudModels: ModelOption[] = cloudConfigured
+    ? cloudConfig.isDefaultDeepseek
+      ? [...DEEPSEEK_MODELS]
+      : [...OPENAI_COMPAT_MODELS]
+    : [];
+
   return {
     cloudConfigured,
     localConfigured,
-    cloudModels: cloudConfigured ? [...DEEPSEEK_MODELS] : [],
+    cloudModels,
     localModels,
+    cloudUsesCustomEndpoint,
   };
 }

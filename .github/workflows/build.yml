@@ -18,6 +18,11 @@ jobs:
           - platform: ubuntu-22.04
             args: "--bundles deb,rpm,appimage"
             linux_artifacts: true
+            linux_arch: x86_64
+          - platform: ubuntu-24.04-arm
+            args: "--bundles deb,appimage"
+            linux_artifacts: true
+            linux_arch: aarch64
           - platform: windows-latest
             args: "--bundles msi,nsis"
 
@@ -50,7 +55,7 @@ jobs:
           cd src-tauri && cargo test
 
       - name: Install Linux system deps
-        if: matrix.platform == 'ubuntu-22.04'
+        if: matrix.linux_artifacts == true
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -77,12 +82,12 @@ jobs:
         if: matrix.linux_artifacts == true
         uses: actions/upload-artifact@v4
         with:
-          name: linux-deb-x86_64
+          name: linux-deb-${{ matrix.linux_arch }}
           path: src-tauri/target/release/bundle/deb/*.deb
           if-no-files-found: error
 
       - name: Upload Linux .rpm
-        if: matrix.linux_artifacts == true
+        if: matrix.linux_artifacts == true && matrix.linux_arch == 'x86_64'
         uses: actions/upload-artifact@v4
         with:
           name: linux-rpm-x86_64
@@ -93,6 +98,6 @@ jobs:
         if: matrix.linux_artifacts == true
         uses: actions/upload-artifact@v4
         with:
-          name: linux-appimage-x86_64
+          name: linux-appimage-${{ matrix.linux_arch }}
           path: src-tauri/target/release/bundle/appimage/*.AppImage
           if-no-files-found: error

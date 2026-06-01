@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.gnomadstudio.Gnomad</id>
+  <name>Gnomad</name>
+  <summary>Desktop AI assistant</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <description>
+    <p>Gnomad is a cross-platform desktop AI assistant with tray access, cloud and local LLMs, and an agent that can run shell commands and workspace file tools under explicit user approval.</p>
+  </description>
+  <launchable type="desktop-id">com.gnomadstudio.Gnomad.desktop</launchable>
+  <url type="homepage">https://github.com/davidthegnomad/gnomad-desktop-assistant</url>
+  <url type="bugtracker">https://github.com/davidthegnomad/gnomad-desktop-assistant/issues</url>
+  <url type="help">https://davidthegnomad.github.io/gnomad-desktop-assistant/</url>
+  <url type="vcs-browser">https://github.com/davidthegnomad/gnomad-desktop-assistant</url>
+  <developer_name>Gnomad Studio</developer_name>
+  <releases>
+    <release version="0.2.0-beta.1" date="2026-05-31"/>
+    <release version="0.1.0-alpha" date="2026-05-31"/>
+  </releases>
+  <content_rating type="oars-1.1"/>
+</component>
