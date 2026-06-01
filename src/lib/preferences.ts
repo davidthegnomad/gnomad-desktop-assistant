@@ -72,18 +72,22 @@ export async function saveCredential(key: string, value: string): Promise<void> 
   await invoke("store_credential", { key, value });
 }
 
+export async function deleteCredential(key: string): Promise<void> {
+  await invoke("delete_credential", { key });
+}
+
+export async function hasCredential(key: string): Promise<boolean> {
+  try {
+    return await invoke<boolean>("has_credential", { key });
+  } catch {
+    return false;
+  }
+}
+
 export async function hasProviderConfigured(): Promise<boolean> {
   try {
-    const configured = await invoke<boolean>("has_llm_configured");
-    if (configured) return true;
+    return await invoke<boolean>("has_llm_configured");
   } catch {
-    /* fallback below */
+    return false;
   }
-  const provider = getStoredProvider();
-  if (provider === "cloud") {
-    const key = await loadCredential("llm_api_key");
-    return key.trim().length > 0;
-  }
-  const url = await loadCredential("ollama_url");
-  return url.trim().length > 0;
 }

@@ -8,6 +8,8 @@ import {
   PanelRightClose,
 } from "lucide-react";
 import { ChatHistoryPanel } from "./ChatHistoryPanel";
+import { GnomadLogo } from "./GnomadLogo";
+import { StudioLink } from "./StudioLink";
 import type { ChatSessionSummary } from "../lib/chatHistory";
 import {
   SIDEBAR_COLLAPSED_WIDTH,
@@ -27,6 +29,8 @@ interface ChatSidebarProps {
   sessions: ChatSessionSummary[];
   activeId: string | null;
   knowledgeOpen: boolean;
+  /** Tray panel: keep icon rail only. */
+  forceCollapsed?: boolean;
   onNewChat: () => void;
   onSelectChat: (id: string) => void;
   onDeleteChat: (id: string) => void;
@@ -38,6 +42,7 @@ export function ChatSidebar({
   sessions,
   activeId,
   knowledgeOpen,
+  forceCollapsed = false,
   onNewChat,
   onSelectChat,
   onDeleteChat,
@@ -55,7 +60,8 @@ export function ChatSidebar({
     onSideChange?.(side);
   }, [side, onSideChange]);
 
-  const railWidth = collapsed ? SIDEBAR_COLLAPSED_WIDTH : width;
+  const effectiveCollapsed = collapsed || forceCollapsed;
+  const railWidth = effectiveCollapsed ? SIDEBAR_COLLAPSED_WIDTH : width;
 
   const toggleCollapsed = useCallback(() => {
     setCollapsed((c) => {
@@ -129,14 +135,22 @@ export function ChatSidebar({
   const CollapseIcon = side === "left" ? PanelLeftClose : PanelRightClose;
   const ExpandIcon = PanelLeftOpen;
 
+  const brandHeader = (
+    <div className="side-rail-brand" title="Gnomad Studio">
+      <GnomadLogo size="sm" />
+      <StudioLink />
+    </div>
+  );
+
   return (
     <aside
-      className={`side-rail rail-${side} ${collapsed ? "collapsed" : ""}`}
+      className={`side-rail rail-${side} ${effectiveCollapsed ? "collapsed" : ""}`}
       style={{ width: railWidth, minWidth: railWidth, maxWidth: railWidth }}
       data-side={side}
     >
-      {collapsed ? (
+      {effectiveCollapsed ? (
         <div className="side-rail-compact">
+          {brandHeader}
           <button
             type="button"
             className="side-rail-icon-btn"
@@ -167,6 +181,7 @@ export function ChatSidebar({
         </div>
       ) : (
         <>
+          {brandHeader}
           <div
             className="side-rail-chrome"
             onPointerDown={startSwapDrag}

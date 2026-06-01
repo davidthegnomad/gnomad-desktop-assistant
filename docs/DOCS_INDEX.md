@@ -1,0 +1,75 @@
+# Documentation Index (all formats) — Gnomad Desktop Assistant
+
+Every document is available in **three formats**:
+
+| Format | Best for |
+|--------|----------|
+| **`.md`** | GitHub, editing, version control |
+| **`.html`** | Browser reading (styled, TOC sidebar) |
+| **`.txt`** | Notepad, Word, email, print |
+
+Regenerate HTML/TXT after editing Markdown:
+
+```bash
+npm run docs:export
+```
+
+---
+
+## Start here
+
+| Document | MD | HTML | TXT |
+|----------|----|------|-----|
+| README (project overview) | [../README.md](../README.md) | [../README.html](../README.html) | [../README.txt](../README.txt) |
+| **User Guide** | [USER_GUIDE.md](USER_GUIDE.md) | [USER_GUIDE.html](USER_GUIDE.html) | [USER_GUIDE.txt](USER_GUIDE.txt) |
+| Changelog | [../CHANGELOG.md](../CHANGELOG.md) | [../CHANGELOG.html](../CHANGELOG.html) | [../CHANGELOG.txt](../CHANGELOG.txt) |
+
+---
+
+## Engineering & portfolio
+
+| Document | MD | HTML | TXT |
+|----------|----|------|-----|
+| Tech Stack | [TECH_STACK.md](TECH_STACK.md) | [TECH_STACK.html](TECH_STACK.html) | [TECH_STACK.txt](TECH_STACK.txt) |
+| Build Narrative | [BUILD.md](BUILD.md) | [BUILD.html](BUILD.html) | [BUILD.txt](BUILD.txt) |
+| Architecture | [ARCHITECTURE.md](ARCHITECTURE.md) | [ARCHITECTURE.html](ARCHITECTURE.html) | [ARCHITECTURE.txt](ARCHITECTURE.txt) |
+| Security Model | [SECURITY_MODEL.md](SECURITY_MODEL.md) | [SECURITY_MODEL.html](SECURITY_MODEL.html) | [SECURITY_MODEL.txt](SECURITY_MODEL.txt) |
+| Privacy | [PRIVACY.md](PRIVACY.md) | [PRIVACY.html](PRIVACY.html) | [PRIVACY.txt](PRIVACY.txt) |
+| Roadmap | [ROADMAP.md](ROADMAP.md) | [ROADMAP.html](ROADMAP.html) | [ROADMAP.txt](ROADMAP.txt) |
+| Wave B (HITL tokens, embedded LLM, xterm, sandbox) | [WAVE_B_ROADMAP.md](WAVE_B_ROADMAP.md) | — | — |
+| Demo Script | [DEMO_SCRIPT.md](DEMO_SCRIPT.md) | [DEMO_SCRIPT.html](DEMO_SCRIPT.html) | [DEMO_SCRIPT.txt](DEMO_SCRIPT.txt) |
+| QA Checklists | [QA_CHECKLIST.md](QA_CHECKLIST.md) | [QA_CHECKLIST.html](QA_CHECKLIST.html) | [QA_CHECKLIST.txt](QA_CHECKLIST.txt) |
+
+---
+
+## Build & platform
+
+| Document | MD | HTML | TXT |
+|----------|----|------|-----|
+| Build Platforms | [BUILD_PLATFORMS.md](BUILD_PLATFORMS.md) | [BUILD_PLATFORMS.html](BUILD_PLATFORMS.html) | [BUILD_PLATFORMS.txt](BUILD_PLATFORMS.txt) |
+| Linux Packages | [LINUX_PACKAGES.md](LINUX_PACKAGES.md) | [LINUX_PACKAGES.html](LINUX_PACKAGES.html) | [LINUX_PACKAGES.txt](LINUX_PACKAGES.txt) |
+| macOS Permissions | [MACOS_PERMISSIONS.md](MACOS_PERMISSIONS.md) | [MACOS_PERMISSIONS.html](MACOS_PERMISSIONS.html) | [MACOS_PERMISSIONS.txt](MACOS_PERMISSIONS.txt) |
+
+---
+
+## Product & design
+
+| Document | MD | HTML | TXT |
+|----------|----|------|-----|
+| Knowledge Base | [KNOWLEDGE.md](KNOWLEDGE.md) | [KNOWLEDGE.html](KNOWLEDGE.html) | [KNOWLEDGE.txt](KNOWLEDGE.txt) |
+| UI Design | [UI_DESIGN.md](UI_DESIGN.md) | [UI_DESIGN.html](UI_DESIGN.html) | [UI_DESIGN.txt](UI_DESIGN.txt) |
+| Agent Capabilities | [AGENT_CAPABILITIES_PROPOSAL.md](AGENT_CAPABILITIES_PROPOSAL.md) | [AGENT_CAPABILITIES_PROPOSAL.html](AGENT_CAPABILITIES_PROPOSAL.html) | [AGENT_CAPABILITIES_PROPOSAL.txt](AGENT_CAPABILITIES_PROPOSAL.txt) |
+
+---
+
+## Internal / review
+
+| Document | MD | HTML | TXT |
+|----------|----|------|-----|
+| Code Review | [CODE_REVIEW.md](CODE_REVIEW.md) | [CODE_REVIEW.html](CODE_REVIEW.html) | [CODE_REVIEW.txt](CODE_REVIEW.txt) |
+| Test Notes | [TEST_NOTES.md](TEST_NOTES.md) | [TEST_NOTES.html](TEST_NOTES.html) | [TEST_NOTES.txt](TEST_NOTES.txt) |
+| Recommended Docs | [RECOMMENDED_DOCS.md](RECOMMENDED_DOCS.md) | [RECOMMENDED_DOCS.html](RECOMMENDED_DOCS.html) | [RECOMMENDED_DOCS.txt](RECOMMENDED_DOCS.txt) |
+
+---
+
+Built with ❤️ by [Gnomad Studio](https://gnomadstudio.org) 🦙

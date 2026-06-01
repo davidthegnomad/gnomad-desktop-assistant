@@ -7,11 +7,30 @@ use std::{
 use tauri::Manager;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StoredCommandResult {
+    pub success: bool,
+    pub stdout: String,
+    pub stderr: String,
+    #[serde(default)]
+    pub status_code: Option<i32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cwd: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub state: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub message: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub duration_ms: Option<u64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StoredChatMessage {
     pub role: String,
     pub text: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub command_executed: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub command_result: Option<StoredCommandResult>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -72,6 +91,7 @@ fn default_welcome_messages() -> Vec<StoredChatMessage> {
         role: "assistant".into(),
         text: "Hey — I'm Gnomad 🦙 I watch your active window and clipboard, run safe shell commands, and help you automate. What's on your mind?".into(),
         command_executed: None,
+        command_result: None,
     }]
 }
 

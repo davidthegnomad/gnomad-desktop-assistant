@@ -1,19 +1,20 @@
-# Code Review — Omni Taskbar AI
+# Code Review — Gnomad Desktop Assistant
 
-**Reviewed:** 2026-05-31  
-**Scope:** `src/`, `src-tauri/src/`, `tauri.conf.json`, `package.json`
+**Reviewed:** 2026-05-31 (updated after hiring-feedback implementation)  
+**Scope:** `src/`, `src-tauri/src/`, workflows, agent/security paths
 
 ## Summary
 
-The app is a **Tauri v2 + React 19** macOS-oriented desktop overlay: tray icon, global shortcut (⌘⇧Space), OS context scraping (active window, clipboard), shell execution with a **Sudo Gate** HITL modal, keychain credential storage, and automation hooks (screenshot, click, type). The UI is polished; the **assistant chat path is still a demo** (timed `setTimeout` flow, no LLM API calls).
+The app is a **Tauri v2 + React 19** desktop assistant: tray/panel, global shortcut, OS context (active window, clipboard), **cloud + local LLM** chat with an **agent tool loop**, persistent **PTY shell session**, filesystem agent tools, **Sudo Gate** / **Path Gate** HITL, and structured error payloads end-to-end.
 
 | Area | Status |
 |------|--------|
 | Frontend build (`npm run build`) | Pass |
-| Rust build (`cargo build`) | Pass |
-| Unit / integration tests | None defined |
-| Real LLM orchestration | Not implemented |
-| Security model (HITL) | Partial — see gaps below |
+| Rust tests (`cargo test`) | Pass (error, privilege, shell_session) |
+| LLM orchestration | Cloud `chat_completion_turn` + tools; local Ollama + `<gnomad-run>` fallback |
+| Structured errors | `GnomadError` → JSON in invoke `Err(String)`; frontend `parseInvokeError` + `AgentErrorBanner` |
+| App shell | `App.tsx` ~400 lines; hooks + `ChatView` / `SettingsPanel` / gate modals |
+| Elevation hardening | Pre-flight injection blocks; Linux `pkexec` argv-only; macOS per-arg escaping |
 
 ---
 
@@ -23,86 +24,70 @@ The app is a **Tauri v2 + React 19** macOS-oriented desktop overlay: tray icon, 
 Tray + Global Shortcut (lib.rs)
         │
         ▼
-React Overlay (App.tsx) ──invoke──► Tauri commands
-        │                              ├── context.rs      (window, clipboard)
-        │                              ├── shell_executor  (zsh/sh)
-        │                              ├── privilege.rs    (safety + elevation)
-        │                              ├── keychain.rs     (API key)
-        │                              └── automation.rs   (enigo + OS fallbacks)
+React App shell (App.tsx) ──hooks──► useAgentExecution, useChatSubmit, …
+        │                              │
+        ▼                              ▼
+ChatView / SettingsPanel ──invoke──► Tauri commands
+                                     ├── agent_runtime / agent_fs
+                                     ├── shell_session (PTY)
+                                     ├── privilege.rs (safety + elevation)
+                                     ├── error.rs (GnomadError payloads)
+                                     └── context, keychain, llm, …
 ```
 
-**Window behavior:** `main` webview starts hidden, frameless, transparent, always-on-top; macOS `ActivationPolicy::Accessory` (no dock icon).
+---
+
+## Agent error payload contract
+
+Tauri commands still return `Result<T, String>`. During migration, error strings are **JSON** matching:
+
+```json
+{
+  "code": "safety_blocked",
+  "message": "Human-readable summary",
+  "detail": "Optional technical detail",
+  "hint": "Optional remediation",
+  "retryable": false
+}
+```
+
+Frontend: [`src/lib/errors.ts`](../src/lib/errors.ts) — `parseInvokeError`, `executionFailedLabel`, `formatErrorForUser`.  
+UI: [`src/components/AgentErrorBanner.tsx`](../src/components/AgentErrorBanner.tsx) on messages with `errorPayload`.
+
+Stable `code` values are covered by `error::tests::payload_codes_are_stable`.
 
 ---
 
 ## Strengths
 
-1. **Clear module split** in Rust: context, privilege, shell, keychain, automation.
-2. **Sudo Gate UX** — modal for dangerous commands with reason text and deny/approve.
-3. **Command safety heuristics** — splits on `;`, `&`, `|`; flags `rm -rf`, `dd`, `chmod 777`, `sudo`, etc.
-4. **macOS fallbacks** — AppleScript for elevation, window title, click/type when Enigo fails.
-5. **Credentials** — `keyring` crate with service `com.omni.agent`; empty string when missing (no throw on first launch).
-6. **Context polling** — 2.5s interval for app/title/clipboard/accessibility.
+1. **Module split** — Rust agent, shell, privilege, FS; React hooks mirror execution concerns.
+2. **HITL** — Sudo Gate and Path Gate with explicit approve/deny.
+3. **Defense in depth** — Server-side safety before shell; elevation rejects injection patterns.
+4. **Cross-platform awareness** — `platformInfo` drives labels and capability flags.
 
 ---
 
-## Issues & gaps (priority order)
+## Remaining gaps (priority)
 
-### P0 — Correctness
+### P1 — Security / product
 
-1. **No LLM integration**  
-   `handleSubmit` ignores `apiType`, `selectedModel`, `apiKey`, and `ollamaUrl`. Every cloud prompt follows the same scripted path ending in `git --version`. Settings are UI-only.
+1. **Wave B error migration** — `llm.rs`, `command_planner.rs`, `chat_history.rs` still return plain strings in some paths.
+2. **Windows elevation** — Structured `elevation_unsupported`; user must use elevated terminal for admin ops.
+3. **Path Gate tokens** — Filesystem approvals still use `path_approved` boolean; consider signed tokens similar to B1 HITL.
 
-2. **`execute_elevated_command` return shape mismatch**  
-   Rust returns `Result<String, String>`. After Sudo Gate approval with `requires_admin`, the frontend still treats the result like `execute_shell_command` (`res.success`, `res.stdout`). Admin-approved commands will break in chat/CLI views.
+### P2 — Engineering
 
-3. **Sudo Gate resolver pattern**  
-   `setSudoGateResolve(() => async (approved) => { ... })` stores a function that *returns* an async function; buttons call `sudoGateResolve(true)` expecting a direct async handler. Works only because the outer arrow returns the inner function — fragile and easy to break. Prefer `useRef` for the pending resolver.
-
-4. **`is_safe` always `true`** (`privilege.rs`)  
-   The field is unused for gating; only `requires_hitl_approval` drives the modal. Either enforce `is_safe` or remove it from the API.
-
-### P1 — Security
-
-5. **Shell injection surface**  
-   Commands run via `zsh -c` / AppleScript string interpolation. Escaping in `execute_elevated_command` only handles `\` and `"`; complex payloads need structured argv or allowlists for production.
-
-6. **`check_command_safety` bypass**  
-   `execute_shell_command` does not call safety checks server-side. A modified or future client could invoke it directly. **Re-check in Rust before every execution.**
-
-7. **`csp: null`** in `tauri.conf.json` — acceptable for local dev; tighten for release.
-
-8. **HITL not enforced in `execute_elevated_command`**  
-   Comment says frontend must confirm; backend does not verify approval token/timestamp.
-
-### P2 — UX / polish
-
-9. **`index.html` title** still "Tauri + React + Typescript".
-
-10. **`accessibilityGranted` defaults to `true`** until first poll — brief false negative for permission banner.
-
-11. **Automation commands unused in UI** — `capture_screen`, `simulate_click`, `simulate_typing` are registered but not invoked from React.
-
-12. **README** was still the generic Tauri template (see root `README.md` update).
-
-### P3 — Engineering
-
-13. **No tests** — safety parser and shell JSON responses are good first candidates.
-
-14. **`any` types** in `App.tsx` (`windowContext`, `cmdRes`) — add shared TS types matching Rust `Serialize` structs.
-
-15. **Clippy** failed in this environment with a stale permissions path under a different folder (`Desktop AI Project Folder/src-tauri/...`); `cargo build` succeeded. Clean `target/` if build scripts point at wrong caches.
+4. **Typed invoke errors** — Optional future: `Result<T, AgentErrorPayload>` at Tauri boundary once JSON-in-string is stable everywhere.
+5. **Vitest** — Optional unit tests for `parseInvokeError` in CI.
+6. **GGUF planner** — Settings field exists; direct inference not enabled (Ollama planner only).
 
 ---
 
 ## Suggested next steps
 
-1. Wire cloud/local LLM calls (or a single Rust `orchestrate_prompt` command) using stored credentials.
-2. Normalize command results: one `CommandResult` struct for shell and elevated paths.
-3. Call `check_command_safety` inside `execute_shell_command` (and optionally require HITL token for elevated).
-4. Add unit tests for `check_command_safety` edge cases (`rm -rf /`, chained commands).
-5. Fix Sudo Gate with `useRef<((approved: boolean) => void) | null>`.
-6. Document macOS permissions (Accessibility, Screen Recording for capture) in `docs/MACOS_PERMISSIONS.md`.
+1. Migrate remaining Rust commands to `into_invoke_err`.
+2. Prefer `agent_fs` + Path Gate over elevated shell for file writes.
+3. Add integration test for cloud agent turn (mocked) if CI budget allows.
 
 ---
 
@@ -110,10 +95,10 @@ React Overlay (App.tsx) ──invoke──► Tauri commands
 
 | File | Role |
 |------|------|
-| `src/App.tsx` | UI, chat demo, Sudo Gate, settings |
-| `src-tauri/src/lib.rs` | App setup, tray, shortcuts, command registry |
+| `src/App.tsx` | Thin shell, providers wiring |
+| `src/hooks/useAgentExecution.ts` | Shell cwd, gates, `executeCommandSafely` |
+| `src/hooks/useChatSubmit.ts` | Submit orchestration, agent loop |
+| `src/components/ChatView.tsx` | Messages, composer, context footer |
+| `src-tauri/src/error.rs` | `GnomadError`, `AgentErrorPayload` |
 | `src-tauri/src/privilege.rs` | Safety + elevation |
-| `src-tauri/src/shell_executor.rs` | Non-privileged shell |
-| `src-tauri/src/context.rs` | Window + clipboard |
-| `src-tauri/src/keychain.rs` | Secrets |
-| `src-tauri/src/automation.rs` | Screenshot + input simulation |
+| `src-tauri/src/shell_session.rs` | PTY session + validation |

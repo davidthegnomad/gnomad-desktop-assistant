@@ -1,0 +1,103 @@
+════════════════════════════════════════════════════════════════════════
+  PRODUCT ROADMAP
+  Gnomad Desktop Assistant · docs/ROADMAP.md
+════════════════════════════════════════════════════════════════════════
+
+PRODUCT ROADMAP — GNOMAD DESKTOP ASSISTANT
+==========================================
+
+Version: 0.1.0-alpha  
+Last updated: June 2026  
+Horizon: 6–12 months (indicative)
+
+────────────────────────────────────────
+
+VISION
+------
+
+Gnomad becomes the default desktop agent surface: always available, OS-aware, trustworthy by default, and capable of real work through shell and files—without surrendering control to opaque automation.
+
+────────────────────────────────────────
+
+RELEASED — V0.1.0-ALPHA ✓
+-------------------------
+
+  Theme         |  Delivered                                          
+  Platform      |  macOS, Windows, Linux installers; CI matrix        
+  UX            |  Gemini-inspired UI, tray, 4 window modes, themes   
+  Intelligence  |  DeepSeek cloud + Ollama local                      
+  Agent         |  Tool loop, PTY shell, FS tools, audit log          
+  Safety        |  Sudo Gate, Path Gate, Standard/YOLO trust          
+  Memory        |  Chat history, knowledge library                    
+  Docs          |  README, tech stack, build narrative, QA, user guide
+
+────────────────────────────────────────
+
+V0.2 — BETA READINESS
+---------------------
+
+Target: Hardening and supportability
+
+  Item                                   |  Priority  |  Notes                          
+  Server-side safety on all shell paths  |  P0        |  Close IPC bypass class         
+  HITL token validated in Rust           |  P0        |  Approve/deny bound to execution
+  Rust unit tests (privilege, parsers)   |  P0        |  CI gate                        
+  Refresh CODE_REVIEW / TEST_NOTES       |  P1        |  Match shipped agent            
+  Auto-update channel (Tauri updater)    |  P1        |  Optional beta opt-in           
+  Improved Linux Wayland tray            |  P1        |  KDE/GNOME QA                   
+  Error telemetry (opt-in, local-first)  |  P2        |  Crash logs only                
+
+────────────────────────────────────────
+
+V0.3 — BROADER REACH
+--------------------
+
+  Item                               |  Priority  |  Notes                      
+  Linux ARM64 builds                 |  P1        |  Apple Silicon Linux devices
+  Snap / Flatpak                     |  P2        |  Community demand           
+  Additional cloud providers         |  P2        |  OpenAI-compatible router   
+  Plugin/skills marketplace (local)  |  P2        |  Curated skill packs        
+  Voice input (push-to-talk)         |  P3        |  Platform STT APIs          
+
+────────────────────────────────────────
+
+V1.0 — GENERAL AVAILABILITY
+---------------------------
+
+  Item                            |  Priority  |  Notes                          
+  Signed + notarized macOS        |  P0        |  Enterprise trust               
+  Security review / pen test      |  P0        |  External or structured internal
+  WCAG accessibility pass         |  P1        |  Keyboard nav, contrast         
+  Enterprise deployment guide     |  P2        |  MDM, proxy, key escrow         
+  Team workspace sync (optional)  |  P3        |  E2E encrypted                  
+
+────────────────────────────────────────
+
+NON-GOALS (CURRENT)
+-------------------
+
+  • Mobile iOS/Android clients
+  • Hosted multi-user SaaS backend for chat
+  • Autonomous background tasks without user message
+  • Cryptocurrency / unrelated integrations
+
+────────────────────────────────────────
+
+HOW PRIORITIES ARE SET
+----------------------
+
+  1. Safety and trust before new capabilities
+  2. Cross-platform parity before niche features
+  3. Local-first privacy preserved for default paths
+  4. Portfolio/demo quality aligned with production bar
+
+Feedback: GitHub Issues
+
+────────────────────────────────────────
+
+Built with ❤️ by Gnomad Studio 🦙
+
+════════════════════════════════════════════════════════════════════════
+Built with ❤️ by Gnomad Studio 🦙
+https://gnomadstudio.org
+════════════════════════════════════════════════════════════════════════

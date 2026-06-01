@@ -8,13 +8,13 @@ import {
   type KnowledgeCategory,
   type KnowledgeFileEntry,
 } from "../lib/knowledge";
-import { MUSHROOM, LLAMA } from "../lib/brand";
+import { MUSHROOM } from "../lib/brand";
 
 const CATEGORIES: { id: KnowledgeCategory; label: string; emoji: string }[] = [
   { id: "skills", label: "Skills", emoji: MUSHROOM },
   { id: "agents", label: "Agent knowledge", emoji: "🤖" },
   { id: "uploads", label: "Uploads", emoji: "📎" },
-  { id: "preferences", label: "Preferences", emoji: LLAMA },
+  { id: "preferences", label: "Preferences", emoji: "⚙️" },
 ];
 
 export function KnowledgePanel() {

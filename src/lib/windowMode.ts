@@ -4,7 +4,8 @@ import { listen } from "@tauri-apps/api/event";
 export type WindowDisplayMode = "panel" | "floating" | "windowed" | "fullscreen";
 
 export async function setWindowMode(mode: WindowDisplayMode): Promise<void> {
-  await invoke("set_window_mode", { mode, anchorTray: mode === "panel" });
+  // Real tray coordinates come from tray clicks in Rust; UI mode switches use default placement.
+  await invoke("set_window_mode", { mode, anchorTray: false });
 }
 
 export async function fitWindowToContent(

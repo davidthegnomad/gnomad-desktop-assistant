@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gnomad Desktop Assistant — Gnomad Desktop Assistant</title>
+  <meta name="description" content="Gnomad Desktop Assistant documentation for Gnomad Desktop Assistant." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>:root {
+  --bg-base: #0a0a0a;
+  --bg-panel: rgba(18, 18, 20, 0.92);
+  --bg-elevated: rgba(30, 30, 35, 0.95);
+  --border: rgba(255, 255, 255, 0.1);
+  --text: #f3f4f6;
+  --muted: #9ca3af;
+  --accent: #8ab4f8;
+  --accent-secondary: #c58af9;
+  --success: #34a853;
+  --warning: #f9ab00;
+  --danger: #ea4335;
+  --pill-radius: 999px;
+  --radius: 16px;
+  --mesh:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(66, 133, 244, 0.2), transparent 65%),
+    radial-gradient(ellipse 60% 40% at 10% 30%, rgba(168, 85, 247, 0.12), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 95% 40%, rgba(242, 139, 130, 0.1), transparent 50%);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: "Google Sans Flex", "Roboto", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--bg-base);
+  min-height: 100vh;
+}
+
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: var(--mesh);
+  z-index: 0;
+}
+
+.layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 1.5rem 1.25rem;
+  background: var(--bg-panel);
+  backdrop-filter: blur(24px);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.brand-icon { font-size: 1.5rem; }
+.brand h1 { font-size: 1rem; font-weight: 600; }
+
+.doc-path {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  word-break: break-all;
+}
+
+.sidebar a {
+  display: block;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar a.toc-h3 { padding-left: 1.1rem; font-size: 0.78rem; }
+.sidebar a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.sidebar a.active { color: var(--accent); background: rgba(138,180,248,0.12); }
+
+.content {
+  padding: 2rem 2.5rem 3rem;
+  max-width: 760px;
+}
+
+.hero { margin-bottom: 1.5rem; }
+.hero h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.formats { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+.formats a { color: var(--accent); }
+
+.doc-body h1 { font-size: 1.5rem; margin: 1.5rem 0 0.75rem; }
+.doc-body h2 {
+  font-size: 1.25rem;
+  margin: 2rem 0 0.65rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.doc-body h3 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; color: var(--accent); }
+.doc-body h4 { font-size: 0.95rem; margin: 1rem 0 0.4rem; }
+
+.doc-body p { margin-bottom: 0.85rem; }
+.doc-body ul, .doc-body ol { margin: 0 0 1rem 1.25rem; color: var(--muted); }
+.doc-body li { margin-bottom: 0.35rem; }
+.doc-body li strong { color: var(--text); }
+
+.doc-body a { color: var(--accent); }
+.doc-body code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85em;
+  background: rgba(255,255,255,0.08);
+  padding: 0.12em 0.35em;
+  border-radius: 6px;
+  color: var(--accent-secondary);
+}
+
+.doc-body pre {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.doc-body pre code {
+  background: none;
+  padding: 0;
+  color: var(--text);
+}
+
+.doc-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1rem 0;
+}
+
+.doc-body th, .doc-body td {
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-body th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.doc-body blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 0.6rem 1rem;
+  margin: 1rem 0;
+  background: rgba(138,180,248,0.08);
+  border-radius: 0 12px 12px 0;
+  color: var(--muted);
+}
+
+.doc-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+.doc-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.doc-footer a { color: var(--accent); text-decoration: none; }
+.doc-footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="mesh-bg" aria-hidden="true"></div>
+  <div class="layout">
+    <nav class="sidebar" aria-label="Table of contents">
+          <div class="brand"><span class="brand-icon">🍄</span><h1>Gnomad</h1></div>
+          <p class="doc-path">README.md</p>
+          <a href="#why-this-exists" class="toc-h2">Why this exists</a>
+<a href="#capabilities-v010-alpha" class="toc-h2">Capabilities (v0.1.0-alpha)</a>
+<a href="#platforms" class="toc-h2">Platforms</a>
+<a href="#quick-start" class="toc-h2">Quick start</a>
+<a href="#end-users" class="toc-h3">End users</a>
+<a href="#developers" class="toc-h3">Developers</a>
+<a href="#architecture-summary" class="toc-h2">Architecture (summary)</a>
+<a href="#documentation-index" class="toc-h2">Documentation index</a>
+<a href="#security-amp-privacy-alpha" class="toc-h2">Security &amp; privacy (alpha)</a>
+<a href="#ci-releases" class="toc-h2">CI / releases</a>
+<a href="#license" class="toc-h2">License</a>
+<a href="#acknowledgments" class="toc-h2">Acknowledgments</a>
+        </nav>
+    <main class="content doc-body">
+      <header class="hero">
+        <h2>Gnomad Desktop Assistant</h2>
+        <p class="formats">Also available: <a href="README.md">Markdown</a> · <a href="README.txt">Plain text</a></p>
+      </header>
+      <h1 id="gnomad-desktop-assistant">Gnomad Desktop Assistant</h1><p><a href="https://davidthegnomad.github.io/gnomad-desktop-assistant/"><img src="https://img.shields.io/badge/status-alpha-f0b429" alt="Alpha"></a>
+<a href="https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha"><img src="https://img.shields.io/badge/version-0.1.0--alpha-7c6cf0" alt="Version"></a>
+<a href="docs/BUILD_PLATFORMS.md"><img src="https://img.shields.io/badge/platforms-macOS%20%7C%20Windows%20%7C%20Linux-333" alt="Platforms"></a></p>
+<p><strong>Gnomad</strong> is a cross-platform desktop AI assistant that integrates with the operating system—system tray, global shortcut, live window and clipboard context—and executes <strong>real</strong> shell and filesystem work under explicit user approval, not simulated chat output.</p>
+<p>Built with ❤️ by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+<p><strong>Live project site:</strong> <a href="https://davidthegnomad.github.io/gnomad-desktop-assistant/">davidthegnomad.github.io/gnomad-desktop-assistant</a></p>
+<hr>
+<h2 id="why-this-exists">Why this exists</h2><p>Desktop knowledge work is fragmented: chat in a browser tab, terminal in another, files elsewhere. Gnomad unifies <strong>conversation</strong>, <strong>OS awareness</strong>, and <strong>action</strong> in a native shell that stays out of the way until invoked—then anchors next to the menu bar or tray with a focused, Gemini-inspired interface.</p>
+<p>The alpha demonstrates end-to-end delivery: multi-platform installers, CI/CD, credential hygiene, agent tooling with human-in-the-loop gates, and documentation suitable for technical review.</p>
+<hr>
+<h2 id="capabilities-v010-alpha">Capabilities (v0.1.0-alpha)</h2><table>
+<thead>
+<tr>
+<th>Area</th>
+<th>What you get</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Access</strong></td>
+<td>Menu bar / system tray, global shortcut, four window modes (panel, pop-out, windowed, fullscreen)</td>
+</tr>
+<tr>
+<td><strong>Intelligence</strong></td>
+<td>DeepSeek (cloud) and Ollama (local); multi-step agent with shell + filesystem tools</td>
+</tr>
+<tr>
+<td><strong>Safety</strong></td>
+<td>Sudo Gate for risky commands, Path Gate for out-of-workspace files, Standard vs YOLO trust modes, audit log</td>
+</tr>
+<tr>
+<td><strong>Context</strong></td>
+<td>Active application, window title, clipboard snippet in the footer</td>
+</tr>
+<tr>
+<td><strong>Memory</strong></td>
+<td>Chat history on disk; knowledge library (skills, agents, uploads) injected into prompts</td>
+</tr>
+<tr>
+<td><strong>Platform</strong></td>
+<td>macOS (primary), Windows, Linux (<code>.deb</code>, <code>.rpm</code>, AppImage)</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="platforms">Platforms</h2><table>
+<thead>
+<tr>
+<th>Platform</th>
+<th>Status</th>
+<th>Install</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>macOS</strong></td>
+<td>Primary</td>
+<td><a href="https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha">.dmg</a></td>
+<td>Menu-bar accessory; overlay title bar</td>
+</tr>
+<tr>
+<td><strong>Windows</strong></td>
+<td>Supported</td>
+<td><a href="https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha">.msi</a></td>
+<td>System tray; <code>Ctrl+Shift+Space</code></td>
+</tr>
+<tr>
+<td><strong>Linux</strong></td>
+<td>Supported</td>
+<td><a href="https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha">.deb · .rpm · AppImage</a></td>
+<td>See <a href="docs/LINUX_PACKAGES.md">Linux packages</a></td>
+</tr>
+</tbody></table>
+<p>Per-OS build instructions: <a href="docs/BUILD_PLATFORMS.md"><code>docs/BUILD_PLATFORMS.md</code></a></p>
+<hr>
+<h2 id="quick-start">Quick start</h2><h3 id="end-users">End users</h3><ol>
+<li>Download the installer for your OS from <a href="https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha">Releases</a> or the <a href="https://davidthegnomad.github.io/gnomad-desktop-assistant/">project site</a>.</li>
+<li>Launch Gnomad; complete the setup wizard (cloud API key <strong>or</strong> local Ollama URL).</li>
+<li>Press <strong>⌘⇧Space</strong> (macOS) or <strong>Ctrl+Shift+Space</strong> (Windows/Linux) to show the assistant.</li>
+<li>Read the full manual: <a href="docs/USER_GUIDE.html"><code>docs/USER_GUIDE.html</code></a> (recommended) or <a href="docs/USER_GUIDE.txt"><code>docs/USER_GUIDE.txt</code></a>.</li>
+</ol>
+<h3 id="developers">Developers</h3><p><strong>Prerequisites:</strong> Node.js LTS, Rust stable, <a href="https://v2.tauri.app/start/prerequisites/">Tauri v2 platform deps</a></p>
+<pre><code class="language-bash">git clone https://github.com/davidthegnomad/gnomad-desktop-assistant.git
+cd gnomad-desktop-assistant
+npm ci
+cp .env.example .env   # optional: DeepSeek_API_KEY for local dev
+npm run tauri dev
+</code></pre>
+<p><strong>Production build:</strong></p>
+<pre><code class="language-bash">npm run tauri:build:mac     # macOS
+npm run tauri:build:linux   # Linux (on Linux host)
+npm run tauri:build:win     # Windows (on Windows host)
+</code></pre>
+<p>Never commit <code>.env</code> or API keys.</p>
+<hr>
+<h2 id="architecture-summary">Architecture (summary)</h2><pre><code>┌─────────────────────────────────────────────────────────┐
+│  React 19 UI (chat, settings, knowledge, gates)         │
+└───────────────────────────┬─────────────────────────────┘
+                            │ Tauri IPC (invoke / events)
+┌───────────────────────────▼─────────────────────────────┐
+│  Rust: tray, window modes, shell PTY, agent FS,         │
+│        keychain, context, safety, audit, chat store      │
+└───────────────────────────┬─────────────────────────────┘
+                            │
+         macOS / Windows / Linux native APIs
+</code></pre>
+<p>Deep dive: <a href="docs/TECH_STACK.md"><code>docs/TECH_STACK.md</code></a> · Delivery narrative: <a href="docs/BUILD.md"><code>docs/BUILD.md</code></a></p>
+<hr>
+<h2 id="documentation-index">Documentation index</h2><p>All docs ship as <strong>Markdown</strong> (source), <strong>HTML</strong> (browser), and <strong>TXT</strong> (Notepad/Word). Full index: <a href="docs/DOCS_INDEX.md"><code>docs/DOCS_INDEX.md</code></a>. Regenerate: <code>npm run docs:export</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>MD</th>
+<th>HTML</th>
+<th>TXT</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>User Guide</td>
+<td><a href="docs/USER_GUIDE.md">docs/USER_GUIDE.md</a></td>
+<td><a href="docs/USER_GUIDE.html">docs/USER_GUIDE.html</a></td>
+<td><a href="docs/USER_GUIDE.txt">docs/USER_GUIDE.txt</a></td>
+</tr>
+<tr>
+<td>Tech Stack</td>
+<td><a href="docs/TECH_STACK.md">docs/TECH_STACK.md</a></td>
+<td><a href="docs/TECH_STACK.html">docs/TECH_STACK.html</a></td>
+<td><a href="docs/TECH_STACK.txt">docs/TECH_STACK.txt</a></td>
+</tr>
+<tr>
+<td>Build Narrative</td>
+<td><a href="docs/BUILD.md">docs/BUILD.md</a></td>
+<td><a href="docs/BUILD.html">docs/BUILD.html</a></td>
+<td><a href="docs/BUILD.txt">docs/BUILD.txt</a></td>
+</tr>
+<tr>
+<td>Architecture</td>
+<td><a href="docs/ARCHITECTURE.md">docs/ARCHITECTURE.md</a></td>
+<td><a href="docs/ARCHITECTURE.html">docs/ARCHITECTURE.html</a></td>
+<td><a href="docs/ARCHITECTURE.txt">docs/ARCHITECTURE.txt</a></td>
+</tr>
+<tr>
+<td>Security Model</td>
+<td><a href="docs/SECURITY_MODEL.md">docs/SECURITY_MODEL.md</a></td>
+<td><a href="docs/SECURITY_MODEL.html">docs/SECURITY_MODEL.html</a></td>
+<td><a href="docs/SECURITY_MODEL.txt">docs/SECURITY_MODEL.txt</a></td>
+</tr>
+<tr>
+<td>Privacy</td>
+<td><a href="docs/PRIVACY.md">docs/PRIVACY.md</a></td>
+<td><a href="docs/PRIVACY.html">docs/PRIVACY.html</a></td>
+<td><a href="docs/PRIVACY.txt">docs/PRIVACY.txt</a></td>
+</tr>
+<tr>
+<td>Roadmap</td>
+<td><a href="docs/ROADMAP.md">docs/ROADMAP.md</a></td>
+<td><a href="docs/ROADMAP.html">docs/ROADMAP.html</a></td>
+<td><a href="docs/ROADMAP.txt">docs/ROADMAP.txt</a></td>
+</tr>
+<tr>
+<td>Demo Script</td>
+<td><a href="docs/DEMO_SCRIPT.md">docs/DEMO_SCRIPT.md</a></td>
+<td><a href="docs/DEMO_SCRIPT.html">docs/DEMO_SCRIPT.html</a></td>
+<td><a href="docs/DEMO_SCRIPT.txt">docs/DEMO_SCRIPT.txt</a></td>
+</tr>
+<tr>
+<td>QA Checklists</td>
+<td><a href="docs/QA_CHECKLIST.md">docs/QA_CHECKLIST.md</a></td>
+<td><a href="docs/QA_CHECKLIST.html">docs/QA_CHECKLIST.html</a></td>
+<td><a href="docs/QA_CHECKLIST.txt">docs/QA_CHECKLIST.txt</a></td>
+</tr>
+<tr>
+<td>Build Platforms</td>
+<td><a href="docs/BUILD_PLATFORMS.md">docs/BUILD_PLATFORMS.md</a></td>
+<td><a href="docs/BUILD_PLATFORMS.html">docs/BUILD_PLATFORMS.html</a></td>
+<td><a href="docs/BUILD_PLATFORMS.txt">docs/BUILD_PLATFORMS.txt</a></td>
+</tr>
+<tr>
+<td>Changelog</td>
+<td><a href="CHANGELOG.md">CHANGELOG.md</a></td>
+<td><a href="CHANGELOG.html">CHANGELOG.html</a></td>
+<td><a href="CHANGELOG.txt">CHANGELOG.txt</a></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="security-amp-privacy-alpha">Security &amp; privacy (alpha)</h2><ul>
+<li>API keys are stored in the <strong>OS keychain</strong>, not in chat logs or <code>localStorage</code>.</li>
+<li>Destructive or privileged shell operations require <strong>Sudo Gate</strong> approval.</li>
+<li>Filesystem access defaults to a <strong>workspace folder</strong> (Standard trust mode); broader access requires explicit trust or per-path approval.</li>
+<li>Agent actions are appended to a local <strong>audit log</strong> under application data.</li>
+</ul>
+<p>Alpha software: review <a href="CHANGELOG.md"><code>CHANGELOG.md</code></a> for known limitations before production use.</p>
+<hr>
+<h2 id="ci-releases">CI / releases</h2><p>GitHub Actions builds <strong>macOS</strong>, <strong>Linux</strong>, and <strong>Windows</strong> on every push to <code>main</code> / <code>master</code>. Tagged <code>v*</code> releases attach installers to <a href="https://github.com/davidthegnomad/gnomad-desktop-assistant/releases">GitHub Releases</a>.</p>
+<hr>
+<h2 id="license">License</h2><p>Private project — see repository settings. Contact <a href="https://gnomadstudio.org">Gnomad Studio</a> for licensing inquiries.</p>
+<hr>
+<h2 id="acknowledgments">Acknowledgments</h2><p>UI patterns informed by Google Gemini’s 2026 “Neural Expressive” redesign; implementation is original to Gnomad Studio. Built with <a href="https://v2.tauri.app/">Tauri</a>, <a href="https://react.dev/">React</a>, and <a href="https://www.rust-lang.org/">Rust</a>.</p>
+
+      <footer class="doc-footer">
+        <p>Built with <span aria-label="love">❤️</span> by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+      </footer>
+    </main>
+  </div>
+  <script>
+    const links = document.querySelectorAll(".sidebar a[href^='#']");
+    const sections = [...links].map((a) => document.querySelector(a.getAttribute("href")));
+    const onScroll = () => {
+      let cur = 0;
+      sections.forEach((s, i) => { if (s && s.getBoundingClientRect().top <= 120) cur = i; });
+      links.forEach((l, i) => l.classList.toggle("active", i === cur));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  </script>
+</body>
+</html>

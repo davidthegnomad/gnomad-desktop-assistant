@@ -1,9 +1,22 @@
 import { invoke } from "@tauri-apps/api/core";
 
+export interface StoredCommandResult {
+  success: boolean;
+  stdout: string;
+  stderr: string;
+  status_code?: number;
+  cwd?: string;
+  state?: string;
+  message?: string;
+  duration_ms?: number;
+}
+
 export interface StoredChatMessage {
   role: "user" | "assistant";
   text: string;
+  command_executed?: string;
   commandExecuted?: string;
+  command_result?: StoredCommandResult;
 }
 
 export interface ChatSessionSummary {
@@ -36,11 +49,7 @@ export async function loadChatSession(id: string): Promise<ChatSession> {
     title: string;
     created_at: number;
     updated_at: number;
-    messages: {
-      role: string;
-      text: string;
-      command_executed?: string;
-    }[];
+    messages: StoredChatMessage[];
   }>("load_chat_session", { id });
 
   return {
@@ -52,6 +61,7 @@ export async function loadChatSession(id: string): Promise<ChatSession> {
       role: m.role === "user" ? "user" : "assistant",
       text: m.text,
       commandExecuted: m.command_executed,
+      command_result: m.command_result,
     })),
   };
 }

@@ -2,6 +2,15 @@ use std::process::Command;
 
 #[tauri::command]
 pub fn execute_shell_command(command: &str) -> Result<serde_json::Value, String> {
+    let safety = crate::privilege::check_command_safety(command);
+    if safety.requires_hitl_approval {
+        return Err(
+            safety
+                .danger_reason
+                .unwrap_or_else(|| "Command requires safety approval.".into()),
+        );
+    }
+
     // Run in user standard shell
     let shell = if cfg!(target_os = "windows") { "cmd" } else { "zsh" };
     let flag = if cfg!(target_os = "windows") { "/C" } else { "-c" };

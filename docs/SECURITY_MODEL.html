@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Security Model — Gnomad Desktop Assistant</title>
+  <meta name="description" content="Security Model documentation for Gnomad Desktop Assistant." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>:root {
+  --bg-base: #0a0a0a;
+  --bg-panel: rgba(18, 18, 20, 0.92);
+  --bg-elevated: rgba(30, 30, 35, 0.95);
+  --border: rgba(255, 255, 255, 0.1);
+  --text: #f3f4f6;
+  --muted: #9ca3af;
+  --accent: #8ab4f8;
+  --accent-secondary: #c58af9;
+  --success: #34a853;
+  --warning: #f9ab00;
+  --danger: #ea4335;
+  --pill-radius: 999px;
+  --radius: 16px;
+  --mesh:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(66, 133, 244, 0.2), transparent 65%),
+    radial-gradient(ellipse 60% 40% at 10% 30%, rgba(168, 85, 247, 0.12), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 95% 40%, rgba(242, 139, 130, 0.1), transparent 50%);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: "Google Sans Flex", "Roboto", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--bg-base);
+  min-height: 100vh;
+}
+
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: var(--mesh);
+  z-index: 0;
+}
+
+.layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 1.5rem 1.25rem;
+  background: var(--bg-panel);
+  backdrop-filter: blur(24px);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.brand-icon { font-size: 1.5rem; }
+.brand h1 { font-size: 1rem; font-weight: 600; }
+
+.doc-path {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  word-break: break-all;
+}
+
+.sidebar a {
+  display: block;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar a.toc-h3 { padding-left: 1.1rem; font-size: 0.78rem; }
+.sidebar a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.sidebar a.active { color: var(--accent); background: rgba(138,180,248,0.12); }
+
+.content {
+  padding: 2rem 2.5rem 3rem;
+  max-width: 760px;
+}
+
+.hero { margin-bottom: 1.5rem; }
+.hero h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.formats { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+.formats a { color: var(--accent); }
+
+.doc-body h1 { font-size: 1.5rem; margin: 1.5rem 0 0.75rem; }
+.doc-body h2 {
+  font-size: 1.25rem;
+  margin: 2rem 0 0.65rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.doc-body h3 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; color: var(--accent); }
+.doc-body h4 { font-size: 0.95rem; margin: 1rem 0 0.4rem; }
+
+.doc-body p { margin-bottom: 0.85rem; }
+.doc-body ul, .doc-body ol { margin: 0 0 1rem 1.25rem; color: var(--muted); }
+.doc-body li { margin-bottom: 0.35rem; }
+.doc-body li strong { color: var(--text); }
+
+.doc-body a { color: var(--accent); }
+.doc-body code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85em;
+  background: rgba(255,255,255,0.08);
+  padding: 0.12em 0.35em;
+  border-radius: 6px;
+  color: var(--accent-secondary);
+}
+
+.doc-body pre {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.doc-body pre code {
+  background: none;
+  padding: 0;
+  color: var(--text);
+}
+
+.doc-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1rem 0;
+}
+
+.doc-body th, .doc-body td {
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-body th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.doc-body blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 0.6rem 1rem;
+  margin: 1rem 0;
+  background: rgba(138,180,248,0.08);
+  border-radius: 0 12px 12px 0;
+  color: var(--muted);
+}
+
+.doc-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+.doc-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.doc-footer a { color: var(--accent); text-decoration: none; }
+.doc-footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="mesh-bg" aria-hidden="true"></div>
+  <div class="layout">
+    <nav class="sidebar" aria-label="Table of contents">
+          <div class="brand"><span class="brand-icon">🍄</span><h1>Gnomad</h1></div>
+          <p class="doc-path">docs/SECURITY_MODEL.md</p>
+          <a href="#scope" class="toc-h2">Scope</a>
+<a href="#threat-summary" class="toc-h2">Threat summary</a>
+<a href="#trust-modes" class="toc-h2">Trust modes</a>
+<a href="#human-in-the-loop-gates" class="toc-h2">Human-in-the-loop gates</a>
+<a href="#sudo-gate" class="toc-h3">Sudo Gate</a>
+<a href="#path-gate" class="toc-h3">Path Gate</a>
+<a href="#command-safety-server-side" class="toc-h2">Command safety (server-side)</a>
+<a href="#secrets-handling" class="toc-h2">Secrets handling</a>
+<a href="#audit-amp-observability" class="toc-h2">Audit &amp; observability</a>
+<a href="#network-exposure" class="toc-h2">Network exposure</a>
+<a href="#platform-permissions" class="toc-h2">Platform permissions</a>
+<a href="#hardening-roadmap-post-alpha" class="toc-h2">Hardening roadmap (post-alpha)</a>
+<a href="#related-documents" class="toc-h2">Related documents</a>
+        </nav>
+    <main class="content doc-body">
+      <header class="hero">
+        <h2>Security Model</h2>
+        <p class="formats">Also available: <a href="SECURITY_MODEL.md">Markdown</a> · <a href="SECURITY_MODEL.txt">Plain text</a></p>
+      </header>
+      <h1 id="security-model-gnomad-desktop-assistant">Security Model — Gnomad Desktop Assistant</h1><p><strong>Version:</strong> 0.1.0-alpha<br><strong>Classification:</strong> Internal / portfolio<br><strong>Last updated:</strong> June 2026</p>
+<hr>
+<h2 id="scope">Scope</h2><p>This document describes how Gnomad <strong>reduces risk</strong> when an LLM can run shell commands and access files. It is not a formal penetration test or certification.</p>
+<p><strong>In scope:</strong> Desktop app on user-controlled machine; cloud (DeepSeek) and local (Ollama) inference; agent tools; keychain storage.</p>
+<p><strong>Out of scope (alpha):</strong> Multi-tenant SaaS, supply-chain signing beyond platform defaults, enterprise MDM deployment guides.</p>
+<hr>
+<h2 id="threat-summary">Threat summary</h2><table>
+<thead>
+<tr>
+<th>Threat</th>
+<th>Mitigation (alpha)</th>
+<th>Residual risk</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Model suggests destructive shell</td>
+<td><code>privilege</code> heuristics + <strong>Sudo Gate</strong></td>
+<td>User may approve; heuristics incomplete</td>
+</tr>
+<tr>
+<td>Model reads sensitive files</td>
+<td><strong>Workspace</strong> + <strong>Path Gate</strong> (Standard mode)</td>
+<td>YOLO mode expands access by user choice</td>
+</tr>
+<tr>
+<td>Stolen API key</td>
+<td>OS keychain; not logged in UI</td>
+<td>Key exfiltration via other malware on host</td>
+</tr>
+<tr>
+<td>Malicious attachment in chat</td>
+<td>User explicitly attaches; sent to model</td>
+<td>User social-engineered to attach secrets</td>
+</tr>
+<tr>
+<td>IPC bypass (modified client)</td>
+<td>Commands should re-validate in Rust</td>
+<td>Not all paths audited to production bar</td>
+</tr>
+<tr>
+<td>Prompt injection via clipboard/context</td>
+<td>Context labeled; user visibility</td>
+<td>Model may over-trust injected text</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="trust-modes">Trust modes</h2><table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Filesystem</th>
+<th>Shell</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Standard</strong> (default)</td>
+<td>Read/write/search inside <strong>workspace</strong>; paths outside require <strong>Path Gate</strong></td>
+<td>Sudo Gate for flagged commands</td>
+</tr>
+<tr>
+<td><strong>YOLO!</strong></td>
+<td>Broader machine access (user opt-in)</td>
+<td>Sudo Gate may still apply for destructive patterns</td>
+</tr>
+</tbody></table>
+<p>Workspace defaults to <code>$HOME</code> until changed in <strong>Settings → Agent access</strong>.</p>
+<hr>
+<h2 id="human-in-the-loop-gates">Human-in-the-loop gates</h2><h3 id="sudo-gate">Sudo Gate</h3><p>Triggered when <code>check_command_safety</code> marks a command as requiring HITL (e.g. <code>sudo</code>, <code>rm -rf</code>, <code>chmod 777</code>, chained operators).</p>
+<ul>
+<li>UI shows <strong>reason</strong> text  </li>
+<li><strong>Deny</strong> → command not executed  </li>
+<li><strong>Approve</strong> → execution proceeds; macOS/Linux may prompt for administrator credentials</li>
+</ul>
+<h3 id="path-gate">Path Gate</h3><p>In <strong>Standard</strong> mode, filesystem tool calls targeting paths outside the workspace require explicit approval.</p>
+<hr>
+<h2 id="command-safety-server-side">Command safety (server-side)</h2><p><code>privilege.rs</code> analyzes command strings before execution:</p>
+<ul>
+<li>Splits on <code>;</code>, <code>&amp;</code>, <code>|</code></li>
+<li>Flags known-dangerous patterns</li>
+<li>Returns <code>requires_hitl_approval</code>, <code>requires_admin</code>, <code>danger_reason</code></li>
+</ul>
+<p><strong>Alpha gap:</strong> All invoke paths must call safety checks; treat direct <code>execute_shell_command</code> without checks as a finding in review.</p>
+<hr>
+<h2 id="secrets-handling">Secrets handling</h2><table>
+<thead>
+<tr>
+<th>Secret</th>
+<th>Storage</th>
+<th>UI behavior</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>DeepSeek API key</td>
+<td>Keychain (+ optional <code>.env</code> in dev)</td>
+<td>Never re-displayed after save</td>
+</tr>
+<tr>
+<td>Ollama URL</td>
+<td>Keychain</td>
+<td>Editable in settings</td>
+</tr>
+<tr>
+<td>Chat content</td>
+<td>Local app data</td>
+<td>Not encrypted at rest (alpha)</td>
+</tr>
+</tbody></table>
+<p><code>.env</code> keys show as <strong>locked</strong> in Settings; user edits file to rotate.</p>
+<hr>
+<h2 id="audit-amp-observability">Audit &amp; observability</h2><p>Agent actions append to:</p>
+<p><code>{app_data}/gnomad/agent-audit.jsonl</code></p>
+<p>Each line should include timestamp, action type, and outcome (exact schema in <code>agent_audit.rs</code>). Users can inspect this file for accountability.</p>
+<hr>
+<h2 id="network-exposure">Network exposure</h2><table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Endpoint</th>
+<th>Data sent</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Cloud chat</td>
+<td>DeepSeek API</td>
+<td>Prompts, tool results, attachments user includes</td>
+</tr>
+<tr>
+<td>Local chat</td>
+<td>User-configured Ollama URL</td>
+<td>Same, stays on network path to Ollama</td>
+</tr>
+<tr>
+<td>Studio link</td>
+<td>gnomadstudio.org</td>
+<td>Normal HTTPS (user-initiated)</td>
+</tr>
+</tbody></table>
+<p>No Gnomad Studio backend receives chat content in the alpha architecture.</p>
+<hr>
+<h2 id="platform-permissions">Platform permissions</h2><table>
+<thead>
+<tr>
+<th>OS</th>
+<th>Permission</th>
+<th>Feature</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>macOS</td>
+<td>Accessibility</td>
+<td>Input automation fallbacks</td>
+</tr>
+<tr>
+<td>macOS</td>
+<td>Automation (System Events)</td>
+<td>Window titles</td>
+</tr>
+<tr>
+<td>macOS</td>
+<td>Admin auth</td>
+<td>Elevated shell</td>
+</tr>
+<tr>
+<td>All</td>
+<td>Tray / shortcuts</td>
+<td>No extra privacy prompt</td>
+</tr>
+</tbody></table>
+<p>See <a href="MACOS_PERMISSIONS.md"><code>MACOS_PERMISSIONS.md</code></a>.</p>
+<hr>
+<h2 id="hardening-roadmap-post-alpha">Hardening roadmap (post-alpha)</h2><ol>
+<li>Enforce <code>check_command_safety</code> on every shell invoke path  </li>
+<li>HITL approval token validated in Rust (not UI-only)  </li>
+<li>Tighten CSP for release builds  </li>
+<li>Optional at-rest encryption for chat store  </li>
+<li>Rust unit tests for safety parser edge cases  </li>
+<li>Signed releases + notarization (macOS)</li>
+</ol>
+<hr>
+<h2 id="related-documents">Related documents</h2><ul>
+<li><a href="ARCHITECTURE.md"><code>ARCHITECTURE.md</code></a>  </li>
+<li><a href="PRIVACY.md"><code>PRIVACY.md</code></a>  </li>
+<li><a href="QA_CHECKLIST.md"><code>QA_CHECKLIST.md</code></a> — security spot checks</li>
+</ul>
+<p>Built with ❤️ by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+
+      <footer class="doc-footer">
+        <p>Built with <span aria-label="love">❤️</span> by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+      </footer>
+    </main>
+  </div>
+  <script>
+    const links = document.querySelectorAll(".sidebar a[href^='#']");
+    const sections = [...links].map((a) => document.querySelector(a.getAttribute("href")));
+    const onScroll = () => {
+      let cur = 0;
+      sections.forEach((s, i) => { if (s && s.getBoundingClientRect().top <= 120) cur = i; });
+      links.forEach((l, i) => l.classList.toggle("active", i === cur));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  </script>
+</body>
+</html>

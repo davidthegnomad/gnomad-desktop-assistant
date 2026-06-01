@@ -1,0 +1,146 @@
+# Architecture — Gnomad Desktop Assistant
+
+**Version:** 0.1.0-alpha  
+**Last updated:** June 2026
+
+---
+
+## System context
+
+Gnomad is a **desktop-native AI assistant** that combines a WebView UI with a Rust systems layer. Users invoke it from the menu bar or system tray; the app reads OS context (active window, clipboard), sends prompts to cloud or local LLMs, and executes approved shell and filesystem actions.
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                        Operating System                          │
+│  (tray, shortcuts, keychain, windowing, clipboard, shell)      │
+└────────────────────────────┬─────────────────────────────────────┘
+                             │
+┌────────────────────────────▼─────────────────────────────────────┐
+│                     Tauri 2 Runtime (Rust)                       │
+│  lib.rs · window_manager · platform · context · keychain         │
+│  shell_session · agent_runtime · agent_fs · privilege · audit    │
+└────────────────────────────┬─────────────────────────────────────┘
+                             │ invoke / events
+┌────────────────────────────▼─────────────────────────────────────┐
+│                   React 19 SPA (TypeScript)                      │
+│  App.tsx · agentLoop · llm · chatHistory · knowledge · settings  │
+└──────────────────────────────────────────────────────────────────┘
+                             │
+              ┌──────────────┴──────────────┐
+              ▼                             ▼
+      DeepSeek API                    Ollama HTTP
+      (cloud + tools)               (local + tags/planner)
+```
+
+---
+
+## Layer responsibilities
+
+| Layer | Owns | Must not own |
+|-------|------|----------------|
+| **React UI** | Layout, chat UX, modals (Sudo/Path Gate), onboarding | Direct shell spawn, raw secret storage |
+| **Tauri IPC** | Serialization, command dispatch, events | Business copy in Rust-only paths where UI suffices |
+| **Rust backend** | PTY, FS sandbox, safety checks, keychain, audit | LLM prompt styling (mostly frontend) |
+| **External LLM** | Inference | Local file paths without agent layer |
+
+---
+
+## Window & lifecycle
+
+| Mode | Behavior |
+|------|----------|
+| **Panel** | Anchored near tray/menu bar; compact chrome |
+| **Floating** | Movable always-on-top window |
+| **Windowed** | Native menus; may hide duplicate in-app toolbar |
+| **Fullscreen** | Maximized workspace |
+
+**Lifecycle:** App starts hidden → tray visible → global shortcut or tray click shows window → close hides to tray → Quit exits process.
+
+macOS uses `ActivationPolicy::Accessory` for menu-bar-first presence.
+
+---
+
+## IPC model
+
+Communication uses Tauri **`invoke`** (request/response) and **`emit`/`listen`** (menu → UI events).
+
+### Event channels (UI subscribes)
+
+| Event | Source | Purpose |
+|-------|--------|---------|
+| `menu-new-chat` | Native menu / tray | Reset composer session |
+| `menu-open-settings` | Tray | Open settings pane |
+| `menu-open-knowledge` | Menu | Open knowledge overlay |
+| `menu-cycle-theme` | Menu | Theme rotation |
+| `window-mode-changed` | `window_manager` | Sync mode chips |
+| Shell output streams | `shell_session` | Live stdout in chat |
+
+### Command domains
+
+| Domain | Module(s) | Examples |
+|--------|-----------|----------|
+| **Platform** | `platform`, `window_manager` | `get_platform_info`, `set_window_mode` |
+| **Context** | `context` | `get_active_window`, clipboard |
+| **Secrets** | `keychain`, `env_config` | `save_credential`, `get_env_llm_config` |
+| **LLM** | `llm` | `chat_completion`, model listing |
+| **Chat store** | `chat_history` | `save_chat_session`, `load_chat_session` |
+| **Agent** | `agent_runtime`, `agent_fs`, `agent_settings` | Tool execution, workspace |
+| **Shell** | `shell_session`, `shell_executor`, `privilege` | PTY run, safety check, elevation |
+| **Knowledge** | `knowledge` | Index, upload, context bundle |
+| **Attachments** | `attachments` | Stage files for prompts |
+
+Full command surface evolves with releases; grep `#[tauri::command]` in `src-tauri/src/` for the authoritative list.
+
+---
+
+## Agent execution flow
+
+```
+User message (UI)
+      │
+      ▼
+chatCompletion / runAgentLoop
+      │
+      ├── Cloud: tool_calls (shell_run, fs_*, workspace_info)
+      │         └── invoke Rust agent_runtime (≤10 steps)
+      │
+      └── Local: <gnomad-run> tags or $ direct shell
+                └── optional command_planner (Ollama)
+      │
+      ▼
+privilege::check_command_safety
+      │
+      ├── requires_hitl → Sudo Gate modal (UI) → approve/deny
+      └── execute via shell_session (PTY)
+      │
+      ▼
+agent_audit.jsonl + chat thread update
+```
+
+---
+
+## Data locations
+
+| Data | Path pattern |
+|------|----------------|
+| Chat sessions | `{app_data}/gnomad/chats/` |
+| Knowledge library | `{app_data}/gnomad/knowledge/` |
+| Agent audit | `{app_data}/gnomad/agent-audit.jsonl` |
+| Agent settings | `{app_data}/gnomad/agent-settings.json` |
+| API keys | OS keychain (service scoped) |
+
+---
+
+## Cross-platform abstraction
+
+`platform::get_platform_info()` returns capability flags consumed by React (tray labels, accessibility UI, title bar behavior). Platform-specific code lives in `#[cfg(target_os = ...)]` blocks inside `context`, `privilege`, and `automation` modules.
+
+---
+
+## Related documents
+
+- [`TECH_STACK.md`](TECH_STACK.md) — technology choices  
+- [`SECURITY_MODEL.md`](SECURITY_MODEL.md) — trust and gates  
+- [`BUILD.md`](BUILD.md) — delivery phases  
+
+Built with ❤️ by [Gnomad Studio](https://gnomadstudio.org) 🦙

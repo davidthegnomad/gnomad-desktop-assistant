@@ -1,0 +1,83 @@
+════════════════════════════════════════════════════════════════════════
+  DOCUMENTATION INDEX (ALL FORMATS)
+  Gnomad Desktop Assistant · docs/DOCS_INDEX.md
+════════════════════════════════════════════════════════════════════════
+
+DOCUMENTATION INDEX (ALL FORMATS) — GNOMAD DESKTOP ASSISTANT
+============================================================
+
+Every document is available in three formats:
+
+  Format  |  Best for                             
+  .md     |  GitHub, editing, version control     
+  .html   |  Browser reading (styled, TOC sidebar)
+  .txt    |  Notepad, Word, email, print          
+
+Regenerate HTML/TXT after editing Markdown:
+
+  [bash]
+    npm run docs:export
+
+────────────────────────────────────────
+
+START HERE
+----------
+
+  Document                   |  MD               |  HTML               |  TXT             
+  README (project overview)  |  ../README.md     |  ../README.html     |  ../README.txt   
+  User Guide                 |  USER_GUIDE.md    |  USER_GUIDE.html    |  USER_GUIDE.txt  
+  Changelog                  |  ../CHANGELOG.md  |  ../CHANGELOG.html  |  ../CHANGELOG.txt
+
+────────────────────────────────────────
+
+ENGINEERING & PORTFOLIO
+-----------------------
+
+  Document         |  MD                 |  HTML                 |  TXT               
+  Tech Stack       |  TECH_STACK.md      |  TECH_STACK.html      |  TECH_STACK.txt    
+  Build Narrative  |  BUILD.md           |  BUILD.html           |  BUILD.txt         
+  Architecture     |  ARCHITECTURE.md    |  ARCHITECTURE.html    |  ARCHITECTURE.txt  
+  Security Model   |  SECURITY_MODEL.md  |  SECURITY_MODEL.html  |  SECURITY_MODEL.txt
+  Privacy          |  PRIVACY.md         |  PRIVACY.html         |  PRIVACY.txt       
+  Roadmap          |  ROADMAP.md         |  ROADMAP.html         |  ROADMAP.txt       
+  Demo Script      |  DEMO_SCRIPT.md     |  DEMO_SCRIPT.html     |  DEMO_SCRIPT.txt   
+  QA Checklists    |  QA_CHECKLIST.md    |  QA_CHECKLIST.html    |  QA_CHECKLIST.txt  
+
+────────────────────────────────────────
+
+BUILD & PLATFORM
+----------------
+
+  Document           |  MD                    |  HTML                    |  TXT                  
+  Build Platforms    |  BUILD_PLATFORMS.md    |  BUILD_PLATFORMS.html    |  BUILD_PLATFORMS.txt  
+  Linux Packages     |  LINUX_PACKAGES.md     |  LINUX_PACKAGES.html     |  LINUX_PACKAGES.txt   
+  macOS Permissions  |  MACOS_PERMISSIONS.md  |  MACOS_PERMISSIONS.html  |  MACOS_PERMISSIONS.txt
+
+────────────────────────────────────────
+
+PRODUCT & DESIGN
+----------------
+
+  Document            |  MD                              |  HTML                              |  TXT                            
+  Knowledge Base      |  KNOWLEDGE.md                    |  KNOWLEDGE.html                    |  KNOWLEDGE.txt                  
+  UI Design           |  UI_DESIGN.md                    |  UI_DESIGN.html                    |  UI_DESIGN.txt                  
+  Agent Capabilities  |  AGENT_CAPABILITIES_PROPOSAL.md  |  AGENT_CAPABILITIES_PROPOSAL.html  |  AGENT_CAPABILITIES_PROPOSAL.txt
+
+────────────────────────────────────────
+
+INTERNAL / REVIEW
+-----------------
+
+  Document          |  MD                   |  HTML                   |  TXT                 
+  Code Review       |  CODE_REVIEW.md       |  CODE_REVIEW.html       |  CODE_REVIEW.txt     
+  Test Notes        |  TEST_NOTES.md        |  TEST_NOTES.html        |  TEST_NOTES.txt      
+  Recommended Docs  |  RECOMMENDED_DOCS.md  |  RECOMMENDED_DOCS.html  |  RECOMMENDED_DOCS.txt
+
+────────────────────────────────────────
+
+Built with ❤️ by Gnomad Studio 🦙
+
+════════════════════════════════════════════════════════════════════════
+Built with ❤️ by Gnomad Studio 🦙
+https://gnomadstudio.org
+════════════════════════════════════════════════════════════════════════

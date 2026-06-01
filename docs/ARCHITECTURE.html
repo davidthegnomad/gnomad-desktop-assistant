@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Architecture — Gnomad Desktop Assistant</title>
+  <meta name="description" content="Architecture documentation for Gnomad Desktop Assistant." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>:root {
+  --bg-base: #0a0a0a;
+  --bg-panel: rgba(18, 18, 20, 0.92);
+  --bg-elevated: rgba(30, 30, 35, 0.95);
+  --border: rgba(255, 255, 255, 0.1);
+  --text: #f3f4f6;
+  --muted: #9ca3af;
+  --accent: #8ab4f8;
+  --accent-secondary: #c58af9;
+  --success: #34a853;
+  --warning: #f9ab00;
+  --danger: #ea4335;
+  --pill-radius: 999px;
+  --radius: 16px;
+  --mesh:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(66, 133, 244, 0.2), transparent 65%),
+    radial-gradient(ellipse 60% 40% at 10% 30%, rgba(168, 85, 247, 0.12), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 95% 40%, rgba(242, 139, 130, 0.1), transparent 50%);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: "Google Sans Flex", "Roboto", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--bg-base);
+  min-height: 100vh;
+}
+
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: var(--mesh);
+  z-index: 0;
+}
+
+.layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 1.5rem 1.25rem;
+  background: var(--bg-panel);
+  backdrop-filter: blur(24px);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.brand-icon { font-size: 1.5rem; }
+.brand h1 { font-size: 1rem; font-weight: 600; }
+
+.doc-path {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  word-break: break-all;
+}
+
+.sidebar a {
+  display: block;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar a.toc-h3 { padding-left: 1.1rem; font-size: 0.78rem; }
+.sidebar a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.sidebar a.active { color: var(--accent); background: rgba(138,180,248,0.12); }
+
+.content {
+  padding: 2rem 2.5rem 3rem;
+  max-width: 760px;
+}
+
+.hero { margin-bottom: 1.5rem; }
+.hero h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.formats { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+.formats a { color: var(--accent); }
+
+.doc-body h1 { font-size: 1.5rem; margin: 1.5rem 0 0.75rem; }
+.doc-body h2 {
+  font-size: 1.25rem;
+  margin: 2rem 0 0.65rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.doc-body h3 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; color: var(--accent); }
+.doc-body h4 { font-size: 0.95rem; margin: 1rem 0 0.4rem; }
+
+.doc-body p { margin-bottom: 0.85rem; }
+.doc-body ul, .doc-body ol { margin: 0 0 1rem 1.25rem; color: var(--muted); }
+.doc-body li { margin-bottom: 0.35rem; }
+.doc-body li strong { color: var(--text); }
+
+.doc-body a { color: var(--accent); }
+.doc-body code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85em;
+  background: rgba(255,255,255,0.08);
+  padding: 0.12em 0.35em;
+  border-radius: 6px;
+  color: var(--accent-secondary);
+}
+
+.doc-body pre {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.doc-body pre code {
+  background: none;
+  padding: 0;
+  color: var(--text);
+}
+
+.doc-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1rem 0;
+}
+
+.doc-body th, .doc-body td {
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-body th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.doc-body blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 0.6rem 1rem;
+  margin: 1rem 0;
+  background: rgba(138,180,248,0.08);
+  border-radius: 0 12px 12px 0;
+  color: var(--muted);
+}
+
+.doc-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+.doc-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.doc-footer a { color: var(--accent); text-decoration: none; }
+.doc-footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="mesh-bg" aria-hidden="true"></div>
+  <div class="layout">
+    <nav class="sidebar" aria-label="Table of contents">
+          <div class="brand"><span class="brand-icon">🍄</span><h1>Gnomad</h1></div>
+          <p class="doc-path">docs/ARCHITECTURE.md</p>
+          <a href="#system-context" class="toc-h2">System context</a>
+<a href="#layer-responsibilities" class="toc-h2">Layer responsibilities</a>
+<a href="#window-amp-lifecycle" class="toc-h2">Window &amp; lifecycle</a>
+<a href="#ipc-model" class="toc-h2">IPC model</a>
+<a href="#event-channels-ui-subscribes" class="toc-h3">Event channels (UI subscribes)</a>
+<a href="#command-domains" class="toc-h3">Command domains</a>
+<a href="#agent-execution-flow" class="toc-h2">Agent execution flow</a>
+<a href="#data-locations" class="toc-h2">Data locations</a>
+<a href="#cross-platform-abstraction" class="toc-h2">Cross-platform abstraction</a>
+<a href="#related-documents" class="toc-h2">Related documents</a>
+        </nav>
+    <main class="content doc-body">
+      <header class="hero">
+        <h2>Architecture</h2>
+        <p class="formats">Also available: <a href="ARCHITECTURE.md">Markdown</a> · <a href="ARCHITECTURE.txt">Plain text</a></p>
+      </header>
+      <h1 id="architecture-gnomad-desktop-assistant">Architecture — Gnomad Desktop Assistant</h1><p><strong>Version:</strong> 0.1.0-alpha<br><strong>Last updated:</strong> June 2026</p>
+<hr>
+<h2 id="system-context">System context</h2><p>Gnomad is a <strong>desktop-native AI assistant</strong> that combines a WebView UI with a Rust systems layer. Users invoke it from the menu bar or system tray; the app reads OS context (active window, clipboard), sends prompts to cloud or local LLMs, and executes approved shell and filesystem actions.</p>
+<pre><code>┌──────────────────────────────────────────────────────────────────┐
+│                        Operating System                          │
+│  (tray, shortcuts, keychain, windowing, clipboard, shell)      │
+└────────────────────────────┬─────────────────────────────────────┘
+                             │
+┌────────────────────────────▼─────────────────────────────────────┐
+│                     Tauri 2 Runtime (Rust)                       │
+│  lib.rs · window_manager · platform · context · keychain         │
+│  shell_session · agent_runtime · agent_fs · privilege · audit    │
+└────────────────────────────┬─────────────────────────────────────┘
+                             │ invoke / events
+┌────────────────────────────▼─────────────────────────────────────┐
+│                   React 19 SPA (TypeScript)                      │
+│  App.tsx · agentLoop · llm · chatHistory · knowledge · settings  │
+└──────────────────────────────────────────────────────────────────┘
+                             │
+              ┌──────────────┴──────────────┐
+              ▼                             ▼
+      DeepSeek API                    Ollama HTTP
+      (cloud + tools)               (local + tags/planner)
+</code></pre>
+<hr>
+<h2 id="layer-responsibilities">Layer responsibilities</h2><table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Owns</th>
+<th>Must not own</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>React UI</strong></td>
+<td>Layout, chat UX, modals (Sudo/Path Gate), onboarding</td>
+<td>Direct shell spawn, raw secret storage</td>
+</tr>
+<tr>
+<td><strong>Tauri IPC</strong></td>
+<td>Serialization, command dispatch, events</td>
+<td>Business copy in Rust-only paths where UI suffices</td>
+</tr>
+<tr>
+<td><strong>Rust backend</strong></td>
+<td>PTY, FS sandbox, safety checks, keychain, audit</td>
+<td>LLM prompt styling (mostly frontend)</td>
+</tr>
+<tr>
+<td><strong>External LLM</strong></td>
+<td>Inference</td>
+<td>Local file paths without agent layer</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="window-amp-lifecycle">Window &amp; lifecycle</h2><table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Panel</strong></td>
+<td>Anchored near tray/menu bar; compact chrome</td>
+</tr>
+<tr>
+<td><strong>Floating</strong></td>
+<td>Movable always-on-top window</td>
+</tr>
+<tr>
+<td><strong>Windowed</strong></td>
+<td>Native menus; may hide duplicate in-app toolbar</td>
+</tr>
+<tr>
+<td><strong>Fullscreen</strong></td>
+<td>Maximized workspace</td>
+</tr>
+</tbody></table>
+<p><strong>Lifecycle:</strong> App starts hidden → tray visible → global shortcut or tray click shows window → close hides to tray → Quit exits process.</p>
+<p>macOS uses <code>ActivationPolicy::Accessory</code> for menu-bar-first presence.</p>
+<hr>
+<h2 id="ipc-model">IPC model</h2><p>Communication uses Tauri <strong><code>invoke</code></strong> (request/response) and <strong><code>emit</code>/<code>listen</code></strong> (menu → UI events).</p>
+<h3 id="event-channels-ui-subscribes">Event channels (UI subscribes)</h3><table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Source</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>menu-new-chat</code></td>
+<td>Native menu / tray</td>
+<td>Reset composer session</td>
+</tr>
+<tr>
+<td><code>menu-open-settings</code></td>
+<td>Tray</td>
+<td>Open settings pane</td>
+</tr>
+<tr>
+<td><code>menu-open-knowledge</code></td>
+<td>Menu</td>
+<td>Open knowledge overlay</td>
+</tr>
+<tr>
+<td><code>menu-cycle-theme</code></td>
+<td>Menu</td>
+<td>Theme rotation</td>
+</tr>
+<tr>
+<td><code>window-mode-changed</code></td>
+<td><code>window_manager</code></td>
+<td>Sync mode chips</td>
+</tr>
+<tr>
+<td>Shell output streams</td>
+<td><code>shell_session</code></td>
+<td>Live stdout in chat</td>
+</tr>
+</tbody></table>
+<h3 id="command-domains">Command domains</h3><table>
+<thead>
+<tr>
+<th>Domain</th>
+<th>Module(s)</th>
+<th>Examples</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Platform</strong></td>
+<td><code>platform</code>, <code>window_manager</code></td>
+<td><code>get_platform_info</code>, <code>set_window_mode</code></td>
+</tr>
+<tr>
+<td><strong>Context</strong></td>
+<td><code>context</code></td>
+<td><code>get_active_window</code>, clipboard</td>
+</tr>
+<tr>
+<td><strong>Secrets</strong></td>
+<td><code>keychain</code>, <code>env_config</code></td>
+<td><code>save_credential</code>, <code>get_env_llm_config</code></td>
+</tr>
+<tr>
+<td><strong>LLM</strong></td>
+<td><code>llm</code></td>
+<td><code>chat_completion</code>, model listing</td>
+</tr>
+<tr>
+<td><strong>Chat store</strong></td>
+<td><code>chat_history</code></td>
+<td><code>save_chat_session</code>, <code>load_chat_session</code></td>
+</tr>
+<tr>
+<td><strong>Agent</strong></td>
+<td><code>agent_runtime</code>, <code>agent_fs</code>, <code>agent_settings</code></td>
+<td>Tool execution, workspace</td>
+</tr>
+<tr>
+<td><strong>Shell</strong></td>
+<td><code>shell_session</code>, <code>shell_executor</code>, <code>privilege</code></td>
+<td>PTY run, safety check, elevation</td>
+</tr>
+<tr>
+<td><strong>Knowledge</strong></td>
+<td><code>knowledge</code></td>
+<td>Index, upload, context bundle</td>
+</tr>
+<tr>
+<td><strong>Attachments</strong></td>
+<td><code>attachments</code></td>
+<td>Stage files for prompts</td>
+</tr>
+</tbody></table>
+<p>Full command surface evolves with releases; grep <code>#[tauri::command]</code> in <code>src-tauri/src/</code> for the authoritative list.</p>
+<hr>
+<h2 id="agent-execution-flow">Agent execution flow</h2><pre><code>User message (UI)
+      │
+      ▼
+chatCompletion / runAgentLoop
+      │
+      ├── Cloud: tool_calls (shell_run, fs_*, workspace_info)
+      │         └── invoke Rust agent_runtime (≤10 steps)
+      │
+      └── Local: &lt;gnomad-run&gt; tags or $ direct shell
+                └── optional command_planner (Ollama)
+      │
+      ▼
+privilege::check_command_safety
+      │
+      ├── requires_hitl → Sudo Gate modal (UI) → approve/deny
+      └── execute via shell_session (PTY)
+      │
+      ▼
+agent_audit.jsonl + chat thread update
+</code></pre>
+<hr>
+<h2 id="data-locations">Data locations</h2><table>
+<thead>
+<tr>
+<th>Data</th>
+<th>Path pattern</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Chat sessions</td>
+<td><code>{app_data}/gnomad/chats/</code></td>
+</tr>
+<tr>
+<td>Knowledge library</td>
+<td><code>{app_data}/gnomad/knowledge/</code></td>
+</tr>
+<tr>
+<td>Agent audit</td>
+<td><code>{app_data}/gnomad/agent-audit.jsonl</code></td>
+</tr>
+<tr>
+<td>Agent settings</td>
+<td><code>{app_data}/gnomad/agent-settings.json</code></td>
+</tr>
+<tr>
+<td>API keys</td>
+<td>OS keychain (service scoped)</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="cross-platform-abstraction">Cross-platform abstraction</h2><p><code>platform::get_platform_info()</code> returns capability flags consumed by React (tray labels, accessibility UI, title bar behavior). Platform-specific code lives in <code>#[cfg(target_os = ...)]</code> blocks inside <code>context</code>, <code>privilege</code>, and <code>automation</code> modules.</p>
+<hr>
+<h2 id="related-documents">Related documents</h2><ul>
+<li><a href="TECH_STACK.md"><code>TECH_STACK.md</code></a> — technology choices  </li>
+<li><a href="SECURITY_MODEL.md"><code>SECURITY_MODEL.md</code></a> — trust and gates  </li>
+<li><a href="BUILD.md"><code>BUILD.md</code></a> — delivery phases</li>
+</ul>
+<p>Built with ❤️ by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+
+      <footer class="doc-footer">
+        <p>Built with <span aria-label="love">❤️</span> by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+      </footer>
+    </main>
+  </div>
+  <script>
+    const links = document.querySelectorAll(".sidebar a[href^='#']");
+    const sections = [...links].map((a) => document.querySelector(a.getAttribute("href")));
+    const onScroll = () => {
+      let cur = 0;
+      sections.forEach((s, i) => { if (s && s.getBoundingClientRect().top <= 120) cur = i; });
+      links.forEach((l, i) => l.classList.toggle("active", i === cur));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  </script>
+</body>
+</html>

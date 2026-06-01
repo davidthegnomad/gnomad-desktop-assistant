@@ -44,19 +44,38 @@ pub fn resolved_env_path() -> Option<String> {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct EnvLlmConfig {
-    pub deepseek_api_key: Option<String>,
-    pub loaded_from_env: bool,
+    /// True when a DeepSeek key is present in `.env` (value is never sent to the UI).
+    pub deepseek_configured: bool,
     pub env_path: Option<String>,
 }
 
 #[tauri::command]
 pub fn get_env_llm_config() -> EnvLlmConfig {
-    let deepseek = deepseek_api_key_from_env();
     EnvLlmConfig {
-        loaded_from_env: deepseek.is_some(),
-        deepseek_api_key: deepseek,
+        deepseek_configured: deepseek_api_key_from_env().is_some(),
         env_path: resolved_env_path(),
     }
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum CloudApiKeySource {
+    Env,
+    Keychain,
+    None,
+}
+
+#[tauri::command]
+pub fn get_cloud_api_key_source() -> CloudApiKeySource {
+    if deepseek_api_key_from_env().is_some() {
+        return CloudApiKeySource::Env;
+    }
+    if let Ok(key) = crate::keychain::get_credential_value("llm_api_key") {
+        if !key.trim().is_empty() {
+            return CloudApiKeySource::Keychain;
+        }
+    }
+    CloudApiKeySource::None
 }
 
 #[tauri::command]

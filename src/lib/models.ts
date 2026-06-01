@@ -1,5 +1,5 @@
 import { getEnvLlmConfig } from "./envConfig";
-import { loadCredential } from "./preferences";
+import { hasCredential, loadCredential } from "./preferences";
 
 export interface ModelOption {
   value: string;
@@ -43,22 +43,15 @@ export function normalizeCloudModel(
   return pickDefaultCloudModel(available);
 }
 
-/** Resolve which providers/models are usable from env, keychain, and in-app state. */
+/** Resolve which providers/models are usable from env and keychain (never reads key values in UI). */
 export async function resolveLlmAvailability(options?: {
-  apiKey?: string;
   ollamaUrl?: string;
 }): Promise<LlmAvailability> {
   const env = await getEnvLlmConfig();
-  const keychainKey = await loadCredential("llm_api_key");
+  const keychainKeySet = await hasCredential("llm_api_key");
+  const cloudConfigured = env.deepseek_configured || keychainKeySet;
+
   const keychainOllama = await loadCredential("ollama_url");
-
-  const inlineKey = options?.apiKey?.trim() ?? "";
-  const cloudConfigured = !!(
-    env.deepseek_api_key?.trim() ||
-    keychainKey.trim() ||
-    inlineKey
-  );
-
   const ollamaUrl = (options?.ollamaUrl ?? keychainOllama).trim();
   const localConfigured = ollamaUrl.length > 0;
 

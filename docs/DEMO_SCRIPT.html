@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Demo Script — Gnomad Desktop Assistant</title>
+  <meta name="description" content="Demo Script documentation for Gnomad Desktop Assistant." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>:root {
+  --bg-base: #0a0a0a;
+  --bg-panel: rgba(18, 18, 20, 0.92);
+  --bg-elevated: rgba(30, 30, 35, 0.95);
+  --border: rgba(255, 255, 255, 0.1);
+  --text: #f3f4f6;
+  --muted: #9ca3af;
+  --accent: #8ab4f8;
+  --accent-secondary: #c58af9;
+  --success: #34a853;
+  --warning: #f9ab00;
+  --danger: #ea4335;
+  --pill-radius: 999px;
+  --radius: 16px;
+  --mesh:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(66, 133, 244, 0.2), transparent 65%),
+    radial-gradient(ellipse 60% 40% at 10% 30%, rgba(168, 85, 247, 0.12), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 95% 40%, rgba(242, 139, 130, 0.1), transparent 50%);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: "Google Sans Flex", "Roboto", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--bg-base);
+  min-height: 100vh;
+}
+
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: var(--mesh);
+  z-index: 0;
+}
+
+.layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 1.5rem 1.25rem;
+  background: var(--bg-panel);
+  backdrop-filter: blur(24px);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.brand-icon { font-size: 1.5rem; }
+.brand h1 { font-size: 1rem; font-weight: 600; }
+
+.doc-path {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  word-break: break-all;
+}
+
+.sidebar a {
+  display: block;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar a.toc-h3 { padding-left: 1.1rem; font-size: 0.78rem; }
+.sidebar a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.sidebar a.active { color: var(--accent); background: rgba(138,180,248,0.12); }
+
+.content {
+  padding: 2rem 2.5rem 3rem;
+  max-width: 760px;
+}
+
+.hero { margin-bottom: 1.5rem; }
+.hero h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.formats { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+.formats a { color: var(--accent); }
+
+.doc-body h1 { font-size: 1.5rem; margin: 1.5rem 0 0.75rem; }
+.doc-body h2 {
+  font-size: 1.25rem;
+  margin: 2rem 0 0.65rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.doc-body h3 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; color: var(--accent); }
+.doc-body h4 { font-size: 0.95rem; margin: 1rem 0 0.4rem; }
+
+.doc-body p { margin-bottom: 0.85rem; }
+.doc-body ul, .doc-body ol { margin: 0 0 1rem 1.25rem; color: var(--muted); }
+.doc-body li { margin-bottom: 0.35rem; }
+.doc-body li strong { color: var(--text); }
+
+.doc-body a { color: var(--accent); }
+.doc-body code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85em;
+  background: rgba(255,255,255,0.08);
+  padding: 0.12em 0.35em;
+  border-radius: 6px;
+  color: var(--accent-secondary);
+}
+
+.doc-body pre {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.doc-body pre code {
+  background: none;
+  padding: 0;
+  color: var(--text);
+}
+
+.doc-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1rem 0;
+}
+
+.doc-body th, .doc-body td {
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-body th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.doc-body blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 0.6rem 1rem;
+  margin: 1rem 0;
+  background: rgba(138,180,248,0.08);
+  border-radius: 0 12px 12px 0;
+  color: var(--muted);
+}
+
+.doc-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+.doc-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.doc-footer a { color: var(--accent); text-decoration: none; }
+.doc-footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="mesh-bg" aria-hidden="true"></div>
+  <div class="layout">
+    <nav class="sidebar" aria-label="Table of contents">
+          <div class="brand"><span class="brand-icon">🍄</span><h1>Gnomad</h1></div>
+          <p class="doc-path">docs/DEMO_SCRIPT.md</p>
+          <a href="#setup-before-you-share-screen" class="toc-h2">Setup (before you share screen)</a>
+<a href="#act-1-native-presence-45-sec" class="toc-h2">Act 1 — Native presence (45 sec)</a>
+<a href="#act-2-onboarding-amp-models-60-sec" class="toc-h2">Act 2 — Onboarding &amp; models (60 sec)</a>
+<a href="#act-3-conversation-90-sec" class="toc-h2">Act 3 — Conversation (90 sec)</a>
+<a href="#act-4-agent-amp-safety-2-min-highlight-reel" class="toc-h2">Act 4 — Agent &amp; safety (2 min) — highlight reel</a>
+<a href="#act-5-knowledge-45-sec" class="toc-h2">Act 5 — Knowledge (45 sec)</a>
+<a href="#act-6-engineering-story-30-sec-close" class="toc-h2">Act 6 — Engineering story (30 sec close)</a>
+<a href="#fallbacks-if-something-breaks" class="toc-h2">Fallbacks if something breaks</a>
+<a href="#do-not-demo-on-a-live-stream" class="toc-h2">Do not demo on a live stream</a>
+        </nav>
+    <main class="content doc-body">
+      <header class="hero">
+        <h2>Demo Script</h2>
+        <p class="formats">Also available: <a href="DEMO_SCRIPT.md">Markdown</a> · <a href="DEMO_SCRIPT.txt">Plain text</a></p>
+      </header>
+      <h1 id="demo-script-gnomad-desktop-assistant">Demo Script — Gnomad Desktop Assistant</h1><p><strong>Duration:</strong> 5–7 minutes<br><strong>Audience:</strong> Portfolio review, interview, or investor technical screen<br><strong>Prerequisites:</strong> Installed alpha build, DeepSeek key <strong>or</strong> Ollama running</p>
+<hr>
+<h2 id="setup-before-you-share-screen">Setup (before you share screen)</h2><ol>
+<li>Quit other assistants/tray clutter.  </li>
+<li>Confirm Gnomad is in tray; window hidden.  </li>
+<li>Pre-stage: one text file in Downloads, Ollama model pulled if local demo.  </li>
+<li>Optional: add a short <code>skills/demo-skill.md</code> in knowledge (“Prefer concise answers”).  </li>
+<li>Close sensitive windows; copy a harmless clipboard string (e.g. “Q2 roadmap draft”).</li>
+</ol>
+<hr>
+<h2 id="act-1-native-presence-45-sec">Act 1 — Native presence (45 sec)</h2><p><strong>Say:</strong> “Gnomad is a native desktop assistant—not a browser tab. It lives in the menu bar / tray and respects OS conventions.”</p>
+<ol>
+<li>Press <strong>⌘⇧Space</strong> (or <strong>Ctrl+Shift+Space</strong>) → panel appears.  </li>
+<li>Point out <strong>context footer</strong>: active app, window title, clipboard.  </li>
+<li>Click tray → show <strong>Pop out</strong> vs <strong>Windowed</strong> (brief).  </li>
+<li>Close window → “It hides to tray; it doesn’t quit.”</li>
+</ol>
+<hr>
+<h2 id="act-2-onboarding-amp-models-60-sec">Act 2 — Onboarding &amp; models (60 sec)</h2><p><strong>Say:</strong> “Users choose cloud or local inference; secrets go to the system keychain.”</p>
+<ol>
+<li>Open <strong>Settings</strong> (gear).  </li>
+<li>Show <strong>API keys</strong> — configured, not visible.  </li>
+<li>Toggle <strong>Provider</strong>: Cloud vs Local; change <strong>model</strong> dropdown.  </li>
+<li>Mention <code>.env</code> for developers (optional one line).</li>
+</ol>
+<hr>
+<h2 id="act-3-conversation-90-sec">Act 3 — Conversation (90 sec)</h2><p><strong>Say:</strong> “Chat is grounded in what you’re working on.”</p>
+<ol>
+<li>New chat from sidebar.  </li>
+<li>Click a <strong>suggestion chip</strong> or type:<br><em>“Summarize what I’m working on based on my window and clipboard.”</em>  </li>
+<li>Show assistant reply referencing context pills.  </li>
+<li>Attach a small file → send → note attachment pill in thread.</li>
+</ol>
+<hr>
+<h2 id="act-4-agent-amp-safety-2-min-highlight-reel">Act 4 — Agent &amp; safety (2 min) — highlight reel</h2><p><strong>Say:</strong> “This is an agent that executes—not theater. Safety is explicit.”</p>
+<ol>
+<li><p><strong>Safe shell:</strong><br><em>“Run <code>echo Hello from Gnomad</code> and show the output.”</em><br>→ Point at <strong>shell block</strong> with stdout.</p>
+</li>
+<li><p><strong>Persistent cwd:</strong><br><em>“Run <code>pwd</code> then <code>cd Desktop</code> and <code>pwd</code> again.”</em><br>→ Show cwd continuity in settings/shell block.</p>
+</li>
+<li><p><strong>Sudo Gate (careful):</strong><br><em>“Try <code>sudo echo test</code>”</em> or use a flagged pattern.<br>→ <strong>Deny</strong> first (“user stays in control”), then optionally approve on a safe test machine.</p>
+</li>
+<li><p><strong>Stop:</strong> Start a longer command; click <strong>Stop</strong> during thinking.</p>
+</li>
+</ol>
+<hr>
+<h2 id="act-5-knowledge-45-sec">Act 5 — Knowledge (45 sec)</h2><p><strong>Say:</strong> “Skills and docs live on disk and inject into every prompt.”</p>
+<ol>
+<li>Open <strong>Knowledge &amp; skills</strong> (book icon).  </li>
+<li>Show folder structure / add file.  </li>
+<li>Ask a question that only your staged skill can answer.</li>
+</ol>
+<hr>
+<h2 id="act-6-engineering-story-30-sec-close">Act 6 — Engineering story (30 sec close)</h2><p><strong>Say:</strong> “Under the hood: Tauri 2, React 19, Rust for shell and FS. CI builds macOS, Windows, and Linux installers.”</p>
+<p>Show (optional, 10 sec): GitHub Actions or <code>docs/ARCHITECTURE.md</code> diagram.</p>
+<p><strong>Close:</strong> “Alpha today; roadmap includes hardened HITL, tests, and broader packaging.”</p>
+<hr>
+<h2 id="fallbacks-if-something-breaks">Fallbacks if something breaks</h2><table>
+<thead>
+<tr>
+<th>Issue</th>
+<th>Fallback line</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Cloud API down</td>
+<td>Switch to local Ollama</td>
+</tr>
+<tr>
+<td>Ollama down</td>
+<td>Show pre-recorded screenshot of shell block</td>
+</tr>
+<tr>
+<td>Context empty (Linux)</td>
+<td>“Optional packages xdotool/wl-paste; core chat still works”</td>
+</tr>
+<tr>
+<td>Permission banner</td>
+<td>“macOS Accessibility—one-time grant”</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="do-not-demo-on-a-live-stream">Do not demo on a live stream</h2><ul>
+<li>Real <code>rm -rf</code>  </li>
+<li>Production API keys in view  </li>
+<li>Customer data paths  </li>
+<li>YOLO mode on a machine with secrets</li>
+</ul>
+<hr>
+<p>Built with ❤️ by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+
+      <footer class="doc-footer">
+        <p>Built with <span aria-label="love">❤️</span> by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+      </footer>
+    </main>
+  </div>
+  <script>
+    const links = document.querySelectorAll(".sidebar a[href^='#']");
+    const sections = [...links].map((a) => document.querySelector(a.getAttribute("href")));
+    const onScroll = () => {
+      let cur = 0;
+      sections.forEach((s, i) => { if (s && s.getBoundingClientRect().top <= 120) cur = i; });
+      links.forEach((l, i) => l.classList.toggle("active", i === cur));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  </script>
+</body>
+</html>

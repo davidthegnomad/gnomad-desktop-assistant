@@ -1,4 +1,4 @@
-import { LLAMA, MUSHROOM } from "../lib/brand";
+import { MUSHROOM } from "../lib/brand";
 
 type Size = "sm" | "md" | "lg";
 
@@ -13,7 +13,7 @@ interface GnomadLogoProps {
   className?: string;
 }
 
-/** Brand mark: llama + mushroom */
+/** Brand mark: mushroom */
 export function GnomadLogo({ size = "md", className = "" }: GnomadLogoProps) {
   return (
     <span
@@ -21,8 +21,7 @@ export function GnomadLogo({ size = "md", className = "" }: GnomadLogoProps) {
       style={{ fontSize: sizes[size] }}
       aria-hidden
     >
-      <span className="gnomad-logo-llama">{LLAMA}</span>
-      <span className="gnomad-logo-mushroom">{MUSHROOM}</span>
+      {MUSHROOM}
     </span>
   );
 }

@@ -15,7 +15,8 @@
     "tauri:build:linux:deb": "tauri build --bundles deb",
     "tauri:build:linux:rpm": "tauri build --bundles rpm",
     "tauri:build:linux:appimage": "tauri build --bundles appimage",
-    "tauri:build:win": "tauri build --bundles msi,nsis"
+    "tauri:build:win": "tauri build --bundles msi,nsis",
+    "docs:export": "node scripts/export-docs.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",
@@ -31,6 +32,7 @@
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.6.0",
+    "marked": "^18.0.4",
     "typescript": "~5.8.3",
     "vite": "^7.0.4"
   }

@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Technology Stack — Gnomad Desktop Assistant</title>
+  <meta name="description" content="Technology Stack documentation for Gnomad Desktop Assistant." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>:root {
+  --bg-base: #0a0a0a;
+  --bg-panel: rgba(18, 18, 20, 0.92);
+  --bg-elevated: rgba(30, 30, 35, 0.95);
+  --border: rgba(255, 255, 255, 0.1);
+  --text: #f3f4f6;
+  --muted: #9ca3af;
+  --accent: #8ab4f8;
+  --accent-secondary: #c58af9;
+  --success: #34a853;
+  --warning: #f9ab00;
+  --danger: #ea4335;
+  --pill-radius: 999px;
+  --radius: 16px;
+  --mesh:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(66, 133, 244, 0.2), transparent 65%),
+    radial-gradient(ellipse 60% 40% at 10% 30%, rgba(168, 85, 247, 0.12), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 95% 40%, rgba(242, 139, 130, 0.1), transparent 50%);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: "Google Sans Flex", "Roboto", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--bg-base);
+  min-height: 100vh;
+}
+
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: var(--mesh);
+  z-index: 0;
+}
+
+.layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 1.5rem 1.25rem;
+  background: var(--bg-panel);
+  backdrop-filter: blur(24px);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.brand-icon { font-size: 1.5rem; }
+.brand h1 { font-size: 1rem; font-weight: 600; }
+
+.doc-path {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  word-break: break-all;
+}
+
+.sidebar a {
+  display: block;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar a.toc-h3 { padding-left: 1.1rem; font-size: 0.78rem; }
+.sidebar a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.sidebar a.active { color: var(--accent); background: rgba(138,180,248,0.12); }
+
+.content {
+  padding: 2rem 2.5rem 3rem;
+  max-width: 760px;
+}
+
+.hero { margin-bottom: 1.5rem; }
+.hero h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.formats { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+.formats a { color: var(--accent); }
+
+.doc-body h1 { font-size: 1.5rem; margin: 1.5rem 0 0.75rem; }
+.doc-body h2 {
+  font-size: 1.25rem;
+  margin: 2rem 0 0.65rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.doc-body h3 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; color: var(--accent); }
+.doc-body h4 { font-size: 0.95rem; margin: 1rem 0 0.4rem; }
+
+.doc-body p { margin-bottom: 0.85rem; }
+.doc-body ul, .doc-body ol { margin: 0 0 1rem 1.25rem; color: var(--muted); }
+.doc-body li { margin-bottom: 0.35rem; }
+.doc-body li strong { color: var(--text); }
+
+.doc-body a { color: var(--accent); }
+.doc-body code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85em;
+  background: rgba(255,255,255,0.08);
+  padding: 0.12em 0.35em;
+  border-radius: 6px;
+  color: var(--accent-secondary);
+}
+
+.doc-body pre {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.doc-body pre code {
+  background: none;
+  padding: 0;
+  color: var(--text);
+}
+
+.doc-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1rem 0;
+}
+
+.doc-body th, .doc-body td {
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-body th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.doc-body blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 0.6rem 1rem;
+  margin: 1rem 0;
+  background: rgba(138,180,248,0.08);
+  border-radius: 0 12px 12px 0;
+  color: var(--muted);
+}
+
+.doc-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+.doc-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.doc-footer a { color: var(--accent); text-decoration: none; }
+.doc-footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="mesh-bg" aria-hidden="true"></div>
+  <div class="layout">
+    <nav class="sidebar" aria-label="Table of contents">
+          <div class="brand"><span class="brand-icon">🍄</span><h1>Gnomad</h1></div>
+          <p class="doc-path">docs/TECH_STACK.md</p>
+          <a href="#executive-summary" class="toc-h2">Executive summary</a>
+<a href="#stack-overview" class="toc-h2">Stack overview</a>
+<a href="#frontend-presentation-layer" class="toc-h2">Frontend (presentation layer)</a>
+<a href="#react-19-typescript" class="toc-h3">React 19 + TypeScript</a>
+<a href="#design-system" class="toc-h3">Design system</a>
+<a href="#state-and-persistence" class="toc-h3">State and persistence</a>
+<a href="#backend-systems-layer" class="toc-h2">Backend (systems layer)</a>
+<a href="#rust-module-map" class="toc-h3">Rust module map</a>
+<a href="#why-rust-for-the-backend" class="toc-h3">Why Rust for the backend</a>
+<a href="#tauri-plugins" class="toc-h3">Tauri plugins</a>
+<a href="#ai-llm-integration" class="toc-h2">AI / LLM integration</a>
+<a href="#security-model-high-level" class="toc-h2">Security model (high level)</a>
+<a href="#build-amp-release-engineering" class="toc-h2">Build &amp; release engineering</a>
+<a href="#dependencies-worth-noting" class="toc-h2">Dependencies worth noting</a>
+<a href="#related-documents" class="toc-h2">Related documents</a>
+        </nav>
+    <main class="content doc-body">
+      <header class="hero">
+        <h2>Technology Stack</h2>
+        <p class="formats">Also available: <a href="TECH_STACK.md">Markdown</a> · <a href="TECH_STACK.txt">Plain text</a></p>
+      </header>
+      <h1 id="technology-stack-gnomad-desktop-assistant">Technology Stack — Gnomad Desktop Assistant</h1><p><strong>Document owner:</strong> Engineering<br><strong>Version:</strong> 0.1.0-alpha<br><strong>Last updated:</strong> June 2026</p>
+<hr>
+<h2 id="executive-summary">Executive summary</h2><p>Gnomad is a <strong>native desktop application</strong> built on <strong>Tauri v2</strong>, pairing a <strong>React 19 + TypeScript</strong> presentation layer with a <strong>Rust</strong> systems backend. The architecture deliberately keeps privileged operations (shell, filesystem, secrets, OS integration) on the Rust side while the webview handles UX, chat orchestration, and LLM client logic. This split yields a small install footprint relative to Electron, cross-platform parity from a single UI codebase, and a security boundary that is easier to reason about than a pure browser-based assistant.</p>
+<hr>
+<h2 id="stack-overview">Stack overview</h2><table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Technology</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Shell / runtime</strong></td>
+<td>Tauri 2.x</td>
+<td>Native windowing, tray, menus, IPC, bundling</td>
+</tr>
+<tr>
+<td><strong>UI</strong></td>
+<td>React 19, TypeScript 5.8, Vite 7</td>
+<td>Component model, build pipeline, HMR in dev</td>
+</tr>
+<tr>
+<td><strong>Systems backend</strong></td>
+<td>Rust 2021 edition</td>
+<td>Commands, PTY shell, FS agent, keychain, platform APIs</td>
+</tr>
+<tr>
+<td><strong>Styling</strong></td>
+<td>CSS custom properties (design tokens)</td>
+<td>Gemini-inspired theming; no CSS-in-JS framework</td>
+</tr>
+<tr>
+<td><strong>Icons</strong></td>
+<td>Lucide React</td>
+<td>Consistent stroke icons</td>
+</tr>
+<tr>
+<td><strong>HTTP (Rust)</strong></td>
+<td>reqwest + rustls</td>
+<td>Server-side LLM proxy paths where applicable</td>
+</tr>
+<tr>
+<td><strong>Secrets</strong></td>
+<td>keyring crate</td>
+<td>OS-native credential storage</td>
+</tr>
+<tr>
+<td><strong>PTY</strong></td>
+<td>portable-pty</td>
+<td>Persistent shell sessions with cwd tracking</td>
+</tr>
+<tr>
+<td><strong>CI/CD</strong></td>
+<td>GitHub Actions + tauri-action</td>
+<td>Matrix builds: macOS, Ubuntu 22.04, Windows</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="frontend-presentation-layer">Frontend (presentation layer)</h2><h3 id="react-19-typescript">React 19 + TypeScript</h3><p>The UI is a single-page application compiled by Vite and embedded in Tauri’s WebView. TypeScript enforces contracts between the frontend and Tauri <code>invoke</code> payloads (messages, safety checks, platform info, agent settings).</p>
+<p><strong>Key frontend modules:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>App.tsx</code></td>
+<td>Root layout, chat flow, settings/knowledge overlays, gates (Sudo, Path)</td>
+</tr>
+<tr>
+<td><code>lib/llm.ts</code></td>
+<td>Cloud/local chat completion wiring</td>
+</tr>
+<tr>
+<td><code>lib/agentLoop.ts</code></td>
+<td>Multi-step agent orchestration (tool calls, up to 10 steps)</td>
+</tr>
+<tr>
+<td><code>lib/chatHistory.ts</code></td>
+<td>Session persistence via Tauri commands</td>
+</tr>
+<tr>
+<td><code>lib/knowledge.ts</code></td>
+<td>Knowledge bundle injection into prompts</td>
+</tr>
+<tr>
+<td><code>lib/shellSession.ts</code></td>
+<td>Streaming shell output subscription</td>
+</tr>
+<tr>
+<td><code>hooks/useTheme.ts</code></td>
+<td>Light / dark / system theme with FOUC prevention</td>
+</tr>
+</tbody></table>
+<h3 id="design-system">Design system</h3><p>Visual language follows a <strong>Gemini-inspired “Neural Expressive”</strong> pattern: pill composer, centered welcome state, gradient mesh backgrounds, dual provider/model selectors, and near-black dark theme (<code>#0a0a0a</code>). Theme tokens live in <code>src/index.css</code> as CSS variables under <code>[data-theme=&quot;light&quot;]</code> and <code>[data-theme=&quot;dark&quot;]</code>, enabling consistent surfaces without a runtime CSS framework.</p>
+<h3 id="state-and-persistence">State and persistence</h3><ul>
+<li><strong>Ephemeral UI state:</strong> React <code>useState</code> / <code>useRef</code> (chat messages, modals, thinking state).</li>
+<li><strong>Preferences:</strong> <code>localStorage</code> for theme, sidebar layout, provider/model selection, onboarding flag.</li>
+<li><strong>Secrets:</strong> Never stored in <code>localStorage</code>; routed to OS keychain via Rust (<code>keyring</code>).</li>
+<li><strong>Chat history &amp; knowledge:</strong> App data directory (<code>gnomad/</code>) managed from Rust for path safety.</li>
+</ul>
+<hr>
+<h2 id="backend-systems-layer">Backend (systems layer)</h2><h3 id="rust-module-map">Rust module map</h3><pre><code>src-tauri/src/
+├── lib.rs              # App bootstrap, tray, shortcuts, command registry
+├── platform.rs         # OS capability matrix exposed to UI
+├── window_manager.rs   # Panel / floating / windowed / fullscreen placement
+├── context.rs          # Active window + clipboard (per-OS implementations)
+├── keychain.rs         # Credential slots (API keys, Ollama URL)
+├── env_config.rs       # .env loading for dev/CI
+├── llm.rs              # Rust-side LLM helpers where needed
+├── shell_executor.rs   # One-shot shell execution
+├── shell_session.rs    # PTY-backed persistent shell + interrupt
+├── privilege.rs        # Safety heuristics, Sudo Gate signals
+├── agent_runtime.rs    # Tool execution loop (shell_run, fs_*)
+├── agent_fs.rs         # Workspace-scoped filesystem operations
+├── agent_settings.rs   # Trust mode, workspace root, planner config
+├── agent_audit.rs      # JSONL audit log
+├── command_planner.rs  # Local Ollama fallback for invalid shell tags
+├── knowledge.rs        # Knowledge base indexing on disk
+├── chat_history.rs     # Session store
+├── attachments.rs      # Staged file handling
+├── automation.rs       # Screenshot / input simulation (Enigo + OS fallbacks)
+└── menu_shell.rs       # Native File/Edit/View/Window/Help menus
+</code></pre>
+<h3 id="why-rust-for-the-backend">Why Rust for the backend</h3><ol>
+<li><strong>Process and PTY control</strong> — Shell sessions need reliable spawn, signal handling (<code>Ctrl+C</code> interrupt), and cwd propagation; Rust’s ownership model fits long-lived session state guarded by <code>Mutex</code>.</li>
+<li><strong>Cross-platform OS APIs</strong> — Window titles, clipboard, elevation, and tray placement differ per OS; <code>cfg(target_os = ...)</code> blocks isolate platform code without duplicating the React UI.</li>
+<li><strong>Security-sensitive paths</strong> — Command safety checks and filesystem sandboxing run server-side so a modified client cannot bypass gates by skipping UI modals.</li>
+<li><strong>Distribution</strong> — Tauri bundles produce <code>.app</code>, <code>.dmg</code>, <code>.deb</code>, <code>.rpm</code>, AppImage, <code>.msi</code>, and NSIS installers from one codebase.</li>
+</ol>
+<h3 id="tauri-plugins">Tauri plugins</h3><table>
+<thead>
+<tr>
+<th>Plugin</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>tauri-plugin-global-shortcut</code></td>
+<td>Toggle visibility (⌘⇧Space / Ctrl+Shift+Space)</td>
+</tr>
+<tr>
+<td><code>tauri-plugin-opener</code></td>
+<td>Open URLs (e.g. Gnomad Studio site)</td>
+</tr>
+<tr>
+<td><code>tauri-plugin-dialog</code></td>
+<td>File/folder pickers for knowledge and workspace</td>
+</tr>
+<tr>
+<td><code>tauri-plugin-fs</code></td>
+<td>Scoped filesystem access per capabilities</td>
+</tr>
+</tbody></table>
+<p>Capabilities are declared in <code>src-tauri/capabilities/</code> (<code>default.json</code>, <code>desktop.json</code>) following Tauri v2’s permission model.</p>
+<hr>
+<h2 id="ai-llm-integration">AI / LLM integration</h2><table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Provider</th>
+<th>Configuration</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Cloud</strong></td>
+<td>DeepSeek API</td>
+<td>API key in keychain or <code>DeepSeek_API_KEY</code> in <code>.env</code></td>
+</tr>
+<tr>
+<td><strong>Local</strong></td>
+<td>Ollama</td>
+<td>Base URL in keychain; model tag in settings</td>
+</tr>
+</tbody></table>
+<p><strong>Cloud agent path:</strong> <code>chatCompletion</code> + <code>runAgentLoop</code> issue structured tool calls (<code>shell_run</code>, filesystem tools, <code>workspace_info</code>) with up to <strong>10 steps</strong> per user message.</p>
+<p><strong>Local path:</strong> Models may emit <code>&lt;gnomad-run&gt;</code> command tags; optional <strong>command planner</strong> (small Ollama model) recovers when the main model returns prose instead of a valid command.</p>
+<p><strong>Context injection:</strong> Active app, window title, clipboard snippet, and trimmed knowledge bundle are appended to prompts so responses are grounded in the user’s current work.</p>
+<hr>
+<h2 id="security-model-high-level">Security model (high level)</h2><table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Mechanism</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Sudo Gate</strong></td>
+<td>Modal HITL for destructive/privileged shell patterns</td>
+</tr>
+<tr>
+<td><strong>Path Gate</strong></td>
+<td>Approval for filesystem paths outside workspace (Standard trust mode)</td>
+</tr>
+<tr>
+<td><strong>Trust modes</strong></td>
+<td>Standard (workspace-scoped) vs YOLO (broader FS access; shell gates may remain)</td>
+</tr>
+<tr>
+<td><strong>Audit log</strong></td>
+<td><code>{app_data}/gnomad/agent-audit.jsonl</code></td>
+</tr>
+<tr>
+<td><strong>Secrets</strong></td>
+<td>OS keychain; keys never re-displayed after save</td>
+</tr>
+</tbody></table>
+<p>Shell safety heuristics flag patterns such as <code>rm -rf</code>, <code>sudo</code>, <code>chmod 777</code>, and chained operators before execution. Production hardening would add server-side re-validation on every <code>invoke</code> (documented in internal code review).</p>
+<hr>
+<h2 id="build-amp-release-engineering">Build &amp; release engineering</h2><table>
+<thead>
+<tr>
+<th>Output</th>
+<th>Platform</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>.app</code> / <code>.dmg</code></td>
+<td>macOS (primary); menu-bar accessory mode</td>
+</tr>
+<tr>
+<td><code>.deb</code>, <code>.rpm</code>, AppImage</td>
+<td>Linux x86_64 (CI); optional <code>xdotool</code> / <code>wl-paste</code> for context</td>
+</tr>
+<tr>
+<td><code>.msi</code>, NSIS</td>
+<td>Windows</td>
+</tr>
+</tbody></table>
+<p><strong>CI:</strong> <code>.github/workflows/build.yml</code> runs a three-OS matrix on push to <code>main</code>/<code>master</code>. Release artifacts attach to version tags via <code>release.yml</code>.</p>
+<p><strong>Dev loop:</strong> <code>npm run tauri dev</code> — Vite on port 1420, Rust debug binary, hot reload for frontend.</p>
+<hr>
+<h2 id="dependencies-worth-noting">Dependencies worth noting</h2><p><strong>Intentionally omitted:</strong> Electron, Next.js, heavy state libraries (Redux), CSS frameworks (Tailwind). The stack stays lean for a portfolio-grade native assistant: one UI bundle, one Rust binary, OS-native chrome where possible.</p>
+<p><strong>Alpha caveats:</strong> CSP is relaxed (<code>null</code>) for local asset loading; Snap/Flatpak not shipped; ARM Linux requires local build. See <code>CHANGELOG.md</code> for release-scoped limitations.</p>
+<hr>
+<h2 id="related-documents">Related documents</h2><table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="BUILD.md"><code>BUILD.md</code></a></td>
+<td>Product build narrative and feature delivery phases</td>
+</tr>
+<tr>
+<td><a href="BUILD_PLATFORMS.md"><code>BUILD_PLATFORMS.md</code></a></td>
+<td>Per-OS build commands</td>
+</tr>
+<tr>
+<td><a href="QA_CHECKLIST.md"><code>QA_CHECKLIST.md</code></a></td>
+<td>Release QA matrices</td>
+</tr>
+<tr>
+<td><a href="USER_GUIDE.txt"><code>USER_GUIDE.txt</code></a> / <a href="USER_GUIDE.html"><code>USER_GUIDE.html</code></a></td>
+<td>End-user documentation</td>
+</tr>
+</tbody></table>
+<p>Built with ❤️ by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+
+      <footer class="doc-footer">
+        <p>Built with <span aria-label="love">❤️</span> by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+      </footer>
+    </main>
+  </div>
+  <script>
+    const links = document.querySelectorAll(".sidebar a[href^='#']");
+    const sections = [...links].map((a) => document.querySelector(a.getAttribute("href")));
+    const onScroll = () => {
+      let cur = 0;
+      sections.forEach((s, i) => { if (s && s.getBoundingClientRect().top <= 120) cur = i; });
+      links.forEach((l, i) => l.classList.toggle("active", i === cur));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  </script>
+</body>
+</html>

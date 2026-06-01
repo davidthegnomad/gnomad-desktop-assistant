@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>User Guide — Gnomad Desktop Assistant</title>
+  <meta name="description" content="User Guide documentation for Gnomad Desktop Assistant." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>:root {
+  --bg-base: #0a0a0a;
+  --bg-panel: rgba(18, 18, 20, 0.92);
+  --bg-elevated: rgba(30, 30, 35, 0.95);
+  --border: rgba(255, 255, 255, 0.1);
+  --text: #f3f4f6;
+  --muted: #9ca3af;
+  --accent: #8ab4f8;
+  --accent-secondary: #c58af9;
+  --success: #34a853;
+  --warning: #f9ab00;
+  --danger: #ea4335;
+  --pill-radius: 999px;
+  --radius: 16px;
+  --mesh:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(66, 133, 244, 0.2), transparent 65%),
+    radial-gradient(ellipse 60% 40% at 10% 30%, rgba(168, 85, 247, 0.12), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 95% 40%, rgba(242, 139, 130, 0.1), transparent 50%);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: "Google Sans Flex", "Roboto", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--bg-base);
+  min-height: 100vh;
+}
+
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: var(--mesh);
+  z-index: 0;
+}
+
+.layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 1.5rem 1.25rem;
+  background: var(--bg-panel);
+  backdrop-filter: blur(24px);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.brand-icon { font-size: 1.5rem; }
+.brand h1 { font-size: 1rem; font-weight: 600; }
+
+.doc-path {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  word-break: break-all;
+}
+
+.sidebar a {
+  display: block;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar a.toc-h3 { padding-left: 1.1rem; font-size: 0.78rem; }
+.sidebar a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.sidebar a.active { color: var(--accent); background: rgba(138,180,248,0.12); }
+
+.content {
+  padding: 2rem 2.5rem 3rem;
+  max-width: 760px;
+}
+
+.hero { margin-bottom: 1.5rem; }
+.hero h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.formats { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+.formats a { color: var(--accent); }
+
+.doc-body h1 { font-size: 1.5rem; margin: 1.5rem 0 0.75rem; }
+.doc-body h2 {
+  font-size: 1.25rem;
+  margin: 2rem 0 0.65rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.doc-body h3 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; color: var(--accent); }
+.doc-body h4 { font-size: 0.95rem; margin: 1rem 0 0.4rem; }
+
+.doc-body p { margin-bottom: 0.85rem; }
+.doc-body ul, .doc-body ol { margin: 0 0 1rem 1.25rem; color: var(--muted); }
+.doc-body li { margin-bottom: 0.35rem; }
+.doc-body li strong { color: var(--text); }
+
+.doc-body a { color: var(--accent); }
+.doc-body code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85em;
+  background: rgba(255,255,255,0.08);
+  padding: 0.12em 0.35em;
+  border-radius: 6px;
+  color: var(--accent-secondary);
+}
+
+.doc-body pre {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.doc-body pre code {
+  background: none;
+  padding: 0;
+  color: var(--text);
+}
+
+.doc-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1rem 0;
+}
+
+.doc-body th, .doc-body td {
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-body th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.doc-body blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 0.6rem 1rem;
+  margin: 1rem 0;
+  background: rgba(138,180,248,0.08);
+  border-radius: 0 12px 12px 0;
+  color: var(--muted);
+}
+
+.doc-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+.doc-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.doc-footer a { color: var(--accent); text-decoration: none; }
+.doc-footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="mesh-bg" aria-hidden="true"></div>
+  <div class="layout">
+    <nav class="sidebar" aria-label="Table of contents">
+          <div class="brand"><span class="brand-icon">🍄</span><h1>Gnomad</h1></div>
+          <p class="doc-path">docs/USER_GUIDE.md</p>
+          <a href="#introduction" class="toc-h2">Introduction</a>
+<a href="#installation" class="toc-h2">Installation</a>
+<a href="#macos" class="toc-h3">macOS</a>
+<a href="#windows" class="toc-h3">Windows</a>
+<a href="#linux" class="toc-h3">Linux</a>
+<a href="#first-launch-amp-onboarding" class="toc-h2">First launch &amp; onboarding</a>
+<a href="#opening-and-closing-gnomad" class="toc-h2">Opening and closing Gnomad</a>
+<a href="#window-modes" class="toc-h2">Window modes</a>
+<a href="#main-interface-overview" class="toc-h2">Main interface overview</a>
+<a href="#chat-amp-composer" class="toc-h2">Chat &amp; composer</a>
+<a href="#cloud-vs-local-ai" class="toc-h2">Cloud vs local AI</a>
+<a href="#changing-models-and-api-keys" class="toc-h2">Changing models and API keys</a>
+<a href="#agent-shell-amp-filesystem" class="toc-h2">Agent: shell &amp; filesystem</a>
+<a href="#safety-sudo-gate-amp-path-gate" class="toc-h2">Safety: Sudo Gate &amp; Path Gate</a>
+<a href="#knowledge-amp-skills-library" class="toc-h2">Knowledge &amp; skills library</a>
+<a href="#chat-history-amp-sidebar" class="toc-h2">Chat history &amp; sidebar</a>
+<a href="#settings-reference" class="toc-h2">Settings reference</a>
+<a href="#keyboard-shortcuts" class="toc-h2">Keyboard shortcuts</a>
+<a href="#platform-specific-notes" class="toc-h2">Platform-specific notes</a>
+<a href="#troubleshooting" class="toc-h2">Troubleshooting</a>
+<a href="#privacy-amp-data" class="toc-h2">Privacy &amp; data</a>
+        </nav>
+    <main class="content doc-body">
+      <header class="hero">
+        <h2>User Guide</h2>
+        <p class="formats">Also available: <a href="USER_GUIDE.md">Markdown</a> · <a href="USER_GUIDE.txt">Plain text</a></p>
+      </header>
+      <h1 id="user-guide-gnomad-desktop-assistant">User Guide — Gnomad Desktop Assistant</h1><p><strong>Version:</strong> 0.1.0-alpha</p>
+<p>Project site: <a href="https://davidthegnomad.github.io/gnomad-desktop-assistant/">davidthegnomad.github.io/gnomad-desktop-assistant</a><br>Studio: <a href="https://gnomadstudio.org">gnomadstudio.org</a></p>
+<hr>
+<h2 id="introduction">Introduction</h2><p>Gnomad is a desktop AI assistant that lives in your menu bar (macOS) or system tray (Windows/Linux). It can:</p>
+<ul>
+<li>Chat using cloud (DeepSeek) or local (Ollama) models</li>
+<li>See your active app, window title, and clipboard (footer context strip)</li>
+<li>Run real shell commands and file operations in a controlled workspace</li>
+<li>Store skills and reference documents in a knowledge library</li>
+</ul>
+<p>Closing the window hides Gnomad to the tray—it does not quit the app unless you choose <strong>Quit</strong> from the tray menu.</p>
+<hr>
+<h2 id="installation">Installation</h2><h3 id="macos">macOS</h3><ul>
+<li>Download the <code>.dmg</code> from GitHub Releases or the project site</li>
+<li>Drag Gnomad to Applications</li>
+<li>First open: right-click → Open if Gatekeeper blocks unsigned alpha builds</li>
+</ul>
+<h3 id="windows">Windows</h3><ul>
+<li>Run the <code>.msi</code> or <code>setup.exe</code> installer</li>
+<li>Launch from Start Menu; allow tray icon if prompted</li>
+</ul>
+<h3 id="linux">Linux</h3><ul>
+<li>Debian/Ubuntu: <code>sudo apt install ./gnomad_*_amd64.deb</code></li>
+<li>Fedora/RHEL: <code>sudo dnf install ./gnomad-*-1.x86_64.rpm</code></li>
+<li>Other: <code>chmod +x gnomad_*.AppImage</code> &amp;&amp; run it</li>
+</ul>
+<p>See <a href="LINUX_PACKAGES.md">LINUX_PACKAGES.md</a> for distro-specific details.</p>
+<hr>
+<h2 id="first-launch-amp-onboarding">First launch &amp; onboarding</h2><p>On first launch (when no API key and no Ollama URL are configured), a welcome wizard appears:</p>
+<ol>
+<li><strong>Choose provider</strong> — Cloud API (DeepSeek) or Local model (Ollama)</li>
+<li><strong>Configure</strong> — API key + model, or Ollama URL + model tag</li>
+</ol>
+<p>Keys are saved to your system keychain. Change setup anytime in <strong>Settings → Re-run setup wizard</strong>.</p>
+<p>Developers may use <code>.env</code> with <code>DeepSeek_API_KEY</code>; the UI shows <strong>Set from .env</strong> and locks that key slot.</p>
+<hr>
+<h2 id="opening-and-closing-gnomad">Opening and closing Gnomad</h2><table>
+<thead>
+<tr>
+<th>Action</th>
+<th>macOS</th>
+<th>Windows / Linux</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Show / hide</td>
+<td>Menu bar icon or <strong>⌘⇧Space</strong></td>
+<td>Tray icon or <strong>Ctrl+Shift+Space</strong></td>
+</tr>
+<tr>
+<td>Hide window</td>
+<td>Close button or shortcut again</td>
+<td>Same</td>
+</tr>
+<tr>
+<td>Quit</td>
+<td>Tray → Quit Gnomad</td>
+<td>Same</td>
+</tr>
+</tbody></table>
+<p><strong>Tray menu:</strong> Show Gnomad, Pop Out Window, Settings, Visit gnomadstudio.org, About, Quit.</p>
+<hr>
+<h2 id="window-modes">Window modes</h2><p>Use the four chips in the title bar (or <strong>View</strong> menu in windowed mode):</p>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Panel</strong></td>
+<td>Drops from menu bar / near tray; compact layout</td>
+</tr>
+<tr>
+<td><strong>Pop out</strong></td>
+<td>Floating, movable window</td>
+</tr>
+<tr>
+<td><strong>Window</strong></td>
+<td>Standard window with native menus</td>
+</tr>
+<tr>
+<td><strong>Full</strong></td>
+<td>Fullscreen; click again to return to pop out</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="main-interface-overview">Main interface overview</h2><p><strong>Title bar:</strong> Window modes, theme toggle, Knowledge (book), Settings (gear).</p>
+<p><strong>Sidebar:</strong> New chat, history, knowledge shortcut; resize, collapse, flip side.</p>
+<p><strong>Center:</strong> Welcome, suggestion chips, messages, shell output blocks.</p>
+<p><strong>Composer:</strong> Input, attachments, terminal (local), provider/model, send.</p>
+<p><strong>Context footer:</strong> Active app, window title, clipboard, permission banner (macOS).</p>
+<hr>
+<h2 id="chat-amp-composer">Chat &amp; composer</h2><ol>
+<li>Type or click a suggestion chip</li>
+<li>Optionally attach files</li>
+<li>Choose Cloud/Local and model</li>
+<li>Press <strong>Send</strong> or Enter</li>
+</ol>
+<p><strong>While thinking:</strong> Click <strong>Stop</strong> to interrupt shell activity.</p>
+<p><strong>Direct shell (local):</strong> Prefix with <code>$</code> or use the terminal icon.</p>
+<hr>
+<h2 id="cloud-vs-local-ai">Cloud vs local AI</h2><table>
+<thead>
+<tr>
+<th></th>
+<th>Cloud (DeepSeek)</th>
+<th>Local (Ollama)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Requires</td>
+<td>API key</td>
+<td>Ollama URL + running server</td>
+</tr>
+<tr>
+<td>Models</td>
+<td>Chat, Reasoner</td>
+<td>llama3.2, mistral, custom tags</td>
+</tr>
+<tr>
+<td>Agent</td>
+<td>Tool calling</td>
+<td><code>&lt;gnomad-run&gt;</code> tags + optional planner</td>
+</tr>
+<tr>
+<td>Network</td>
+<td>Internet</td>
+<td>Usually localhost</td>
+</tr>
+</tbody></table>
+<p>Switch via composer or <strong>Settings → Model &amp; API</strong>.</p>
+<hr>
+<h2 id="changing-models-and-api-keys">Changing models and API keys</h2><p><strong>Composer:</strong> Provider and model dropdowns.</p>
+<p><strong>Settings → Model &amp; API:</strong> Cloud model or Ollama URL + model name.</p>
+<p><strong>Settings → API keys:</strong> Add/change/remove DeepSeek key (keychain). <code>.env</code> keys are locked in UI.</p>
+<hr>
+<h2 id="agent-shell-amp-filesystem">Agent: shell &amp; filesystem</h2><ul>
+<li><strong>Cloud:</strong> Tools for shell, files, workspace (up to 10 steps per message)</li>
+<li><strong>Local:</strong> <code>gnomad-run</code> tags, <code>$</code> commands, optional command planner</li>
+<li><strong>Shell session:</strong> Persistent cwd; reset in Settings → Agent shell</li>
+<li><strong>Workspace:</strong> Settings → Agent access → Change folder</li>
+<li><strong>Trust:</strong> Standard (workspace + gates) or YOLO (broader FS)</li>
+<li><strong>Audit:</strong> <code>{app_data}/gnomad/agent-audit.jsonl</code></li>
+</ul>
+<hr>
+<h2 id="safety-sudo-gate-amp-path-gate">Safety: Sudo Gate &amp; Path Gate</h2><p><strong>Sudo Gate</strong> — Risky shell (sudo, rm -rf, etc.): read reason, Approve or Deny.</p>
+<p><strong>Path Gate</strong> — Standard mode: files outside workspace need approval.</p>
+<hr>
+<h2 id="knowledge-amp-skills-library">Knowledge &amp; skills library</h2><p>Open via book icon or sidebar. Folders under <code>gnomad/knowledge/</code>:</p>
+<ul>
+<li><code>skills/</code> — instructions (<code>.md</code>, <code>.txt</code>, <code>.json</code>)</li>
+<li><code>agents/</code> — personas</li>
+<li><code>preferences/</code> — user preferences</li>
+<li><code>uploads/</code> — reference files</li>
+</ul>
+<p>Add files in the panel; <code>INDEX.md</code> updates automatically.</p>
+<hr>
+<h2 id="chat-history-amp-sidebar">Chat history &amp; sidebar</h2><ul>
+<li><strong>New chat:</strong> Sidebar + or <strong>⌘/Ctrl+N</strong></li>
+<li><strong>Select / delete</strong> sessions in the list</li>
+<li><strong>Layout:</strong> Resize, collapse, drag to flip side</li>
+</ul>
+<p>Sessions stored locally on disk.</p>
+<hr>
+<h2 id="settings-reference">Settings reference</h2><table>
+<thead>
+<tr>
+<th>Section</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Model &amp; API</td>
+<td>Provider, models, wizard</td>
+</tr>
+<tr>
+<td>API keys</td>
+<td>Keychain secrets</td>
+</tr>
+<tr>
+<td>Agent access</td>
+<td>Workspace, trust, planner</td>
+</tr>
+<tr>
+<td>Agent shell</td>
+<td>CWD, reset session</td>
+</tr>
+<tr>
+<td>Knowledge</td>
+<td>Open library</td>
+</tr>
+<tr>
+<td>Permissions</td>
+<td>Accessibility, elevation test</td>
+</tr>
+</tbody></table>
+<p><strong>Theme:</strong> Sun/moon/monitor icon cycles Light → Dark → System.</p>
+<hr>
+<h2 id="keyboard-shortcuts">Keyboard shortcuts</h2><table>
+<thead>
+<tr>
+<th>Shortcut</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>⌘⇧Space / Ctrl+Shift+Space</td>
+<td>Show / hide</td>
+</tr>
+<tr>
+<td>⌘N / Ctrl+N</td>
+<td>New chat</td>
+</tr>
+<tr>
+<td>⌘, / Ctrl+,</td>
+<td>Settings</td>
+</tr>
+<tr>
+<td>⌘Q / Ctrl+Q</td>
+<td>Quit (windowed)</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="platform-specific-notes">Platform-specific notes</h2><p><strong>macOS:</strong> Accessibility for automation; admin auth for elevation.</p>
+<p><strong>Windows:</strong> Tray near notification area; elevated cmds in admin terminal.</p>
+<p><strong>Linux:</strong> WebKitGTK + AppIndicator; optional <code>xdotool</code>, <code>wl-paste</code>, <code>xclip</code>.</p>
+<hr>
+<h2 id="troubleshooting">Troubleshooting</h2><table>
+<thead>
+<tr>
+<th>Issue</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Cloud disabled</td>
+<td>Add DeepSeek API key or <code>.env</code></td>
+</tr>
+<tr>
+<td>Local disabled</td>
+<td>Set Ollama URL; run <code>ollama serve</code></td>
+</tr>
+<tr>
+<td>Chat errors</td>
+<td>Check network or <code>curl</code> Ollama URL</td>
+</tr>
+<tr>
+<td>No tray (Linux)</td>
+<td>Install appindicator packages</td>
+</tr>
+<tr>
+<td>Empty context (Linux)</td>
+<td>Install clipboard/window tools</td>
+</tr>
+<tr>
+<td>macOS permissions</td>
+<td>Re-grant Accessibility after updates</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="privacy-amp-data">Privacy &amp; data</h2><ul>
+<li>Chat and knowledge stay on your device</li>
+<li>Cloud prompts go to DeepSeek per their terms</li>
+<li>Local prompts go to your Ollama server</li>
+<li>API keys in OS keychain</li>
+<li>Clipboard included only when you send a message</li>
+</ul>
+<p>See <a href="PRIVACY.md">PRIVACY.md</a> for the full policy.</p>
+<hr>
+<p>Built with ❤️ by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+
+      <footer class="doc-footer">
+        <p>Built with <span aria-label="love">❤️</span> by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+      </footer>
+    </main>
+  </div>
+  <script>
+    const links = document.querySelectorAll(".sidebar a[href^='#']");
+    const sections = [...links].map((a) => document.querySelector(a.getAttribute("href")));
+    const onScroll = () => {
+      let cur = 0;
+      sections.forEach((s, i) => { if (s && s.getBoundingClientRect().top <= 120) cur = i; });
+      links.forEach((l, i) => l.classList.toggle("active", i === cur));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  </script>
+</body>
+</html>

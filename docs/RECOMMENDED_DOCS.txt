@@ -1,0 +1,64 @@
+════════════════════════════════════════════════════════════════════════
+  RECOMMENDED DOCUMENTATION
+  Gnomad Desktop Assistant · docs/RECOMMENDED_DOCS.md
+════════════════════════════════════════════════════════════════════════
+
+RECOMMENDED DOCUMENTATION — PORTFOLIO & PRODUCTION READINESS
+============================================================
+
+Status: Core portfolio set complete (see DOCS_INDEX.md). All docs available as .md, .html, and .txt via npm run docs:export.
+
+────────────────────────────────────────
+
+SHIPPED IN THIS REPOSITORY
+--------------------------
+
+  Document              |  Purpose                     
+  DOCS_INDEX.md         |  Master index — all formats  
+  USER_GUIDE.md         |  End-user manual             
+  TECH_STACK.md         |  Stack rationale             
+  BUILD.md              |  Phased delivery narrative   
+  ARCHITECTURE.md       |  System diagram + IPC        
+  SECURITY_MODEL.md     |  Trust, gates, threats       
+  PRIVACY.md            |  Data handling policy (alpha)
+  ROADMAP.md            |  v0.2 → v1.0 plan            
+  DEMO_SCRIPT.md        |  5–7 min live demo           
+  QA_CHECKLIST.md       |  Per-OS release QA           
+  BUILD_PLATFORMS.md    |  Build commands              
+  LINUX_PACKAGES.md     |  Distro install matrix       
+  MACOS_PERMISSIONS.md  |  macOS privacy matrix        
+  KNOWLEDGE.md          |  Knowledge base layout       
+
+────────────────────────────────────────
+
+STILL RECOMMENDED (NOT YET WRITTEN)
+-----------------------------------
+
+  Document                    |  Priority     |  Notes                                  
+  RELEASE_RUNBOOK.md          |  Production   |  Tag → CI → GitHub Release checklist    
+  TROUBLESHOOTING.md          |  Support      |  Top issues consolidated from USER_GUIDE
+  CONTRIBUTING.md             |  Open source  |  If repo goes public                    
+  TEST_STRATEGY.md            |  Engineering  |  Unit/E2E plan                          
+  ADR folder (docs/adr/)      |  Engineering  |  Decision records                       
+  ACCESSIBILITY_STATEMENT.md  |  GA           |  WCAG goals                             
+
+────────────────────────────────────────
+
+REGENERATING HTML & TXT
+-----------------------
+
+Edit the .md source, then:
+
+  [bash]
+    npm run docs:export
+
+Script: scripts/export-docs.mjs · Theme: docs/_assets/doc-theme.css
+
+────────────────────────────────────────
+
+Built with ❤️ by Gnomad Studio 🦙
+
+════════════════════════════════════════════════════════════════════════
+Built with ❤️ by Gnomad Studio 🦙
+https://gnomadstudio.org
+════════════════════════════════════════════════════════════════════════

@@ -1,86 +1,146 @@
-# Gnomad Desktop Assistant 🦙🍄
+# Gnomad Desktop Assistant
 
 [![Alpha](https://img.shields.io/badge/status-alpha-f0b429)](https://davidthegnomad.github.io/gnomad-desktop-assistant/)
 [![Version](https://img.shields.io/badge/version-0.1.0--alpha-7c6cf0)](https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha)
+[![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20Windows%20%7C%20Linux-333)](docs/BUILD_PLATFORMS.md)
 
-Cross-platform desktop assistant built with **Tauri v2**, **React 19**, and **TypeScript**. Gemini-inspired UI, system tray, chat history, knowledge base, and DeepSeek/Ollama chat.
+**Gnomad** is a cross-platform desktop AI assistant that integrates with the operating system—system tray, global shortcut, live window and clipboard context—and executes **real** shell and filesystem work under explicit user approval, not simulated chat output.
 
-**Project site:** [davidthegnomad.github.io/gnomad-desktop-assistant](https://davidthegnomad.github.io/gnomad-desktop-assistant/)
+Built with ❤️ by [Gnomad Studio](https://gnomadstudio.org) 🦙
 
-Built with ❤️ by [Gnomad Studio](https://gnomadstudio.org)
+**Live project site:** [davidthegnomad.github.io/gnomad-desktop-assistant](https://davidthegnomad.github.io/gnomad-desktop-assistant/)
+
+---
+
+## Why this exists
+
+Desktop knowledge work is fragmented: chat in a browser tab, terminal in another, files elsewhere. Gnomad unifies **conversation**, **OS awareness**, and **action** in a native shell that stays out of the way until invoked—then anchors next to the menu bar or tray with a focused, Gemini-inspired interface.
+
+The alpha demonstrates end-to-end delivery: multi-platform installers, CI/CD, credential hygiene, agent tooling with human-in-the-loop gates, and documentation suitable for technical review.
+
+---
+
+## Capabilities (v0.1.0-alpha)
+
+| Area | What you get |
+|------|----------------|
+| **Access** | Menu bar / system tray, global shortcut, four window modes (panel, pop-out, windowed, fullscreen) |
+| **Intelligence** | DeepSeek (cloud) and Ollama (local); multi-step agent with shell + filesystem tools |
+| **Safety** | Sudo Gate for risky commands, Path Gate for out-of-workspace files, Standard vs YOLO trust modes, audit log |
+| **Context** | Active application, window title, clipboard snippet in the footer |
+| **Memory** | Chat history on disk; knowledge library (skills, agents, uploads) injected into prompts |
+| **Platform** | macOS (primary), Windows, Linux (`.deb`, `.rpm`, AppImage) |
+
+---
 
 ## Platforms
 
-| Platform | Status | Notes |
-|----------|--------|--------|
-| **macOS** | Primary | Menu-bar accessory; full menu bar in Windowed mode |
-| **Linux** | Supported | `.deb`, `.rpm`, AppImage — see [`docs/LINUX_PACKAGES.md`](docs/LINUX_PACKAGES.md) |
-| **Windows** | Supported | `.msi` installer; system tray, `Ctrl+Shift+Space` |
+| Platform | Status | Install | Notes |
+|----------|--------|---------|-------|
+| **macOS** | Primary | [.dmg](https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha) | Menu-bar accessory; overlay title bar |
+| **Windows** | Supported | [.msi](https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha) | System tray; `Ctrl+Shift+Space` |
+| **Linux** | Supported | [.deb · .rpm · AppImage](https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha) | See [Linux packages](docs/LINUX_PACKAGES.md) |
 
-See [`docs/BUILD_PLATFORMS.md`](docs/BUILD_PLATFORMS.md) for per-OS build steps.
+Per-OS build instructions: [`docs/BUILD_PLATFORMS.md`](docs/BUILD_PLATFORMS.md)  
+**Adding features or UI?** Use the [`docs/CROSS_PLATFORM_CHECKLIST.md`](docs/CROSS_PLATFORM_CHECKLIST.md) so changes are verified on macOS, Windows, and Linux.
 
-## Features
+---
 
-- Gemini-style welcome, suggestion chips, and composer
-- Collapsible chat sidebar + knowledge/skills library
-- Cloud (DeepSeek) and local (Ollama) chat
-- OS context (active app, window title, clipboard)
-- Safe shell execution with Sudo Gate for risky commands
-- Chat history persisted locally
-- Close window → hide to tray; quit from tray menu
+## Quick start
 
-## Prerequisites
+### End users
 
-- [Node.js](https://nodejs.org/) (LTS)
-- [Rust](https://www.rust-lang.org/tools/install)
-- Platform prerequisites: [Tauri v2 docs](https://v2.tauri.app/start/prerequisites/)
+1. Download the installer for your OS from [Releases](https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha) or the [project site](https://davidthegnomad.github.io/gnomad-desktop-assistant/).
+2. Launch Gnomad; complete the setup wizard (cloud API key **or** local Ollama URL).
+3. Press **⌘⇧Space** (macOS) or **Ctrl+Shift+Space** (Windows/Linux) to show the assistant.
+4. Read the full manual: [`docs/USER_GUIDE.html`](docs/USER_GUIDE.html) (recommended) or [`docs/USER_GUIDE.txt`](docs/USER_GUIDE.txt).
 
-## API keys (testing)
+### Developers
+
+**Prerequisites:** Node.js LTS, Rust stable, [Tauri v2 platform deps](https://v2.tauri.app/start/prerequisites/)
 
 ```bash
-cp .env.example .env
-# DeepSeek_API_KEY=your-key-here
-```
-
-Loaded at startup from project root `.env`. **Never commit `.env`.**
-
-## Development
-
-```bash
-npm install
+git clone https://github.com/davidthegnomad/gnomad-desktop-assistant.git
+cd gnomad-desktop-assistant
+npm ci
+cp .env.example .env   # optional: DeepSeek_API_KEY for local dev
 npm run tauri dev
 ```
 
-## Download (v0.1.0-alpha)
-
-| Platform | Installer |
-|----------|-----------|
-| **macOS** | [`.dmg` (Universal)](https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha) |
-| **Linux** | [`.deb`](https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha) · [`.rpm`](https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha) · [AppImage](https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha) |
-| **Windows** | [`.msi`](https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha) · [`setup.exe`](https://github.com/davidthegnomad/gnomad-desktop-assistant/releases/tag/v0.1.0-alpha) |
-
-**Project site (live download links):** [davidthegnomad.github.io/gnomad-desktop-assistant](https://davidthegnomad.github.io/gnomad-desktop-assistant/)
-
-Installers are attached to each [GitHub Release](https://github.com/davidthegnomad/gnomad-desktop-assistant/releases) by the `Release` workflow when a `v*` tag is pushed.
-
-## Build from source
+**Production build:**
 
 ```bash
-npm run tauri:build:mac    # macOS
-npm run tauri:build:linux  # Linux (on Linux host)
-npm run tauri:build:win    # Windows (on Windows host)
+npm run tauri:build:mac     # macOS
+npm run tauri:build:linux   # Linux (on Linux host)
+npm run tauri:build:win     # Windows (on Windows host)
 ```
 
-## Documentation
+Never commit `.env` or API keys.
 
-| Doc | Contents |
-|-----|----------|
-| [`docs/BUILD_PLATFORMS.md`](docs/BUILD_PLATFORMS.md) | macOS / Linux / Windows builds |
-| [`docs/LINUX_PACKAGES.md`](docs/LINUX_PACKAGES.md) | `.deb` / `.rpm` / AppImage per distro |
-| [`docs/CODE_REVIEW.md`](docs/CODE_REVIEW.md) | Architecture and findings |
-| [`docs/KNOWLEDGE.md`](docs/KNOWLEDGE.md) | Knowledge base and skills |
-| [`docs/MACOS_PERMISSIONS.md`](docs/MACOS_PERMISSIONS.md) | macOS privacy and elevation |
+---
+
+## Architecture (summary)
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  React 19 UI (chat, settings, knowledge, gates)         │
+└───────────────────────────┬─────────────────────────────┘
+                            │ Tauri IPC (invoke / events)
+┌───────────────────────────▼─────────────────────────────┐
+│  Rust: tray, window modes, shell PTY, agent FS,         │
+│        keychain, context, safety, audit, chat store      │
+└───────────────────────────┬─────────────────────────────┘
+                            │
+         macOS / Windows / Linux native APIs
+```
+
+Deep dive: [`docs/TECH_STACK.md`](docs/TECH_STACK.md) · Delivery narrative: [`docs/BUILD.md`](docs/BUILD.md)
+
+---
+
+## Documentation index
+
+All docs ship as **Markdown** (source), **HTML** (browser), and **TXT** (Notepad/Word). Full index: [`docs/DOCS_INDEX.md`](docs/DOCS_INDEX.md). Regenerate: `npm run docs:export`.
+
+| Document | MD | HTML | TXT |
+|----------|----|------|-----|
+| User Guide | [docs/USER_GUIDE.md](docs/USER_GUIDE.md) | [docs/USER_GUIDE.html](docs/USER_GUIDE.html) | [docs/USER_GUIDE.txt](docs/USER_GUIDE.txt) |
+| Tech Stack | [docs/TECH_STACK.md](docs/TECH_STACK.md) | [docs/TECH_STACK.html](docs/TECH_STACK.html) | [docs/TECH_STACK.txt](docs/TECH_STACK.txt) |
+| Build Narrative | [docs/BUILD.md](docs/BUILD.md) | [docs/BUILD.html](docs/BUILD.html) | [docs/BUILD.txt](docs/BUILD.txt) |
+| Architecture | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | [docs/ARCHITECTURE.html](docs/ARCHITECTURE.html) | [docs/ARCHITECTURE.txt](docs/ARCHITECTURE.txt) |
+| Security Model | [docs/SECURITY_MODEL.md](docs/SECURITY_MODEL.md) | [docs/SECURITY_MODEL.html](docs/SECURITY_MODEL.html) | [docs/SECURITY_MODEL.txt](docs/SECURITY_MODEL.txt) |
+| Privacy | [docs/PRIVACY.md](docs/PRIVACY.md) | [docs/PRIVACY.html](docs/PRIVACY.html) | [docs/PRIVACY.txt](docs/PRIVACY.txt) |
+| Roadmap | [docs/ROADMAP.md](docs/ROADMAP.md) | [docs/ROADMAP.html](docs/ROADMAP.html) | [docs/ROADMAP.txt](docs/ROADMAP.txt) |
+| Demo Script | [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md) | [docs/DEMO_SCRIPT.html](docs/DEMO_SCRIPT.html) | [docs/DEMO_SCRIPT.txt](docs/DEMO_SCRIPT.txt) |
+| QA Checklists | [docs/QA_CHECKLIST.md](docs/QA_CHECKLIST.md) | [docs/QA_CHECKLIST.html](docs/QA_CHECKLIST.html) | [docs/QA_CHECKLIST.txt](docs/QA_CHECKLIST.txt) |
+| Build Platforms | [docs/BUILD_PLATFORMS.md](docs/BUILD_PLATFORMS.md) | [docs/BUILD_PLATFORMS.html](docs/BUILD_PLATFORMS.html) | [docs/BUILD_PLATFORMS.txt](docs/BUILD_PLATFORMS.txt) |
+| Changelog | [CHANGELOG.md](CHANGELOG.md) | [CHANGELOG.html](CHANGELOG.html) | [CHANGELOG.txt](CHANGELOG.txt) |
+
+---
+
+## Security & privacy (alpha)
+
+- API keys are stored in the **OS keychain**, not in chat logs or `localStorage`.
+- Destructive or privileged shell operations require **Sudo Gate** approval.
+- Filesystem access defaults to a **workspace folder** (Standard trust mode); broader access requires explicit trust or per-path approval.
+- Agent actions are appended to a local **audit log** under application data.
+
+Alpha software: review [`CHANGELOG.md`](CHANGELOG.md) for known limitations before production use.
+
+---
+
+## CI / releases
+
+GitHub Actions builds **macOS**, **Linux**, and **Windows** on every push to `main` / `master`. Tagged `v*` releases attach installers to [GitHub Releases](https://github.com/davidthegnomad/gnomad-desktop-assistant/releases).
+
+---
 
 ## License
 
-Private project — see repository settings.
+Private project — see repository settings. Contact [Gnomad Studio](https://gnomadstudio.org) for licensing inquiries.
+
+---
+
+## Acknowledgments
+
+UI patterns informed by Google Gemini’s 2026 “Neural Expressive” redesign; implementation is original to Gnomad Studio. Built with [Tauri](https://v2.tauri.app/), [React](https://react.dev/), and [Rust](https://www.rust-lang.org/).

@@ -1,11 +1,6 @@
-import { openUrl } from "@tauri-apps/plugin-opener";
 import { GnomadLogo } from "./GnomadLogo";
-import {
-  APP_NAME,
-  ABOUT_CREDIT,
-  STUDIO_URL,
-  VERSION,
-} from "../lib/brand";
+import { APP_NAME, VERSION } from "../lib/brand";
+import { StudioLink } from "./StudioLink";
 
 interface AboutModalProps {
   onClose: () => void;
@@ -25,14 +20,9 @@ export function AboutModal({ onClose }: AboutModalProps) {
           {APP_NAME}
         </h2>
         <p className="about-version">Version {VERSION}</p>
-        <p className="onboarding-subtitle about-credit">{ABOUT_CREDIT}</p>
-        <button
-          type="button"
-          className="about-link"
-          onClick={() => openUrl(STUDIO_URL)}
-        >
-          🍄 gnomadstudio.org
-        </button>
+        <p className="onboarding-subtitle about-credit">
+          Built with ❤️ by <StudioLink className="about-studio-inline" />
+        </p>
         <div className="onboarding-actions">
           <button type="button" className="btn primary" onClick={onClose}>
             OK

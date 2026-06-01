@@ -1,14 +1,24 @@
+mod error;
+mod hitl_token;
 mod context;
 mod privilege;
 mod keychain;
+mod attachments;
 mod automation;
 mod shell_executor;
+mod shell_session;
+mod agent_settings;
+mod agent_audit;
+mod agent_fs;
+mod agent_runtime;
+mod command_planner;
 mod window_manager;
 mod knowledge;
 mod env_config;
 mod llm;
 mod chat_history;
 mod menu_shell;
+mod platform;
 
 use std::sync::Mutex;
 use tauri::{
@@ -96,10 +106,12 @@ fn open_settings_panel(app: &tauri::AppHandle, state: &AppTrayState) {
 }
 
 fn build_tray_menu(app: &tauri::AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
+    let pinfo = platform::get_platform_info();
+    let show_label = format!("🦙 Show {}", pinfo.tray_region_label);
     Menu::with_items(
         app,
         &[
-            &MenuItem::with_id(app, "show", "🦙 Show Panel", true, None::<&str>)?,
+            &MenuItem::with_id(app, "show", &show_label, true, None::<&str>)?,
             &MenuItem::with_id(app, "mode_floating", "Pop Out Window", true, None::<&str>)?,
             &MenuItem::with_id(app, "settings", "🍄 Settings", true, None::<&str>)?,
             &PredefinedMenuItem::separator(app)?,
@@ -165,6 +177,9 @@ pub fn run() {
             quit_requested: Mutex::new(false),
         })
         .manage(WindowRuntimeState::default())
+        .manage(shell_session::ShellSessionState::default())
+        .manage(agent_settings::AgentSettingsState::default())
+        .manage(hitl_token::HitlTokenState::default())
         .plugin(
             tauri_plugin_global_shortcut::Builder::new().with_handler(
                 |app: &tauri::AppHandle,
@@ -183,6 +198,11 @@ pub fn run() {
         .setup(|app| {
             env_config::load_dotenv_files();
             let _ = knowledge::init_knowledge_store(&app.handle());
+            {
+                let handle = app.handle().clone();
+                let agent_state = handle.state::<agent_settings::AgentSettingsState>();
+                agent_settings::init_agent_settings(&handle, &agent_state);
+            }
 
             let global_shortcut_manager = app.global_shortcut();
 
@@ -200,9 +220,10 @@ pub fn run() {
             let tray_menu = build_tray_menu(app.handle())?;
 
             let tray_icon = load_tray_icon(app);
+            let tray_tooltip = platform::get_platform_info().tray_tooltip;
             let mut tray_builder = TrayIconBuilder::new()
                 .icon(tray_icon)
-                .tooltip("Gnomad 🦙 — click to open panel");
+                .tooltip(&tray_tooltip);
             #[cfg(target_os = "macos")]
             {
                 tray_builder = tray_builder.icon_as_template(false);
@@ -224,6 +245,11 @@ pub fn run() {
                 })
                 .build(app)?;
 
+            let _ = window_manager::apply_window_mode(
+                &app.handle(),
+                window_manager::WindowDisplayMode::Panel,
+                None,
+            );
             window_manager::sync_platform_shell(
                 &app.handle(),
                 window_manager::WindowDisplayMode::Panel,
@@ -239,9 +265,33 @@ pub fn run() {
             if window.label() != "main" {
                 return;
             }
-            if let WindowEvent::CloseRequested { api, .. } = event {
-                api.prevent_close();
-                let _ = window.hide();
+            match event {
+                WindowEvent::CloseRequested { api, .. } => {
+                    api.prevent_close();
+                    let _ = window.hide();
+                }
+                WindowEvent::Resized(_) => {
+                    let app = window.app_handle();
+                    if let Ok(false) = window.is_fullscreen() {
+                        if let Some(state) = app.try_state::<window_manager::WindowRuntimeState>() {
+                            let current = *state.current_mode.lock().unwrap();
+                            if current == window_manager::WindowDisplayMode::Fullscreen {
+                                *state.current_mode.lock().unwrap() =
+                                    window_manager::WindowDisplayMode::Floating;
+                                let _ = app.emit(
+                                    "window-mode-changed",
+                                    window_manager::WindowDisplayMode::Floating,
+                                );
+                                let _ = window_manager::apply_window_mode(
+                                    app,
+                                    window_manager::WindowDisplayMode::Floating,
+                                    None,
+                                );
+                            }
+                        }
+                    }
+                }
+                _ => {}
             }
         })
         .invoke_handler(tauri::generate_handler![
@@ -251,13 +301,32 @@ pub fn run() {
             context::get_clipboard_text,
             privilege::check_command_safety,
             privilege::execute_elevated_command,
+            hitl_token::issue_hitl_approval_token,
             keychain::store_credential,
             keychain::get_credential,
+            keychain::has_credential,
             keychain::delete_credential,
             automation::capture_screen,
             automation::simulate_click,
             automation::simulate_typing,
             shell_executor::execute_shell_command,
+            shell_session::shell_session_run,
+            shell_session::shell_session_reset,
+            shell_session::shell_session_status,
+            shell_session::shell_session_interrupt,
+            shell_session::validate_shell_command,
+            agent_settings::get_agent_settings,
+            agent_settings::set_workspace_root,
+            agent_settings::set_trust_mode,
+            agent_settings::set_command_planner,
+            command_planner::plan_shell_command,
+            agent_fs::agent_fs_list,
+            agent_fs::agent_fs_read,
+            agent_fs::agent_fs_write,
+            agent_fs::agent_fs_search,
+            agent_runtime::agent_execute_tool,
+            agent_audit::append_agent_audit,
+            llm::chat_completion_turn,
             window_manager::set_window_mode,
             window_manager::get_window_mode,
             window_manager::fit_window_to_content,
@@ -270,6 +339,8 @@ pub fn run() {
             knowledge::append_user_preference,
             knowledge::get_agent_context_bundle,
             env_config::get_env_llm_config,
+            platform::get_platform_info,
+            env_config::get_cloud_api_key_source,
             env_config::has_llm_configured,
             env_config::get_effective_cloud_api_key,
             llm::chat_completion,
@@ -279,6 +350,9 @@ pub fn run() {
             chat_history::save_chat_session,
             chat_history::delete_chat_session,
             chat_history::set_active_chat_session,
+            attachments::stage_chat_attachments,
+            attachments::format_attachments_for_prompt,
+            attachments::remove_staged_attachments,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

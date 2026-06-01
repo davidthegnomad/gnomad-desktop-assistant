@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Privacy Policy — Gnomad Desktop Assistant</title>
+  <meta name="description" content="Privacy Policy documentation for Gnomad Desktop Assistant." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>:root {
+  --bg-base: #0a0a0a;
+  --bg-panel: rgba(18, 18, 20, 0.92);
+  --bg-elevated: rgba(30, 30, 35, 0.95);
+  --border: rgba(255, 255, 255, 0.1);
+  --text: #f3f4f6;
+  --muted: #9ca3af;
+  --accent: #8ab4f8;
+  --accent-secondary: #c58af9;
+  --success: #34a853;
+  --warning: #f9ab00;
+  --danger: #ea4335;
+  --pill-radius: 999px;
+  --radius: 16px;
+  --mesh:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(66, 133, 244, 0.2), transparent 65%),
+    radial-gradient(ellipse 60% 40% at 10% 30%, rgba(168, 85, 247, 0.12), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 95% 40%, rgba(242, 139, 130, 0.1), transparent 50%);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: "Google Sans Flex", "Roboto", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--bg-base);
+  min-height: 100vh;
+}
+
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: var(--mesh);
+  z-index: 0;
+}
+
+.layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 1.5rem 1.25rem;
+  background: var(--bg-panel);
+  backdrop-filter: blur(24px);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.brand-icon { font-size: 1.5rem; }
+.brand h1 { font-size: 1rem; font-weight: 600; }
+
+.doc-path {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  word-break: break-all;
+}
+
+.sidebar a {
+  display: block;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar a.toc-h3 { padding-left: 1.1rem; font-size: 0.78rem; }
+.sidebar a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.sidebar a.active { color: var(--accent); background: rgba(138,180,248,0.12); }
+
+.content {
+  padding: 2rem 2.5rem 3rem;
+  max-width: 760px;
+}
+
+.hero { margin-bottom: 1.5rem; }
+.hero h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.formats { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+.formats a { color: var(--accent); }
+
+.doc-body h1 { font-size: 1.5rem; margin: 1.5rem 0 0.75rem; }
+.doc-body h2 {
+  font-size: 1.25rem;
+  margin: 2rem 0 0.65rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.doc-body h3 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; color: var(--accent); }
+.doc-body h4 { font-size: 0.95rem; margin: 1rem 0 0.4rem; }
+
+.doc-body p { margin-bottom: 0.85rem; }
+.doc-body ul, .doc-body ol { margin: 0 0 1rem 1.25rem; color: var(--muted); }
+.doc-body li { margin-bottom: 0.35rem; }
+.doc-body li strong { color: var(--text); }
+
+.doc-body a { color: var(--accent); }
+.doc-body code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85em;
+  background: rgba(255,255,255,0.08);
+  padding: 0.12em 0.35em;
+  border-radius: 6px;
+  color: var(--accent-secondary);
+}
+
+.doc-body pre {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.doc-body pre code {
+  background: none;
+  padding: 0;
+  color: var(--text);
+}
+
+.doc-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1rem 0;
+}
+
+.doc-body th, .doc-body td {
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-body th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.doc-body blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 0.6rem 1rem;
+  margin: 1rem 0;
+  background: rgba(138,180,248,0.08);
+  border-radius: 0 12px 12px 0;
+  color: var(--muted);
+}
+
+.doc-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+.doc-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.doc-footer a { color: var(--accent); text-decoration: none; }
+.doc-footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="mesh-bg" aria-hidden="true"></div>
+  <div class="layout">
+    <nav class="sidebar" aria-label="Table of contents">
+          <div class="brand"><span class="brand-icon">🍄</span><h1>Gnomad</h1></div>
+          <p class="doc-path">docs/PRIVACY.md</p>
+          <a href="#summary" class="toc-h2">Summary</a>
+<a href="#data-stored-locally" class="toc-h2">Data stored locally</a>
+<a href="#data-sent-to-third-parties" class="toc-h2">Data sent to third parties</a>
+<a href="#deepseek-cloud-mode" class="toc-h3">DeepSeek (cloud mode)</a>
+<a href="#ollama-local-mode" class="toc-h3">Ollama (local mode)</a>
+<a href="#gnomad-studio-website" class="toc-h3">Gnomad Studio website</a>
+<a href="#data-we-do-not-collect-alpha" class="toc-h2">Data we do not collect (alpha)</a>
+<a href="#clipboard-and-window-context" class="toc-h2">Clipboard and window context</a>
+<a href="#api-keys" class="toc-h2">API keys</a>
+<a href="#your-choices" class="toc-h2">Your choices</a>
+<a href="#children" class="toc-h2">Children</a>
+<a href="#changes" class="toc-h2">Changes</a>
+        </nav>
+    <main class="content doc-body">
+      <header class="hero">
+        <h2>Privacy Policy</h2>
+        <p class="formats">Also available: <a href="PRIVACY.md">Markdown</a> · <a href="PRIVACY.txt">Plain text</a></p>
+      </header>
+      <h1 id="privacy-policy-gnomad-desktop-assistant-alpha">Privacy Policy — Gnomad Desktop Assistant (Alpha)</h1><p><strong>Effective:</strong> June 2026<br><strong>Applies to:</strong> Gnomad Desktop Assistant v0.1.0-alpha and subsequent alpha releases until replaced<br><strong>Operator:</strong> Gnomad Studio — <a href="https://gnomadstudio.org">https://gnomadstudio.org</a></p>
+<p>This is a <strong>product privacy overview</strong> for the alpha desktop app. It is not legal advice. A formal policy may replace this at general availability.</p>
+<hr>
+<h2 id="summary">Summary</h2><ul>
+<li><strong>Your chats and knowledge files stay on your device</strong> by default.  </li>
+<li><strong>Cloud mode</strong> sends prompts to <strong>DeepSeek</strong> under their API terms.  </li>
+<li><strong>Local mode</strong> sends prompts only to <strong>your Ollama server</strong> (often localhost).  </li>
+<li><strong>Gnomad Studio does not operate a chat backend</strong> that stores your conversations in the alpha release.  </li>
+<li><strong>API keys</strong> are stored in your <strong>operating system keychain</strong>, not in our servers.</li>
+</ul>
+<hr>
+<h2 id="data-stored-locally">Data stored locally</h2><table>
+<thead>
+<tr>
+<th>Data type</th>
+<th>Location</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Chat sessions</td>
+<td>Application data / <code>gnomad/chats/</code></td>
+<td>History across restarts</td>
+</tr>
+<tr>
+<td>Knowledge files</td>
+<td><code>gnomad/knowledge/</code></td>
+<td>Skills, agents, uploads</td>
+</tr>
+<tr>
+<td>Agent settings</td>
+<td><code>gnomad/agent-settings.json</code></td>
+<td>Workspace, trust mode</td>
+</tr>
+<tr>
+<td>Audit log</td>
+<td><code>gnomad/agent-audit.jsonl</code></td>
+<td>Record of agent actions</td>
+</tr>
+<tr>
+<td>Preferences</td>
+<td><code>localStorage</code> in app</td>
+<td>Theme, sidebar layout (non-secret)</td>
+</tr>
+</tbody></table>
+<p>Alpha builds do <strong>not</strong> encrypt this data at rest. Protect your device with disk encryption and OS account security.</p>
+<hr>
+<h2 id="data-sent-to-third-parties">Data sent to third parties</h2><h3 id="deepseek-cloud-mode">DeepSeek (cloud mode)</h3><p>When you use <strong>Cloud</strong> provider, message content—including optional attachments, context pills (app name, window title, clipboard snippet), and knowledge excerpts—is transmitted to <strong>DeepSeek’s API</strong> to generate responses.</p>
+<ul>
+<li>Review DeepSeek’s privacy policy and data processing terms before use.  </li>
+<li>Do not send regulated data (HIPAA, PCI, etc.) without organizational approval.</li>
+</ul>
+<h3 id="ollama-local-mode">Ollama (local mode)</h3><p>When you use <strong>Local</strong> provider, data is sent to the <strong>URL you configure</strong> (default <code>http://localhost:11434</code>). If that server is on your machine, content does not leave your hardware except to that process. If you point to a remote Ollama instance, that operator receives your prompts.</p>
+<h3 id="gnomad-studio-website">Gnomad Studio website</h3><p>Opening <strong>gnomadstudio.org</strong> from the app uses normal HTTPS browsing. No chat content is transmitted by that action alone.</p>
+<hr>
+<h2 id="data-we-do-not-collect-alpha">Data we do not collect (alpha)</h2><ul>
+<li>No Gnomad account or login  </li>
+<li>No centralized chat sync to Gnomad Studio servers  </li>
+<li>No analytics SDK in the alpha build (subject to change with opt-in telemetry in beta)  </li>
+<li>No sale of personal data</li>
+</ul>
+<hr>
+<h2 id="clipboard-and-window-context">Clipboard and window context</h2><p>Gnomad reads the <strong>frontmost application</strong>, <strong>window title</strong>, and <strong>clipboard text</strong> locally to display context pills and optionally include them in prompts you send. This data is <strong>not</strong> uploaded except as part of a prompt you explicitly send to your chosen model provider.</p>
+<hr>
+<h2 id="api-keys">API keys</h2><p>Keys are stored using:</p>
+<ul>
+<li>macOS Keychain  </li>
+<li>Windows Credential Manager  </li>
+<li>Linux Secret Service</li>
+</ul>
+<p>They are not displayed again in the UI after save. Developers may use a local <code>.env</code> file; never commit <code>.env</code> to version control.</p>
+<hr>
+<h2 id="your-choices">Your choices</h2><table>
+<thead>
+<tr>
+<th>Action</th>
+<th>How</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Stop cloud transmission</td>
+<td>Switch to Local provider or quit app</td>
+</tr>
+<tr>
+<td>Delete chat history</td>
+<td>Delete sessions in sidebar</td>
+</tr>
+<tr>
+<td>Remove knowledge files</td>
+<td>Knowledge panel → remove files</td>
+</tr>
+<tr>
+<td>Revoke API key</td>
+<td>Settings → API keys → Remove</td>
+</tr>
+<tr>
+<td>Uninstall</td>
+<td>Remove app; optionally delete app data folder</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="children">Children</h2><p>Gnomad is not directed at children under 13. Do not use the app in contexts requiring parental consent without guardian oversight.</p>
+<hr>
+<h2 id="changes">Changes</h2><p>Alpha policies may change. Material updates will be noted in <code>CHANGELOG.md</code> and this document’s date.</p>
+<p><strong>Contact:</strong> via <a href="https://gnomadstudio.org">https://gnomadstudio.org</a></p>
+<hr>
+<p>Built with ❤️ by Gnomad Studio 🦙</p>
+
+      <footer class="doc-footer">
+        <p>Built with <span aria-label="love">❤️</span> by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+      </footer>
+    </main>
+  </div>
+  <script>
+    const links = document.querySelectorAll(".sidebar a[href^='#']");
+    const sections = [...links].map((a) => document.querySelector(a.getAttribute("href")));
+    const onScroll = () => {
+      let cur = 0;
+      sections.forEach((s, i) => { if (s && s.getBoundingClientRect().top <= 120) cur = i; });
+      links.forEach((l, i) => l.classList.toggle("active", i === cur));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  </script>
+</body>
+</html>

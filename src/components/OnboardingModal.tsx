@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { getEnvLlmConfig } from "../lib/envConfig";
-import { Eye, EyeOff } from "lucide-react";
+import { Lock } from "lucide-react";
 import { GnomadLogo } from "./GnomadLogo";
-import { APP_NAME, LLAMA, MUSHROOM } from "../lib/brand";
+import { APP_NAME, MUSHROOM } from "../lib/brand";
 import type { ProviderMode } from "../lib/preferences";
 import { DEEPSEEK_MODELS, normalizeCloudModel } from "../lib/models";
+import { storeApiKey, DEEPSEEK_API_KEY_SLOT } from "../lib/apiKeys";
 import {
   saveCredential,
   setOnboardingComplete,
@@ -16,7 +17,6 @@ import {
 interface OnboardingModalProps {
   onComplete: (config: {
     provider: ProviderMode;
-    apiKey: string;
     ollamaUrl: string;
     cloudModel: string;
     localModel: string;
@@ -26,28 +26,26 @@ interface OnboardingModalProps {
 export function OnboardingModal({ onComplete }: OnboardingModalProps) {
   const [step, setStep] = useState<1 | 2>(1);
   const [provider, setProvider] = useState<ProviderMode>("cloud");
-  const [apiKey, setApiKey] = useState("");
-  const [apiKeyVisible, setApiKeyVisible] = useState(false);
+  const [apiKeyDraft, setApiKeyDraft] = useState("");
   const [ollamaUrl, setOllamaUrl] = useState("http://localhost:11434");
   const [cloudModel, setCloudModel] = useState("deepseek-chat");
   const [localModel, setLocalModel] = useState("llama3.2");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
-  const [envLoaded, setEnvLoaded] = useState(false);
+  const [envKeyConfigured, setEnvKeyConfigured] = useState(false);
 
   useEffect(() => {
     getEnvLlmConfig().then((env) => {
-      if (env.deepseek_api_key) {
-        setApiKey(env.deepseek_api_key);
+      if (env.deepseek_configured) {
         setCloudModel(normalizeCloudModel("deepseek-chat", DEEPSEEK_MODELS));
-        setEnvLoaded(true);
+        setEnvKeyConfigured(true);
       }
     });
   }, []);
 
   const finish = async () => {
     setError("");
-    if (provider === "cloud" && !apiKey.trim() && !envLoaded) {
+    if (provider === "cloud" && !apiKeyDraft.trim() && !envKeyConfigured) {
       setError("Enter your API key or add DeepSeek_API_KEY to .env");
       return;
     }
@@ -59,10 +57,10 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
     setSaving(true);
     try {
       setStoredProvider(provider);
-      if (provider === "cloud" && !envLoaded) {
-        await saveCredential("llm_api_key", apiKey.trim());
-        setStoredModel(cloudModel);
-      } else if (provider === "cloud") {
+      if (provider === "cloud") {
+        if (!envKeyConfigured && apiKeyDraft.trim()) {
+          await storeApiKey(DEEPSEEK_API_KEY_SLOT, apiKeyDraft.trim());
+        }
         setStoredModel(cloudModel);
       } else {
         await saveCredential("ollama_url", ollamaUrl.trim());
@@ -71,7 +69,6 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
       setOnboardingComplete();
       onComplete({
         provider,
-        apiKey: apiKey.trim(),
         ollamaUrl: ollamaUrl.trim(),
         cloudModel,
         localModel,
@@ -103,41 +100,52 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
             >
               <span className="provider-card-emoji" aria-hidden>{MUSHROOM}</span>
               <span className="provider-card-title">Cloud API</span>
-              <span className="provider-card-desc">Gemini, Claude, or OpenAI</span>
+              <span className="provider-card-desc">DeepSeek cloud models</span>
             </button>
             <button
               type="button"
               className={`provider-card ${provider === "local" ? "selected" : ""}`}
               onClick={() => setProvider("local")}
             >
-              <span className="provider-card-emoji" aria-hidden>{LLAMA}</span>
+              <span className="provider-card-emoji" aria-hidden>🖥️</span>
               <span className="provider-card-title">Local model</span>
-              <span className="provider-card-desc">Ollama llama on your machine</span>
+              <span className="provider-card-desc">Ollama on your machine</span>
             </button>
           </div>
         )}
 
         {step === 2 && provider === "cloud" && (
           <div className="onboarding-form">
-            <label className="settings-label">API key</label>
-            <div className="input-with-icon">
-              <input
-                type={apiKeyVisible ? "text" : "password"}
-                className="settings-input"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                placeholder="AIza... or sk-..."
-                autoFocus
-              />
-              <button
-                type="button"
-                className="icon-btn input-icon-btn"
-                onClick={() => setApiKeyVisible(!apiKeyVisible)}
-                aria-label="Toggle key visibility"
-              >
-                {apiKeyVisible ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
-            </div>
+            {envKeyConfigured ? (
+              <>
+                <p className="onboarding-hint api-key-env-note">
+                  <Lock size={14} aria-hidden />
+                  DeepSeek API key is already configured via{" "}
+                  <code>DeepSeek_API_KEY</code> in your project <code>.env</code>.
+                  The value is not shown here.
+                </p>
+              </>
+            ) : (
+              <>
+                <label className="settings-label" htmlFor="onboarding-api-key">
+                  API key
+                </label>
+                <input
+                  id="onboarding-api-key"
+                  type="password"
+                  className="settings-input"
+                  value={apiKeyDraft}
+                  onChange={(e) => setApiKeyDraft(e.target.value)}
+                  placeholder="Paste your DeepSeek API key"
+                  autoComplete="off"
+                  autoFocus
+                  spellCheck={false}
+                />
+                <p className="onboarding-hint">
+                  Saved to your system keychain. You can add or replace keys later in Settings → API keys.
+                </p>
+              </>
+            )}
             <label className="settings-label">Default model</label>
             <select
               className="settings-select"
@@ -150,11 +158,6 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
                 </option>
               ))}
             </select>
-            <p className="onboarding-hint">
-              {envLoaded
-                ? "Using DeepSeek_API_KEY from your project .env file."
-                : "Stored securely in your system keychain, or use .env for testing."}
-            </p>
           </div>
         )}
 

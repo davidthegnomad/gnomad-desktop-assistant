@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Code Review — Gnomad Desktop Assistant</title>
+  <meta name="description" content="Code Review documentation for Gnomad Desktop Assistant." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>:root {
+  --bg-base: #0a0a0a;
+  --bg-panel: rgba(18, 18, 20, 0.92);
+  --bg-elevated: rgba(30, 30, 35, 0.95);
+  --border: rgba(255, 255, 255, 0.1);
+  --text: #f3f4f6;
+  --muted: #9ca3af;
+  --accent: #8ab4f8;
+  --accent-secondary: #c58af9;
+  --success: #34a853;
+  --warning: #f9ab00;
+  --danger: #ea4335;
+  --pill-radius: 999px;
+  --radius: 16px;
+  --mesh:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(66, 133, 244, 0.2), transparent 65%),
+    radial-gradient(ellipse 60% 40% at 10% 30%, rgba(168, 85, 247, 0.12), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 95% 40%, rgba(242, 139, 130, 0.1), transparent 50%);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: "Google Sans Flex", "Roboto", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--bg-base);
+  min-height: 100vh;
+}
+
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: var(--mesh);
+  z-index: 0;
+}
+
+.layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 1.5rem 1.25rem;
+  background: var(--bg-panel);
+  backdrop-filter: blur(24px);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.brand-icon { font-size: 1.5rem; }
+.brand h1 { font-size: 1rem; font-weight: 600; }
+
+.doc-path {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  word-break: break-all;
+}
+
+.sidebar a {
+  display: block;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar a.toc-h3 { padding-left: 1.1rem; font-size: 0.78rem; }
+.sidebar a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.sidebar a.active { color: var(--accent); background: rgba(138,180,248,0.12); }
+
+.content {
+  padding: 2rem 2.5rem 3rem;
+  max-width: 760px;
+}
+
+.hero { margin-bottom: 1.5rem; }
+.hero h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.formats { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+.formats a { color: var(--accent); }
+
+.doc-body h1 { font-size: 1.5rem; margin: 1.5rem 0 0.75rem; }
+.doc-body h2 {
+  font-size: 1.25rem;
+  margin: 2rem 0 0.65rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.doc-body h3 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; color: var(--accent); }
+.doc-body h4 { font-size: 0.95rem; margin: 1rem 0 0.4rem; }
+
+.doc-body p { margin-bottom: 0.85rem; }
+.doc-body ul, .doc-body ol { margin: 0 0 1rem 1.25rem; color: var(--muted); }
+.doc-body li { margin-bottom: 0.35rem; }
+.doc-body li strong { color: var(--text); }
+
+.doc-body a { color: var(--accent); }
+.doc-body code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85em;
+  background: rgba(255,255,255,0.08);
+  padding: 0.12em 0.35em;
+  border-radius: 6px;
+  color: var(--accent-secondary);
+}
+
+.doc-body pre {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.doc-body pre code {
+  background: none;
+  padding: 0;
+  color: var(--text);
+}
+
+.doc-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1rem 0;
+}
+
+.doc-body th, .doc-body td {
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-body th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.doc-body blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 0.6rem 1rem;
+  margin: 1rem 0;
+  background: rgba(138,180,248,0.08);
+  border-radius: 0 12px 12px 0;
+  color: var(--muted);
+}
+
+.doc-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+.doc-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.doc-footer a { color: var(--accent); text-decoration: none; }
+.doc-footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="mesh-bg" aria-hidden="true"></div>
+  <div class="layout">
+    <nav class="sidebar" aria-label="Table of contents">
+          <div class="brand"><span class="brand-icon">🍄</span><h1>Gnomad</h1></div>
+          <p class="doc-path">docs/CODE_REVIEW.md</p>
+          <a href="#summary" class="toc-h2">Summary</a>
+<a href="#architecture-high-level" class="toc-h2">Architecture (high level)</a>
+<a href="#strengths" class="toc-h2">Strengths</a>
+<a href="#issues-amp-gaps-priority-order" class="toc-h2">Issues &amp; gaps (priority order)</a>
+<a href="#p0-correctness" class="toc-h3">P0 — Correctness</a>
+<a href="#p1-security" class="toc-h3">P1 — Security</a>
+<a href="#p2-ux-polish" class="toc-h3">P2 — UX / polish</a>
+<a href="#p3-engineering" class="toc-h3">P3 — Engineering</a>
+<a href="#suggested-next-steps" class="toc-h2">Suggested next steps</a>
+<a href="#file-reference" class="toc-h2">File reference</a>
+        </nav>
+    <main class="content doc-body">
+      <header class="hero">
+        <h2>Code Review</h2>
+        <p class="formats">Also available: <a href="CODE_REVIEW.md">Markdown</a> · <a href="CODE_REVIEW.txt">Plain text</a></p>
+      </header>
+      <h1 id="code-review-omni-taskbar-ai">Code Review — Omni Taskbar AI</h1><p><strong>Reviewed:</strong> 2026-05-31<br><strong>Scope:</strong> <code>src/</code>, <code>src-tauri/src/</code>, <code>tauri.conf.json</code>, <code>package.json</code></p>
+<h2 id="summary">Summary</h2><p>The app is a <strong>Tauri v2 + React 19</strong> macOS-oriented desktop overlay: tray icon, global shortcut (⌘⇧Space), OS context scraping (active window, clipboard), shell execution with a <strong>Sudo Gate</strong> HITL modal, keychain credential storage, and automation hooks (screenshot, click, type). The UI is polished; the <strong>assistant chat path is still a demo</strong> (timed <code>setTimeout</code> flow, no LLM API calls).</p>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Frontend build (<code>npm run build</code>)</td>
+<td>Pass</td>
+</tr>
+<tr>
+<td>Rust build (<code>cargo build</code>)</td>
+<td>Pass</td>
+</tr>
+<tr>
+<td>Unit / integration tests</td>
+<td>None defined</td>
+</tr>
+<tr>
+<td>Real LLM orchestration</td>
+<td>Not implemented</td>
+</tr>
+<tr>
+<td>Security model (HITL)</td>
+<td>Partial — see gaps below</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="architecture-high-level">Architecture (high level)</h2><pre><code>Tray + Global Shortcut (lib.rs)
+        │
+        ▼
+React Overlay (App.tsx) ──invoke──► Tauri commands
+        │                              ├── context.rs      (window, clipboard)
+        │                              ├── shell_executor  (zsh/sh)
+        │                              ├── privilege.rs    (safety + elevation)
+        │                              ├── keychain.rs     (API key)
+        │                              └── automation.rs   (enigo + OS fallbacks)
+</code></pre>
+<p><strong>Window behavior:</strong> <code>main</code> webview starts hidden, frameless, transparent, always-on-top; macOS <code>ActivationPolicy::Accessory</code> (no dock icon).</p>
+<hr>
+<h2 id="strengths">Strengths</h2><ol>
+<li><strong>Clear module split</strong> in Rust: context, privilege, shell, keychain, automation.</li>
+<li><strong>Sudo Gate UX</strong> — modal for dangerous commands with reason text and deny/approve.</li>
+<li><strong>Command safety heuristics</strong> — splits on <code>;</code>, <code>&amp;</code>, <code>|</code>; flags <code>rm -rf</code>, <code>dd</code>, <code>chmod 777</code>, <code>sudo</code>, etc.</li>
+<li><strong>macOS fallbacks</strong> — AppleScript for elevation, window title, click/type when Enigo fails.</li>
+<li><strong>Credentials</strong> — <code>keyring</code> crate with service <code>com.omni.agent</code>; empty string when missing (no throw on first launch).</li>
+<li><strong>Context polling</strong> — 2.5s interval for app/title/clipboard/accessibility.</li>
+</ol>
+<hr>
+<h2 id="issues-amp-gaps-priority-order">Issues &amp; gaps (priority order)</h2><h3 id="p0-correctness">P0 — Correctness</h3><ol>
+<li><p><strong>No LLM integration</strong><br><code>handleSubmit</code> ignores <code>apiType</code>, <code>selectedModel</code>, <code>apiKey</code>, and <code>ollamaUrl</code>. Every cloud prompt follows the same scripted path ending in <code>git --version</code>. Settings are UI-only.</p>
+</li>
+<li><p><strong><code>execute_elevated_command</code> return shape mismatch</strong><br>Rust returns <code>Result&lt;String, String&gt;</code>. After Sudo Gate approval with <code>requires_admin</code>, the frontend still treats the result like <code>execute_shell_command</code> (<code>res.success</code>, <code>res.stdout</code>). Admin-approved commands will break in chat/CLI views.</p>
+</li>
+<li><p><strong>Sudo Gate resolver pattern</strong><br><code>setSudoGateResolve(() =&gt; async (approved) =&gt; { ... })</code> stores a function that <em>returns</em> an async function; buttons call <code>sudoGateResolve(true)</code> expecting a direct async handler. Works only because the outer arrow returns the inner function — fragile and easy to break. Prefer <code>useRef</code> for the pending resolver.</p>
+</li>
+<li><p><strong><code>is_safe</code> always <code>true</code></strong> (<code>privilege.rs</code>)<br>The field is unused for gating; only <code>requires_hitl_approval</code> drives the modal. Either enforce <code>is_safe</code> or remove it from the API.</p>
+</li>
+</ol>
+<h3 id="p1-security">P1 — Security</h3><ol start="5">
+<li><p><strong>Shell injection surface</strong><br>Commands run via <code>zsh -c</code> / AppleScript string interpolation. Escaping in <code>execute_elevated_command</code> only handles <code>\</code> and <code>&quot;</code>; complex payloads need structured argv or allowlists for production.</p>
+</li>
+<li><p><strong><code>check_command_safety</code> bypass</strong><br><code>execute_shell_command</code> does not call safety checks server-side. A modified or future client could invoke it directly. <strong>Re-check in Rust before every execution.</strong></p>
+</li>
+<li><p><strong><code>csp: null</code></strong> in <code>tauri.conf.json</code> — acceptable for local dev; tighten for release.</p>
+</li>
+<li><p><strong>HITL not enforced in <code>execute_elevated_command</code></strong><br>Comment says frontend must confirm; backend does not verify approval token/timestamp.</p>
+</li>
+</ol>
+<h3 id="p2-ux-polish">P2 — UX / polish</h3><ol start="9">
+<li><p><strong><code>index.html</code> title</strong> still &quot;Tauri + React + Typescript&quot;.</p>
+</li>
+<li><p><strong><code>accessibilityGranted</code> defaults to <code>true</code></strong> until first poll — brief false negative for permission banner.</p>
+</li>
+<li><p><strong>Automation commands unused in UI</strong> — <code>capture_screen</code>, <code>simulate_click</code>, <code>simulate_typing</code> are registered but not invoked from React.</p>
+</li>
+<li><p><strong>README</strong> was still the generic Tauri template (see root <code>README.md</code> update).</p>
+</li>
+</ol>
+<h3 id="p3-engineering">P3 — Engineering</h3><ol start="13">
+<li><p><strong>No tests</strong> — safety parser and shell JSON responses are good first candidates.</p>
+</li>
+<li><p><strong><code>any</code> types</strong> in <code>App.tsx</code> (<code>windowContext</code>, <code>cmdRes</code>) — add shared TS types matching Rust <code>Serialize</code> structs.</p>
+</li>
+<li><p><strong>Clippy</strong> failed in this environment with a stale permissions path under a different folder (<code>Desktop AI Project Folder/src-tauri/...</code>); <code>cargo build</code> succeeded. Clean <code>target/</code> if build scripts point at wrong caches.</p>
+</li>
+</ol>
+<hr>
+<h2 id="suggested-next-steps">Suggested next steps</h2><ol>
+<li>Wire cloud/local LLM calls (or a single Rust <code>orchestrate_prompt</code> command) using stored credentials.</li>
+<li>Normalize command results: one <code>CommandResult</code> struct for shell and elevated paths.</li>
+<li>Call <code>check_command_safety</code> inside <code>execute_shell_command</code> (and optionally require HITL token for elevated).</li>
+<li>Add unit tests for <code>check_command_safety</code> edge cases (<code>rm -rf /</code>, chained commands).</li>
+<li>Fix Sudo Gate with <code>useRef&lt;((approved: boolean) =&gt; void) | null&gt;</code>.</li>
+<li>Document macOS permissions (Accessibility, Screen Recording for capture) in <code>docs/MACOS_PERMISSIONS.md</code>.</li>
+</ol>
+<hr>
+<h2 id="file-reference">File reference</h2><table>
+<thead>
+<tr>
+<th>File</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>src/App.tsx</code></td>
+<td>UI, chat demo, Sudo Gate, settings</td>
+</tr>
+<tr>
+<td><code>src-tauri/src/lib.rs</code></td>
+<td>App setup, tray, shortcuts, command registry</td>
+</tr>
+<tr>
+<td><code>src-tauri/src/privilege.rs</code></td>
+<td>Safety + elevation</td>
+</tr>
+<tr>
+<td><code>src-tauri/src/shell_executor.rs</code></td>
+<td>Non-privileged shell</td>
+</tr>
+<tr>
+<td><code>src-tauri/src/context.rs</code></td>
+<td>Window + clipboard</td>
+</tr>
+<tr>
+<td><code>src-tauri/src/keychain.rs</code></td>
+<td>Secrets</td>
+</tr>
+<tr>
+<td><code>src-tauri/src/automation.rs</code></td>
+<td>Screenshot + input simulation</td>
+</tr>
+</tbody></table>
+
+      <footer class="doc-footer">
+        <p>Built with <span aria-label="love">❤️</span> by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+      </footer>
+    </main>
+  </div>
+  <script>
+    const links = document.querySelectorAll(".sidebar a[href^='#']");
+    const sections = [...links].map((a) => document.querySelector(a.getAttribute("href")));
+    const onScroll = () => {
+      let cur = 0;
+      sections.forEach((s, i) => { if (s && s.getBoundingClientRect().top <= 120) cur = i; });
+      links.forEach((l, i) => l.classList.toggle("active", i === cur));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  </script>
+</body>
+</html>

@@ -1,0 +1,196 @@
+# Build & Delivery Narrative — Gnomad Desktop Assistant
+
+**Document type:** Engineering delivery record  
+**Version:** 0.1.0-alpha  
+**Last updated:** June 2026
+
+---
+
+## Purpose
+
+This document describes **how Gnomad was built**, **what shipped in the alpha**, and **how major subsystems were sequenced**. It is written for technical leadership, portfolio reviewers, and engineers onboarding to the repository—not as an ad-hoc changelog, but as a structured delivery account.
+
+---
+
+## Product definition
+
+**Gnomad** is a cross-platform desktop AI assistant that lives at the edge of the OS: system tray, global shortcut, awareness of the active window and clipboard, and the ability to run **real** shell and filesystem operations under explicit user trust controls—not simulated chat output.
+
+**Design intent:** A single React UI ships on macOS, Windows, and Linux; Rust owns every privileged boundary. Visual design references the 2026 Gemini “Neural Expressive” language (pill composer, gradient mesh, model picker) while retaining Gnomad’s mushroom brand identity.
+
+---
+
+## Delivery phases
+
+### Phase 0 — Foundation (Tauri shell & windowing)
+
+**Goals:** Prove native shell, tray lifecycle, and multi-mode windowing before investing in AI features.
+
+**Delivered:**
+
+- Tauri v2 application scaffold with React 19 + TypeScript + Vite
+- System tray with mushroom icon; close-to-tray (quit only from tray/menu)
+- Window display modes: **Panel** (tray-anchored), **Pop out**, **Windowed** (native menus), **Fullscreen**
+- Global shortcut: **⌘⇧Space** (macOS) / **Ctrl+Shift+Space** (Windows/Linux)
+- Platform abstraction (`platform.rs`) exposing capability flags to the UI
+- macOS accessory activation policy (menu-bar-first presence)
+
+**Outcome:** A stable native host with predictable show/hide behavior across three operating systems.
+
+---
+
+### Phase 1 — Presentation layer & design system
+
+**Goals:** Production-quality UI that reads as intentional product design, not a prototype skin.
+
+**Delivered:**
+
+- CSS design tokens for light, dark, and system themes with flash prevention (`index.html` inline script)
+- Gemini-inspired layout: welcome state, suggestion chips, pill composer, cursor bloom background
+- Collapsible chat sidebar with resizable width, left/right placement, session list
+- `AppToolbar` with window mode chips, theme cycle, knowledge and settings entry points
+- First-run **onboarding modal** (cloud API vs local Ollama)
+- About modal and studio branding footer
+
+**Outcome:** Visual and interaction parity across platforms; macOS uses overlay title bar, Windows/Linux defer duplicate toolbar in windowed mode.
+
+---
+
+### Phase 2 — OS context & credentials
+
+**Goals:** Ground the assistant in what the user is doing, without storing unnecessary PII.
+
+**Delivered:**
+
+- Context strip: frontmost application, window title, clipboard snippet (~2.5s polling)
+- Per-OS implementations: AppleScript (macOS), PowerShell/Win32 (Windows), `xdotool` / `wl-paste` / `xclip` (Linux, optional)
+- API key management via OS keychain (macOS Keychain, Windows Credential Manager, Linux Secret Service)
+- `.env` support for development (`DeepSeek_API_KEY`) with UI indication when env-locked
+- DeepSeek cloud models and Ollama local model lists with availability gating in the composer
+
+**Outcome:** Users see live context pills; secrets never appear in chat or localStorage after save.
+
+---
+
+### Phase 3 — LLM chat & knowledge
+
+**Goals:** Replace demo chat with real inference and institutional memory on disk.
+
+**Delivered:**
+
+- `chatCompletion` integration for cloud (DeepSeek) and local (Ollama HTTP API)
+- Chat session persistence (`chat_history` Rust module + frontend store)
+- Knowledge base under `{app_data}/gnomad/knowledge/`:
+  - `skills/`, `agents/`, `preferences/`, `uploads/`
+  - Auto-maintained `INDEX.md`
+  - `get_agent_context_bundle` injected into prompts
+- File attachments in composer (images and documents staged for prompts)
+- Native application menus (File, Edit, View, Window, Help) in windowed mode
+
+**Outcome:** Conversations survive restarts; uploaded skills shape agent behavior.
+
+---
+
+### Phase 4 — Agent runtime (command & filesystem)
+
+**Goals:** Ship an agent that **executes** work, with auditable, user-approved boundaries.
+
+**Delivered:**
+
+- Rust `agent_runtime` + `agent_fs` with tool surface: `shell_run`, filesystem read/write/search, `workspace_info`
+- Frontend `agentLoop.ts` orchestrating up to **10 tool steps** per user message
+- PTY-backed **persistent shell session** (`shell_session.rs`) with cwd tracking and streaming output in chat
+- **Sudo Gate** (human-in-the-loop) for risky shell patterns
+- **Path Gate** for operations outside workspace in Standard trust mode
+- Trust modes: **Standard** (workspace-scoped) and **YOLO!** (expanded FS access)
+- JSONL audit log: `gnomad/agent-audit.jsonl`
+- Local **command planner** (optional Ollama sidecar) when main model fails to emit valid shell syntax
+- `<gnomad-run>` tag fallback for local models without native tool calling
+
+**Outcome:** Cloud users get structured tool calls; local users get tag/planner fallbacks; all paths share the same safety gates.
+
+---
+
+### Phase 5 — Release engineering & distribution
+
+**Goals:** Repeatable builds and installable artifacts for portfolio and early adopters.
+
+**Delivered:**
+
+- GitHub Actions matrix: `macos-latest`, `ubuntu-22.04`, `windows-latest`
+- Installers: `.dmg`, `.deb`, `.rpm`, AppImage, `.msi`, NSIS
+- GitHub Pages project site with download links
+- Version **0.1.0-alpha** tagged release
+- Documentation set: platform build guides, Linux package matrix, macOS permissions
+
+**Outcome:** CI-produced artifacts on every main-branch push; tagged releases for public download.
+
+---
+
+## Feature inventory (alpha)
+
+| Area | Capability |
+|------|------------|
+| **Access** | Tray icon, global shortcut, four window modes |
+| **Chat** | Cloud + local models, history, attachments, suggestion chips |
+| **Agent** | Shell session, FS tools, multi-step loop, Stop interrupt |
+| **Safety** | Sudo Gate, Path Gate, trust modes, audit log |
+| **Context** | Active app, window title, clipboard |
+| **Knowledge** | Skills/agents/uploads, indexed library |
+| **Settings** | API keys, agent access, shell reset, permissions |
+| **Platform** | macOS (primary), Windows, Linux package trio |
+
+---
+
+## Architecture decisions (rationale)
+
+| Decision | Rationale |
+|----------|-----------|
+| **Tauri over Electron** | Smaller binaries, Rust for system APIs, native webview |
+| **Rust-side shell/FS** | Single enforcement point; UI cannot skip safety checks if validated in commands |
+| **React SPA (no router)** | Single overlay surface; modes are panes, not routes |
+| **CSS variables vs Tailwind** | Full control of Gemini mesh gradients; no build-time class explosion |
+| **Keychain over encrypted files** | Platform-native secret storage users already trust |
+| **PTY session vs one-shot shell** | Developer workflows need cwd and env continuity |
+| **Separate planner model (local)** | Keeps main chat model focused; cheap model repairs command syntax |
+
+---
+
+## Known alpha limitations
+
+Documented explicitly for portfolio honesty:
+
+- Manual API key / Ollama setup required (no bundled models)
+- macOS automation permissions may need re-grant after binary path changes
+- Linux CI targets **x86_64**; ARM requires local build
+- Snap / Flatpak not published
+- Automated test suite not yet established (see `QA_CHECKLIST.md`)
+- CSP relaxed for asset protocol during alpha
+
+---
+
+## Repository map (engineering)
+
+| Path | Role |
+|------|------|
+| `src/` | React UI, hooks, client orchestration |
+| `src-tauri/` | Rust commands, bundling, tray, menus |
+| `docs/` | Product and engineering documentation |
+| `.github/workflows/` | CI build and release |
+| `docs/index.html` | Public project landing page |
+
+---
+
+## How to verify a build
+
+```bash
+npm ci
+npm run build          # TypeScript + Vite
+npm run tauri:build:mac    # or :linux / :win on respective hosts
+```
+
+See [`BUILD_PLATFORMS.md`](BUILD_PLATFORMS.md) for artifact paths and [`QA_CHECKLIST.md`](QA_CHECKLIST.md) for release sign-off.
+
+---
+
+Built with ❤️ by [Gnomad Studio](https://gnomadstudio.org) 🦙

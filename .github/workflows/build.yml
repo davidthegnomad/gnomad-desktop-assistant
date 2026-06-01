@@ -43,6 +43,11 @@ jobs:
       - name: Install frontend deps
         run: npm ci
 
+      - name: Frontend build and Rust tests
+        run: |
+          npm run build
+          cd src-tauri && cargo test
+
       - name: Install Linux system deps
         if: matrix.platform == 'ubuntu-22.04'
         run: |

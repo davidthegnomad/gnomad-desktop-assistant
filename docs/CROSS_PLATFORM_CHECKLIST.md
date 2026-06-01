@@ -1,0 +1,195 @@
+# Cross-platform checklist
+
+Use this whenever you add a feature, change UI, or tweak behavior. Gnomad ships **one React app** (`src/`) on macOS, Windows, and Linux—but **shell chrome**, **OS integrations**, and **some menus** differ by design.
+
+**Goal:** Shared UI works everywhere; platform-specific behavior is **explicit**, **documented**, and **tested**—not accidental Mac-only behavior.
+
+---
+
+## Quick decision: does my change need per-OS work?
+
+```mermaid
+flowchart TD
+  Start[Change landed] --> Q1{Only React/CSS in src/?}
+  Q1 -->|Yes| Q2{Uses platformInfo or OS-specific CSS?}
+  Q1 -->|No| Q3{Rust in src-tauri?}
+  Q2 -->|No| Low[Usually OK on all OSes — run smoke checklist]
+  Q2 -->|Yes| Med[Verify each branch + Win/Linux windowed]
+  Q3 -->|Yes| High[Add cfg blocks + test on target OS or CI]
+  Q3 -->|shell/context/window| High
+```
+
+| If you changed… | Typical scope | Action |
+|-----------------|---------------|--------|
+| Chat, settings, knowledge, agent cards, composer | **Shared** | Smoke all OSes (panel + **windowed** on Win/Linux) |
+| `index.css` layout / spacing | **Shared** | Check narrow width + windowed (toolbar may be hidden) |
+| Title bar, traffic lights, toolbar, fullscreen | **Per-OS** | Update `TitleBarLeading`, `AppToolbar`, `platform-*.css` |
+| Tray, panel position, global shortcut | **Per-OS** | `window_manager.rs`, `platform.rs`, `lib.rs` setup |
+| Shell, elevation, credentials, context | **Per-OS backend** | `privilege.rs`, `context.rs`, `keychain` — UI can stay shared |
+| New Tauri command | **Shared invoke** | Register in `lib.rs`; gate risky OS APIs with `#[cfg]` |
+
+**Code map**
+
+| Concern | Primary files |
+|---------|----------------|
+| Platform flags & labels | [`src-tauri/src/platform.rs`](../src-tauri/src/platform.rs) → [`src/lib/platform.ts`](../src/lib/platform.ts) |
+| Frontend branching | [`src/App.tsx`](../src/App.tsx), hooks (`useOsContext`, …), `platformInfo`, `data-platform` on `<html>` |
+| Title bar / toolbar | [`src/components/TitleBarLeading.tsx`](../src/components/TitleBarLeading.tsx), [`src/components/AppToolbar.tsx`](../src/components/AppToolbar.tsx) |
+| Win/Linux panel CSS | [`src/index.css`](../src/index.css) (`.platform-windows`, `.platform-linux`) |
+| Window modes & tray | [`src-tauri/src/window_manager.rs`](../src-tauri/src/window_manager.rs), [`src-tauri/src/menu_shell.rs`](../src-tauri/src/menu_shell.rs) |
+| OS context & clipboard | [`src-tauri/src/context.rs`](../src-tauri/src/context.rs) |
+| Safety / elevation | [`src-tauri/src/privilege.rs`](../src-tauri/src/privilege.rs) |
+
+---
+
+## Before you merge (all platforms)
+
+- [ ] `npm run build` passes (TypeScript + Vite)
+- [ ] `cd src-tauri && cargo test` passes
+- [ ] No Mac-only paths in shared React (avoid hardcoding `/Users/…`, `osascript`, `pbcopy` in `src/`)
+- [ ] New settings/UI visible in **Settings** without requiring macOS-only permissions
+- [ ] Strings use `platformInfo` for tray/menu labels when user-facing (e.g. “menu bar” vs “system tray”)
+- [ ] CI green on macOS, Windows, Linux (see [`.github/workflows/build.yml`](../.github/workflows/build.yml))
+
+---
+
+## UI & settings (shared React)
+
+Test on **each OS** you have access to; at minimum run CI and spot-check one non-Mac OS before release.
+
+### All window modes
+
+| Check | macOS | Windows | Linux |
+|-------|:-----:|:-------:|:-----:|
+| **Panel** (tray drop-down) opens, closes, global shortcut | ☐ | ☐ | ☐ |
+| **Pop out** / floating window usable | ☐ | ☐ | ☐ |
+| **Windowed** — content not clipped; settings reachable | ☐ | ☐ | ☐ |
+| **Fullscreen** enter/exit (if touched) | ☐ | ☐ | ☐ |
+| Close hides to tray (not quit) | ☐ | ☐ | ☐ |
+| Quit from tray menu exits app | ☐ | ☐ | ☐ |
+
+### Chat & composer
+
+| Check | macOS | Windows | Linux |
+|-------|:-----:|:-------:|:-----:|
+| Send message (cloud + local if applicable) | ☐ | ☐ | ☐ |
+| Attachments pick + show chips | ☐ | ☐ | ☐ |
+| Shell command cards show output | ☐ | ☐ | ☐ |
+| Sudo Gate appears for risky command; approve/deny works | ☐ | ☐ | ☐ |
+| Failed shell/elevation shows **Agent error banner** (code, hint, expandable detail) | ☐ | ☐ | ☐ |
+| Stop cancels in-flight work | ☐ | ☐ | ☐ |
+
+### Settings panels (new work: tick your feature)
+
+| Check | macOS | Windows | Linux |
+|-------|:-----:|:-------:|:-----:|
+| API keys — save/status (no secret in UI) | ☐ | ☐ | ☐ |
+| Agent access — workspace, trust mode, planner | ☐ | ☐ | ☐ |
+| Model / provider / Ollama URL | ☐ | ☐ | ☐ |
+| Accessibility block **only on macOS** (hidden elsewhere) | ☐ | N/A | N/A |
+| Knowledge import (file dialog) | ☐ | ☐ | ☐ |
+
+**Windowed mode on Windows/Linux:** in-app toolbar is often **hidden**; use **View** menu (OS menu bar) for mode switches—confirm your feature isn’t toolbar-only.
+
+---
+
+## Platform-specific expectations
+
+### macOS
+
+- [ ] Menu bar tray icon visible (not template-only broken)
+- [ ] Traffic-light spacer in panel/pop-out (`titlebar-leading-macos`)
+- [ ] Accessibility settings flow if context features changed
+- [ ] `npm run tauri:build:mac` produces `.app` / `.dmg`
+
+### Windows
+
+- [ ] System tray icon and tooltip
+- [ ] `Ctrl+Shift+Space` toggles window
+- [ ] Panel opens near tray; no duplicate titlebar in **windowed**
+- [ ] Active window / clipboard pills populate (PowerShell available)
+- [ ] Elevated commands show structured **elevation_unsupported** (use admin terminal / `agent_fs` for writes)
+- [ ] `npm run tauri:build:win` on `windows-latest` or local VM
+
+### Linux
+
+- [ ] System tray (AppIndicator); panel placement sane on X11 and Wayland if possible
+- [ ] `Ctrl+Shift+Space` toggles window
+- [ ] Optional: `xdotool` / `wl-paste` / `xclip` for context pills ([`LINUX_PACKAGES.md`](LINUX_PACKAGES.md))
+- [ ] `pkexec` argv-only elevation (injection patterns rejected with structured error)
+- [ ] `npm run tauri:build:linux` (deb or AppImage)
+
+---
+
+## Agent & shell features
+
+| Check | macOS | Windows | Linux |
+|-------|:-----:|:-------:|:-----:|
+| `shell_run` / PTY executes simple command (`command -v brew` or `echo hi`) | ☐ | ☐ | ☐ |
+| `cd` updates cwd in follow-up command | ☐ | ☐ | ☐ |
+| Path Gate for file outside workspace (Standard mode) | ☐ | ☐ | ☐ |
+| YOLO mode reduces path prompts (if enabled) | ☐ | ☐ | ☐ |
+| Command planner (Ollama) converts prose → CLI when enabled | ☐ | ☐ | ☐ |
+| Audit log written under app data (`agent-audit.jsonl`) | ☐ | ☐ | ☐ |
+| Injection-like elevation (`$(`, `;`, pipes) rejected with **safety_blocked** payload | ☐ | ☐ | ☐ |
+
+---
+
+## When you add a **new** feature (template)
+
+Copy into your PR description or task notes:
+
+```markdown
+### Cross-platform: [feature name]
+
+**Layer:** ☐ Shared React  ☐ CSS  ☐ Rust (all OS)  ☐ Rust `#[cfg(...)]` per OS
+
+**UI entry points:** ☐ Panel  ☐ Pop-out  ☐ Windowed  ☐ Settings  ☐ Tray menu  ☐ OS app menu
+
+**Backend:** ☐ Tauri command  ☐ Shell  ☐ FS  ☐ Keychain/credentials  ☐ OS context
+
+**Tested:**
+- [ ] macOS — panel + windowed
+- [ ] Windows — panel + windowed (or CI artifact)
+- [ ] Linux — panel + windowed (or CI artifact)
+
+**Platform notes:** _e.g. “Elevation on Windows still manual”; “Linux needs wl-paste”_
+```
+
+---
+
+## Implementing platform-aware UI (do / don’t)
+
+**Do**
+
+- Use `getPlatformInfo()` / `platformInfo` in React for labels and conditional sections.
+- Add Win/Linux rules next to macOS in `index.css` when layout differs (`.platform-windows.mode-windowed`, etc.).
+- Put OS-specific logic in Rust with `#[cfg(target_os = "macos")]` and keep the invoke API stable for the frontend.
+- Document gaps in this file or [`BUILD_PLATFORMS.md`](BUILD_PLATFORMS.md).
+
+**Don’t**
+
+- Assume the in-app toolbar is visible on Windows/Linux windowed mode.
+- Use macOS-only shortcuts in user-visible copy (prefer “global shortcut” or list both).
+- Test only menu-bar panel mode on Mac and ship.
+- Fork React into `App.macos.tsx` unless absolutely necessary—prefer flags and small components.
+
+---
+
+## CI & release
+
+On push to `main` / `master`:
+
+1. GitHub Actions builds **macOS**, **Windows**, **Linux** ([`build.yml`](../.github/workflows/build.yml)).
+2. Download artifacts and smoke-test installers when changing shell/window/tray code.
+3. Before tagging a release: run the **Before you merge** section on at least one build per OS (or delegate to CI + manual spot-check).
+
+---
+
+## Related docs
+
+- [BUILD_PLATFORMS.md](BUILD_PLATFORMS.md) — build commands and parity table  
+- [QA_CHECKLIST.md](QA_CHECKLIST.md) — formal release QA with P0/P1 IDs (use before shipping a version)  
+- [LINUX_PACKAGES.md](LINUX_PACKAGES.md) — optional Linux dependencies  
+- [MACOS_PERMISSIONS.md](MACOS_PERMISSIONS.md) — Accessibility / automation on macOS  
+- [AGENT_CAPABILITIES_PROPOSAL.md](AGENT_CAPABILITIES_PROPOSAL.md) — agent architecture  

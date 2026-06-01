@@ -5,13 +5,12 @@ use tauri::{
     ActivationPolicy, Emitter, Manager, PhysicalPosition, PhysicalSize, Runtime, WebviewWindow,
 };
 
-/// Default panel size — tuned to fit header, context pills, welcome, and input without clipping.
-pub const PANEL_WIDTH: u32 = 1060;
-pub const PANEL_HEIGHT: u32 = 780;
-const FLOATING_WIDTH: u32 = PANEL_WIDTH;
-const FLOATING_HEIGHT: u32 = PANEL_HEIGHT;
-const WINDOWED_WIDTH: u32 = 1100;
-const WINDOWED_HEIGHT: u32 = 820;
+/// Tray panel — tall rectangle for welcome + composer (minimal UI).
+pub const PANEL_WIDTH: u32 = 600;
+pub const PANEL_HEIGHT: u32 = 920;
+/// Pop-out & window — landscape size (welcome + chips + composer, no wrap).
+pub const EXPANDED_WIDTH: u32 = 1283; // +10% from 1166
+pub const EXPANDED_HEIGHT: u32 = 858; // +10% from 780
 const MIN_WIDTH: u32 = 520;
 const MIN_HEIGHT: u32 = 420;
 const MAX_WIDTH: u32 = 1600;
@@ -93,8 +92,8 @@ fn menu_bar_inset<R: Runtime>(window: &WebviewWindow<R>) -> f64 {
     }
 }
 
-/// Position panel flush under the macOS menu bar (centered, or under tray icon).
-pub fn position_panel_dropdown<R: Runtime>(
+/// Place the panel under a tray click, below the macOS menu bar, or in the top-tray corner.
+pub fn position_panel_near_tray<R: Runtime>(
     window: &WebviewWindow<R>,
     anchor: Option<&TrayAnchor>,
 ) -> tauri::Result<()> {
@@ -135,17 +134,84 @@ pub fn position_panel_dropdown<R: Runtime>(
     Ok(())
 }
 
+/// Default panel placement when opened from a menu/shortcut (no tray click coordinates).
+pub fn position_panel_default<R: Runtime>(window: &WebviewWindow<R>) -> tauri::Result<()> {
+    let monitor = window
+        .current_monitor()
+        .ok()
+        .flatten()
+        .or_else(|| window.primary_monitor().ok().flatten());
+
+    let Some(monitor) = monitor else {
+        return window.center();
+    };
+
+    let screen = monitor.size();
+    let outer = window.outer_size()?;
+    let win_w = outer.width as f64;
+    let win_h = outer.height as f64;
+
+    #[cfg(target_os = "macos")]
+    let top = menu_bar_inset(window);
+
+    #[cfg(not(target_os = "macos"))]
+    let top = 8.0;
+
+    // Tray icons usually live in a screen corner — top-right on Windows/Linux, centered under menu bar on macOS.
+    #[cfg(target_os = "macos")]
+    let x = ((screen.width as f64) - win_w) / 2.0;
+
+    #[cfg(not(target_os = "macos"))]
+    let x = (screen.width as f64 - win_w - 12.0).max(8.0);
+
+    let y = top;
+    let max_y = (screen.height as f64 - win_h - 8.0).max(top);
+    let y = y.min(max_y);
+
+    window.set_position(PhysicalPosition::new(x.round() as i32, y.round() as i32))?;
+    Ok(())
+}
+
+fn position_panel<R: Runtime>(
+    window: &WebviewWindow<R>,
+    anchor: Option<&TrayAnchor>,
+) -> tauri::Result<()> {
+    let has_real_anchor = anchor.is_some_and(|a| a.x > 1.0 || a.y > 1.0);
+    if has_real_anchor {
+        position_panel_near_tray(window, anchor)
+    } else {
+        position_panel_default(window)
+    }
+}
+
 fn apply_min_max_size<R: Runtime>(window: &WebviewWindow<R>) -> tauri::Result<()> {
     window.set_min_size(Some(PhysicalSize::new(MIN_WIDTH, MIN_HEIGHT)))?;
     window.set_max_size(Some(PhysicalSize::new(MAX_WIDTH, MAX_HEIGHT)))?;
     Ok(())
 }
 
+#[cfg(target_os = "macos")]
+fn configure_title_bar<R: Runtime>(window: &WebviewWindow<R>, mode: WindowDisplayMode) {
+    use tauri::TitleBarStyle;
+    let style = if mode == WindowDisplayMode::Windowed {
+        TitleBarStyle::Visible
+    } else {
+        TitleBarStyle::Overlay
+    };
+    let _ = window.set_title_bar_style(style);
+}
+
+#[cfg(not(target_os = "macos"))]
+fn configure_title_bar<R: Runtime>(_window: &WebviewWindow<R>, _mode: WindowDisplayMode) {}
+
 /// Align OS chrome with display mode (macOS menu bar, Linux/Windows focus).
 pub fn sync_platform_shell<R: Runtime>(app: &tauri::AppHandle<R>, mode: WindowDisplayMode) {
     #[cfg(target_os = "macos")]
     {
-        let policy = if mode == WindowDisplayMode::Windowed {
+        let policy = if matches!(
+            mode,
+            WindowDisplayMode::Windowed | WindowDisplayMode::Fullscreen
+        ) {
             ActivationPolicy::Regular
         } else {
             ActivationPolicy::Accessory
@@ -182,6 +248,8 @@ pub fn apply_window_mode<R: Runtime>(
         window.set_fullscreen(false)?;
     }
 
+    configure_title_bar(&window, mode);
+
     match mode {
         WindowDisplayMode::Panel => {
             window.set_decorations(true)?;
@@ -189,22 +257,16 @@ pub fn apply_window_mode<R: Runtime>(
             window.set_always_on_top(true)?;
             apply_min_max_size(&window)?;
             window.set_size(PhysicalSize::new(PANEL_WIDTH, PANEL_HEIGHT))?;
-            #[cfg(target_os = "macos")]
-            position_panel_dropdown(&window, anchor)?;
-            #[cfg(not(target_os = "macos"))]
-            {
-                let _ = anchor;
-                window.center()?;
-            }
+            position_panel(&window, anchor)?;
         }
         WindowDisplayMode::Floating => {
             window.set_decorations(true)?;
             window.set_resizable(true)?;
             window.set_always_on_top(true)?;
             apply_min_max_size(&window)?;
-            window.set_size(PhysicalSize::new(FLOATING_WIDTH, FLOATING_HEIGHT))?;
-            if anchor.is_some() {
-                position_panel_dropdown(&window, anchor)?;
+            window.set_size(PhysicalSize::new(EXPANDED_WIDTH, EXPANDED_HEIGHT))?;
+            if anchor.is_some_and(|a| a.x > 1.0 || a.y > 1.0) {
+                position_panel_near_tray(&window, anchor)?;
             } else {
                 window.center()?;
             }
@@ -214,13 +276,14 @@ pub fn apply_window_mode<R: Runtime>(
             window.set_resizable(true)?;
             window.set_always_on_top(false)?;
             apply_min_max_size(&window)?;
-            window.set_size(PhysicalSize::new(WINDOWED_WIDTH, WINDOWED_HEIGHT))?;
+            window.set_size(PhysicalSize::new(EXPANDED_WIDTH, EXPANDED_HEIGHT))?;
             window.center()?;
         }
         WindowDisplayMode::Fullscreen => {
-            window.set_decorations(false)?;
-            window.set_resizable(false)?;
             window.set_always_on_top(false)?;
+            window.set_max_size(None::<PhysicalSize<u32>>)?;
+            window.set_decorations(true)?;
+            window.set_resizable(true)?;
             window.set_fullscreen(true)?;
         }
     }
@@ -272,7 +335,7 @@ pub fn apply_fit_window_to_content<R: Runtime>(
 
     if let Some(state) = app.try_state::<WindowRuntimeState>() {
         if *state.current_mode.lock().unwrap() == WindowDisplayMode::Panel {
-            position_panel_dropdown(&window, None)?;
+            position_panel_default(&window)?;
         }
     }
 
@@ -290,6 +353,19 @@ pub fn show_gnomad<R: Runtime>(
 
     let target = mode.unwrap_or(WindowDisplayMode::Panel);
     let _ = apply_window_mode(app, target, anchor);
+    // Ensure size matches mode (avoids stale dimensions after tray ↔ pop-out).
+    let want = match target {
+        WindowDisplayMode::Panel => Some(PhysicalSize::new(PANEL_WIDTH, PANEL_HEIGHT)),
+        WindowDisplayMode::Floating | WindowDisplayMode::Windowed => {
+            Some(PhysicalSize::new(EXPANDED_WIDTH, EXPANDED_HEIGHT))
+        }
+        WindowDisplayMode::Fullscreen => None,
+    };
+    if let (Some(want), Ok(size)) = (want, window.outer_size()) {
+        if size.width != want.width || size.height != want.height {
+            let _ = window.set_size(want);
+        }
+    }
     let _ = window.show();
     let _ = window.set_focus();
     let _ = app.emit("window-fit-requested", true);

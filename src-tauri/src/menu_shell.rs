@@ -15,6 +15,17 @@ pub fn about_metadata() -> AboutMetadata<'static> {
     }
 }
 
+fn panel_mode_menu_label() -> &'static str {
+    #[cfg(target_os = "macos")]
+    {
+        "Menu Bar Panel"
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        "System Tray Panel"
+    }
+}
+
 fn hide_to_tray_label() -> &'static str {
     #[cfg(target_os = "macos")]
     {
@@ -117,7 +128,13 @@ pub fn build_app_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> 
         "View",
         true,
         &[
-            &MenuItem::with_id(app, "mode_panel", "Menu Bar Panel", true, None::<&str>)?,
+            &MenuItem::with_id(
+                app,
+                "mode_panel",
+                panel_mode_menu_label(),
+                true,
+                None::<&str>,
+            )?,
             &MenuItem::with_id(app, "mode_floating", "Pop Out (Floating)", true, None::<&str>)?,
             &MenuItem::with_id(app, "mode_windowed", "Windowed", true, None::<&str>)?,
             &MenuItem::with_id(app, "mode_fullscreen", "Fullscreen", true, None::<&str>)?,

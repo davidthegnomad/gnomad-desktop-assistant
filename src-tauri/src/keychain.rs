@@ -29,6 +29,13 @@ pub fn get_credential(key: &str) -> Result<String, String> {
     get_credential_value(key)
 }
 
+/// Whether a non-empty secret exists in the keychain (value is never returned).
+#[tauri::command]
+pub fn has_credential(key: &str) -> Result<bool, String> {
+    let value = get_credential_value(key)?;
+    Ok(!value.trim().is_empty())
+}
+
 #[tauri::command]
 pub fn delete_credential(key: &str) -> Result<(), String> {
     let entry = Entry::new(SERVICE_NAME, key)

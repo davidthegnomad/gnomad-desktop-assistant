@@ -1,0 +1,1488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QA Checklist — Gnomad Desktop Assistant</title>
+  <meta name="description" content="QA Checklist documentation for Gnomad Desktop Assistant." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>:root {
+  --bg-base: #0a0a0a;
+  --bg-panel: rgba(18, 18, 20, 0.92);
+  --bg-elevated: rgba(30, 30, 35, 0.95);
+  --border: rgba(255, 255, 255, 0.1);
+  --text: #f3f4f6;
+  --muted: #9ca3af;
+  --accent: #8ab4f8;
+  --accent-secondary: #c58af9;
+  --success: #34a853;
+  --warning: #f9ab00;
+  --danger: #ea4335;
+  --pill-radius: 999px;
+  --radius: 16px;
+  --mesh:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(66, 133, 244, 0.2), transparent 65%),
+    radial-gradient(ellipse 60% 40% at 10% 30%, rgba(168, 85, 247, 0.12), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 95% 40%, rgba(242, 139, 130, 0.1), transparent 50%);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: "Google Sans Flex", "Roboto", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--bg-base);
+  min-height: 100vh;
+}
+
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: var(--mesh);
+  z-index: 0;
+}
+
+.layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 1.5rem 1.25rem;
+  background: var(--bg-panel);
+  backdrop-filter: blur(24px);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.brand-icon { font-size: 1.5rem; }
+.brand h1 { font-size: 1rem; font-weight: 600; }
+
+.doc-path {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  word-break: break-all;
+}
+
+.sidebar a {
+  display: block;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar a.toc-h3 { padding-left: 1.1rem; font-size: 0.78rem; }
+.sidebar a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.sidebar a.active { color: var(--accent); background: rgba(138,180,248,0.12); }
+
+.content {
+  padding: 2rem 2.5rem 3rem;
+  max-width: 760px;
+}
+
+.hero { margin-bottom: 1.5rem; }
+.hero h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.formats { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+.formats a { color: var(--accent); }
+
+.doc-body h1 { font-size: 1.5rem; margin: 1.5rem 0 0.75rem; }
+.doc-body h2 {
+  font-size: 1.25rem;
+  margin: 2rem 0 0.65rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.doc-body h3 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; color: var(--accent); }
+.doc-body h4 { font-size: 0.95rem; margin: 1rem 0 0.4rem; }
+
+.doc-body p { margin-bottom: 0.85rem; }
+.doc-body ul, .doc-body ol { margin: 0 0 1rem 1.25rem; color: var(--muted); }
+.doc-body li { margin-bottom: 0.35rem; }
+.doc-body li strong { color: var(--text); }
+
+.doc-body a { color: var(--accent); }
+.doc-body code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85em;
+  background: rgba(255,255,255,0.08);
+  padding: 0.12em 0.35em;
+  border-radius: 6px;
+  color: var(--accent-secondary);
+}
+
+.doc-body pre {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.doc-body pre code {
+  background: none;
+  padding: 0;
+  color: var(--text);
+}
+
+.doc-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1rem 0;
+}
+
+.doc-body th, .doc-body td {
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-body th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.doc-body blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 0.6rem 1rem;
+  margin: 1rem 0;
+  background: rgba(138,180,248,0.08);
+  border-radius: 0 12px 12px 0;
+  color: var(--muted);
+}
+
+.doc-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+.doc-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.doc-footer a { color: var(--accent); text-decoration: none; }
+.doc-footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="mesh-bg" aria-hidden="true"></div>
+  <div class="layout">
+    <nav class="sidebar" aria-label="Table of contents">
+          <div class="brand"><span class="brand-icon">🍄</span><h1>Gnomad</h1></div>
+          <p class="doc-path">docs/QA_CHECKLIST.md</p>
+          <a href="#pre-flight-all-platforms" class="toc-h2">Pre-flight (all platforms)</a>
+<a href="#macos-qa" class="toc-h2">macOS QA</a>
+<a href="#installation-amp-lifecycle" class="toc-h3">Installation &amp; lifecycle</a>
+<a href="#window-modes-amp-chrome" class="toc-h3">Window modes &amp; chrome</a>
+<a href="#tray-menu" class="toc-h3">Tray menu</a>
+<a href="#onboarding-amp-settings" class="toc-h3">Onboarding &amp; settings</a>
+<a href="#chat-amp-llm" class="toc-h3">Chat &amp; LLM</a>
+<a href="#agent-amp-shell" class="toc-h3">Agent &amp; shell</a>
+<a href="#os-context-amp-permissions" class="toc-h3">OS context &amp; permissions</a>
+<a href="#knowledge-base" class="toc-h3">Knowledge base</a>
+<a href="#windows-qa" class="toc-h2">Windows QA</a>
+<a href="#installation-amp-lifecycle" class="toc-h3">Installation &amp; lifecycle</a>
+<a href="#window-modes-amp-shortcuts" class="toc-h3">Window modes &amp; shortcuts</a>
+<a href="#tray-amp-menus" class="toc-h3">Tray &amp; menus</a>
+<a href="#credentials-amp-chat" class="toc-h3">Credentials &amp; chat</a>
+<a href="#agent-amp-context" class="toc-h3">Agent &amp; context</a>
+<a href="#knowledge-amp-ui" class="toc-h3">Knowledge &amp; UI</a>
+<a href="#linux-qa" class="toc-h2">Linux QA</a>
+<a href="#installation" class="toc-h3">Installation</a>
+<a href="#tray-amp-windowing-wayland-x11-if-possible" class="toc-h3">Tray &amp; windowing (Wayland + X11 if possible)</a>
+<a href="#secrets-amp-chat" class="toc-h3">Secrets &amp; chat</a>
+<a href="#agent-amp-context" class="toc-h3">Agent &amp; context</a>
+<a href="#packaging-specific" class="toc-h3">Packaging-specific</a>
+<a href="#cross-platform-regression-run-on-each-os" class="toc-h2">Cross-platform regression (run on each OS)</a>
+<a href="#security-spot-checks-all-platforms" class="toc-h2">Security spot checks (all platforms)</a>
+<a href="#sign-off" class="toc-h2">Sign-off</a>
+        </nav>
+    <main class="content doc-body">
+      <header class="hero">
+        <h2>QA Checklist</h2>
+        <p class="formats">Also available: <a href="QA_CHECKLIST.md">Markdown</a> · <a href="QA_CHECKLIST.txt">Plain text</a></p>
+      </header>
+      <h1 id="qa-checklist-gnomad-desktop-assistant">QA Checklist — Gnomad Desktop Assistant</h1><p><strong>Version under test:</strong> _______________<br><strong>Build / artifact:</strong> _______________<br><strong>Tester:</strong> _______________<br><strong>Date:</strong> _______________<br><strong>Environment:</strong> Production-like (release build preferred; note if <code>tauri dev</code>)</p>
+<p>Use one checklist section per OS. Mark <strong>PASS</strong>, <strong>FAIL</strong>, or <strong>N/A</strong> and add notes for failures. Block release on any <strong>P0</strong> failure.</p>
+<p><strong>Severity key</strong></p>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Definition</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>P0</strong></td>
+<td>Crash, data loss, security bypass, or core feature unusable</td>
+</tr>
+<tr>
+<td><strong>P1</strong></td>
+<td>Major feature broken; workaround difficult</td>
+</tr>
+<tr>
+<td><strong>P2</strong></td>
+<td>Cosmetic or edge case; workaround exists</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="pre-flight-all-platforms">Pre-flight (all platforms)</h2><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>P</th>
+<th>Result</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>PF-01</td>
+<td>Install from release artifact (not dev folder)</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>PF-02</td>
+<td>App launches without panic or blank window</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>PF-03</td>
+<td>Version in About matches expected tag</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>PF-04</td>
+<td>No <code>.env</code> required for basic UI (keys may be empty)</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>PF-05</td>
+<td>Tray/status icon visible after launch</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>PF-06</td>
+<td>Window hidden on first launch until shortcut/tray open</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="macos-qa">macOS QA</h2><p><strong>Target OS versions (test matrix):</strong></p>
+<table>
+<thead>
+<tr>
+<th>macOS</th>
+<th>Arch</th>
+<th>Build</th>
+<th>Tester</th>
+<th>Date</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>14 Sonoma</td>
+<td>arm64</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>15 Sequoia</td>
+<td>arm64</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>13 Ventura</td>
+<td>x86_64 or arm64</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<p><strong>Install artifact:</strong> <code>.dmg</code> (Universal or arch-specific) → <code>Gnomad.app</code></p>
+<h3 id="installation-amp-lifecycle">Installation &amp; lifecycle</h3><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>P</th>
+<th>Result</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>MAC-01</td>
+<td>Drag to Applications; first open (Gatekeeper)</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-02</td>
+<td>Quit from tray → process exits</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-03</td>
+<td>Close window (red button) → hides to menu bar, not quit</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-04</td>
+<td>No unwanted Dock icon in panel/accessory mode</td>
+<td>P2</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-05</td>
+<td>Reopen after reboot (tray still works)</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="window-modes-amp-chrome">Window modes &amp; chrome</h3><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>P</th>
+<th>Result</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>MAC-10</td>
+<td><strong>⌘⇧Space</strong> toggles show/hide</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-11</td>
+<td>Tray click opens panel anchored near menu bar</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-12</td>
+<td>Panel mode: compact UI, tray positioning</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-13</td>
+<td>Pop out: movable floating window</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-14</td>
+<td>Windowed: native menus (File/Edit/View/Window/Help)</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-15</td>
+<td>Fullscreen enters/exits cleanly</td>
+<td>P2</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-16</td>
+<td>Title bar overlay; traffic lights usable</td>
+<td>P2</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-17</td>
+<td>Resize min/max within configured bounds</td>
+<td>P2</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="tray-menu">Tray menu</h3><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>P</th>
+<th>Result</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>MAC-20</td>
+<td>Show Gnomad / menu bar item</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-21</td>
+<td>Pop Out Window</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-22</td>
+<td>Settings opens app + settings pane</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-23</td>
+<td>Visit gnomadstudio.org opens browser</td>
+<td>P2</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-24</td>
+<td>About modal</td>
+<td>P2</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-25</td>
+<td>Quit Gnomad terminates app</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="onboarding-amp-settings">Onboarding &amp; settings</h3><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>P</th>
+<th>Result</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>MAC-30</td>
+<td>First launch onboarding (no key, no Ollama)</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-31</td>
+<td>Cloud path: save DeepSeek key → chat enabled</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-32</td>
+<td>Local path: Ollama URL + model → chat enabled</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-33</td>
+<td>Key persists after app restart (keychain)</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-34</td>
+<td>Re-run setup wizard from settings</td>
+<td>P2</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-35</td>
+<td>Theme cycle: light → dark → system</td>
+<td>P2</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-36</td>
+<td>Agent access: change workspace folder</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-37</td>
+<td>Trust mode Standard vs YOLO</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-38</td>
+<td>Reset shell session</td>
+<td>P2</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="chat-amp-llm">Chat &amp; LLM</h3><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>P</th>
+<th>Result</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>MAC-40</td>
+<td>Cloud: send message → real model response</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-41</td>
+<td>Local: send message → Ollama response</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-42</td>
+<td>Provider/model dropdowns match configuration</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-43</td>
+<td>Suggestion chips populate composer</td>
+<td>P2</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-44</td>
+<td>New chat (sidebar + menu <strong>⌘N</strong>)</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-45</td>
+<td>Select/delete prior session</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-46</td>
+<td>Attach file → appears in message</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-47</td>
+<td>Stop button interrupts thinking/shell</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="agent-amp-shell">Agent &amp; shell</h3><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>P</th>
+<th>Result</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>MAC-50</td>
+<td>Safe command (<code>echo hello</code>) → stdout in thread</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-51</td>
+<td><code>pwd</code> / <code>cd</code> → cwd updates in session</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-52</td>
+<td>Risky command (<code>sudo ls</code>) → Sudo Gate modal</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-53</td>
+<td>Deny Sudo Gate → no execution, clear error</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-54</td>
+<td>Approve Sudo Gate → command runs</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-55</td>
+<td>Path outside workspace → Path Gate (Standard mode)</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-56</td>
+<td>Local: <code>$ command</code> or terminal button runs shell</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-57</td>
+<td>Audit log appended (<code>agent-audit.jsonl</code>)</td>
+<td>P2</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="os-context-amp-permissions">OS context &amp; permissions</h3><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>P</th>
+<th>Result</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>MAC-60</td>
+<td>Active app name updates when switching apps</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-61</td>
+<td>Window title updates</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-62</td>
+<td>Clipboard snippet updates after copy</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-63</td>
+<td>Accessibility banner when denied</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-64</td>
+<td>Open System Settings from banner/settings</td>
+<td>P2</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-65</td>
+<td>Test elevation triggers admin prompt</td>
+<td>P2</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="knowledge-base">Knowledge base</h3><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>P</th>
+<th>Result</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>MAC-70</td>
+<td>Open Knowledge panel (book icon / sidebar)</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-71</td>
+<td>Add files → listed in library</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-72</td>
+<td>INDEX.md updates</td>
+<td>P2</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MAC-73</td>
+<td>Skill referenced in chat context</td>
+<td>P2</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="windows-qa">Windows QA</h2><p><strong>Target versions:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Windows</th>
+<th>Edition</th>
+<th>Arch</th>
+<th>Build</th>
+<th>Tester</th>
+<th>Date</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>11 23H2+</td>
+<td>Pro/Home</td>
+<td>x64</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>10 22H2</td>
+<td>Pro</td>
+<td>x64</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<p><strong>Install artifact:</strong> <code>.msi</code> or NSIS <code>setup.exe</code></p>
+<h3 id="installation-amp-lifecycle">Installation &amp; lifecycle</h3><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>P</th>
+<th>Result</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>WIN-01</td>
+<td>Installer completes; Start Menu entry</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>WIN-02</td>
+<td>Uninstall removes app cleanly</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>WIN-03</td>
+<td>Close window → hides to tray</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>WIN-04</td>
+<td>Quit from tray exits process</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="window-modes-amp-shortcuts">Window modes &amp; shortcuts</h3><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>P</th>
+<th>Result</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>WIN-10</td>
+<td><strong>Ctrl+Shift+Space</strong> toggles visibility</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>WIN-11</td>
+<td>Tray click opens panel near system tray</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>WIN-12</td>
+<td>Pop out / Windowed / Fullscreen modes</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>WIN-13</td>
+<td>Windowed: in-app toolbar hidden; OS menu bar used</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>WIN-14</td>
+<td>Native caption buttons work</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="tray-amp-menus">Tray &amp; menus</h3><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>P</th>
+<th>Result</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>WIN-20</td>
+<td>Tray icon visible</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>WIN-21</td>
+<td>Show / Settings / Quit items</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>WIN-22</td>
+<td>Application menus in windowed mode</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="credentials-amp-chat">Credentials &amp; chat</h3><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>P</th>
+<th>Result</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>WIN-30</td>
+<td>API key → Credential Manager persistence</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>WIN-31</td>
+<td>Cloud + local chat functional</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>WIN-32</td>
+<td>Chat history survives restart</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="agent-amp-context">Agent &amp; context</h3><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>P</th>
+<th>Result</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>WIN-40</td>
+<td><code>echo test</code> shell output in chat</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>WIN-41</td>
+<td>Sudo Gate on risky commands</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>WIN-42</td>
+<td>Active window via PowerShell</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>WIN-43</td>
+<td>Clipboard context updates</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>WIN-44</td>
+<td>Elevated command messaging (admin terminal)</td>
+<td>P2</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="knowledge-amp-ui">Knowledge &amp; UI</h3><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>P</th>
+<th>Result</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>WIN-50</td>
+<td>Knowledge panel add/browse files</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>WIN-51</td>
+<td>Theme toggle</td>
+<td>P2</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>WIN-52</td>
+<td>Sidebar collapse/resize</td>
+<td>P2</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="linux-qa">Linux QA</h2><p><strong>Target environments (run at least one .deb, one .rpm, one AppImage):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Distro</th>
+<th>Version</th>
+<th>Format</th>
+<th>DE (GNOME/KDE)</th>
+<th>Tester</th>
+<th>Date</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Ubuntu</td>
+<td>22.04/24.04</td>
+<td>.deb</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Fedora</td>
+<td>39+</td>
+<td>.rpm</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Arch / other</td>
+<td>rolling</td>
+<td>AppImage</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<p><strong>Optional packages for full context:</strong> <code>xdotool</code> (X11), <code>wl-paste</code> (Wayland) or <code>xclip</code></p>
+<h3 id="installation">Installation</h3><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>P</th>
+<th>Result</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>LNX-01</td>
+<td><code>.deb</code>: <code>apt install</code> + dependencies resolve</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>LNX-02</td>
+<td><code>.rpm</code>: <code>dnf install</code> succeeds</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>LNX-03</td>
+<td>AppImage executes (<code>chmod +x</code>)</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>LNX-04</td>
+<td>Desktop entry / launcher appears</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>LNX-05</td>
+<td>Uninstall/remove clean</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="tray-amp-windowing-wayland-x11-if-possible">Tray &amp; windowing (Wayland + X11 if possible)</h3><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>P</th>
+<th>Result</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>LNX-10</td>
+<td>System tray icon visible (AppIndicator)</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>LNX-11</td>
+<td><strong>Ctrl+Shift+Space</strong> toggle</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>LNX-12</td>
+<td>Panel / Pop out / Windowed / Fullscreen</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>LNX-13</td>
+<td>Close → hide to tray</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="secrets-amp-chat">Secrets &amp; chat</h3><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>P</th>
+<th>Result</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>LNX-20</td>
+<td>Secret Service stores API key</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>LNX-21</td>
+<td>Cloud + Ollama chat</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>LNX-22</td>
+<td>Chat sessions persist</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="agent-amp-context">Agent &amp; context</h3><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>P</th>
+<th>Result</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>LNX-30</td>
+<td>Shell command output in chat</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>LNX-31</td>
+<td>Sudo Gate / <code>pkexec</code> elevation path</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>LNX-32</td>
+<td>Active window (with <code>xdotool</code> if X11)</td>
+<td>P2</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>LNX-33</td>
+<td>Clipboard (<code>wl-paste</code> or <code>xclip</code>)</td>
+<td>P2</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>LNX-34</td>
+<td>Without optional tools: app still usable, context N/A</td>
+<td>P2</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="packaging-specific">Packaging-specific</h3><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>P</th>
+<th>Result</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>LNX-40</td>
+<td>WebKitGTK renders UI correctly</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>LNX-41</td>
+<td>README in <code>/usr/share/doc/gnomad/</code> (.deb)</td>
+<td>P2</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>LNX-42</td>
+<td>HiDPI / fractional scaling</td>
+<td>P2</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="cross-platform-regression-run-on-each-os">Cross-platform regression (run on each OS)</h2><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>P</th>
+<th>Result</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>XP-01</td>
+<td>No secrets in chat logs or screenshots</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>XP-02</td>
+<td>Large attachment does not crash webview</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>XP-03</td>
+<td>Long chat thread scroll performance</td>
+<td>P2</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>XP-04</td>
+<td>Offline: graceful error when cloud unreachable</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>XP-05</td>
+<td>Ollama stopped: clear local error message</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>XP-06</td>
+<td>Invalid API key: user-visible error</td>
+<td>P1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>XP-07</td>
+<td>Studio link opens <a href="https://gnomadstudio.org">https://gnomadstudio.org</a></td>
+<td>P2</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="security-spot-checks-all-platforms">Security spot checks (all platforms)</h2><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>P</th>
+<th>Result</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SEC-01</td>
+<td>Denied Sudo Gate does not execute command</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>SEC-02</td>
+<td>Standard mode blocks FS outside workspace without approval</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>SEC-03</td>
+<td>API key not visible after save</td>
+<td>P0</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>SEC-04</td>
+<td><code>.env</code> keys show “locked by env” in UI</td>
+<td>P2</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="sign-off">Sign-off</h2><table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Name</th>
+<th>Date</th>
+<th>Approved</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>QA</td>
+<td></td>
+<td></td>
+<td>☐</td>
+</tr>
+<tr>
+<td>Engineering</td>
+<td></td>
+<td></td>
+<td>☐</td>
+</tr>
+<tr>
+<td>Product</td>
+<td></td>
+<td></td>
+<td>☐</td>
+</tr>
+</tbody></table>
+<p><strong>Open defects blocking release:</strong></p>
+<ol>
+<li><hr>
+</li>
+<li><hr>
+</li>
+</ol>
+<hr>
+<p>Built with ❤️ by Gnomad Studio 🦙</p>
+
+      <footer class="doc-footer">
+        <p>Built with <span aria-label="love">❤️</span> by <a href="https://gnomadstudio.org">Gnomad Studio</a> 🦙</p>
+      </footer>
+    </main>
+  </div>
+  <script>
+    const links = document.querySelectorAll(".sidebar a[href^='#']");
+    const sections = [...links].map((a) => document.querySelector(a.getAttribute("href")));
+    const onScroll = () => {
+      let cur = 0;
+      sections.forEach((s, i) => { if (s && s.getBoundingClientRect().top <= 120) cur = i; });
+      links.forEach((l, i) => l.classList.toggle("active", i === cur));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  </script>
+</body>
+</html>
