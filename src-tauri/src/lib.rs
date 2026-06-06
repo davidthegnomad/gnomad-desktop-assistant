@@ -1,3 +1,4 @@
+mod core_bridge;
 mod path_token;
 mod updater;
 mod error;
@@ -23,6 +24,12 @@ mod llm;
 mod chat_history;
 mod menu_shell;
 mod platform;
+#[cfg(target_os = "linux")]
+mod linux_context;
+#[cfg(target_os = "linux")]
+pub mod linux_webview;
+#[cfg(target_os = "linux")]
+mod linux_window;
 
 use std::sync::Mutex;
 use tauri::{
@@ -173,7 +180,7 @@ fn request_app_quit(app: &tauri::AppHandle) {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let mut builder = tauri::Builder::default()
         .manage(AppTrayState {
             last_anchor: Mutex::new(None),
         })
@@ -185,7 +192,14 @@ pub fn run() {
         .manage(agent_settings::AgentSettingsState::default())
         .manage(hitl_token::HitlTokenState::default())
         .manage(path_token::PathTokenState::default())
-        .manage(local_inference::EmbeddedLlmState::default())
+        .manage(local_inference::EmbeddedLlmState::default());
+
+    #[cfg(target_os = "linux")]
+    {
+        builder = builder.manage(linux_context::LinuxContextState::default());
+    }
+
+    builder
         .plugin(
             tauri_plugin_global_shortcut::Builder::new().with_handler(
                 |app: &tauri::AppHandle,
@@ -214,6 +228,8 @@ pub fn run() {
             #[cfg(target_os = "linux")]
             {
                 std::env::set_var("GTK_USE_PORTAL", "1");
+                linux_context::init(&app.handle());
+                linux_window::init_window_chrome(&app.handle());
             }
 
             let global_shortcut_manager = app.global_shortcut();
@@ -233,23 +249,18 @@ pub fn run() {
 
             let tray_icon = load_tray_icon(app);
             let tray_tooltip = platform::get_platform_info().tray_tooltip;
-            let mut tray_builder = TrayIconBuilder::new()
+            let tray_builder = TrayIconBuilder::new()
                 .icon(tray_icon)
                 .tooltip(&tray_tooltip);
             #[cfg(target_os = "macos")]
-            {
-                tray_builder = tray_builder.icon_as_template(false);
-            }
+            let tray_builder = tray_builder.icon_as_template(false);
             #[cfg(target_os = "linux")]
-            {
-                if platform::linux_session_type() == "wayland" {
-                    // Wayland compositors often lack reliable right-click tray menus.
-                    tray_builder = tray_builder.show_menu_on_left_click(true);
-                }
-            }
+            let tray_left_click_opens_menu = platform::linux_session_type() == "wayland";
+            #[cfg(not(target_os = "linux"))]
+            let tray_left_click_opens_menu = false;
             let _tray = tray_builder
                 .menu(&tray_menu)
-                .show_menu_on_left_click(false)
+                .show_menu_on_left_click(tray_left_click_opens_menu)
                 .on_tray_icon_event(|tray, event| {
                     let app = tray.app_handle();
                     let state = app.state::<AppTrayState>();
@@ -269,10 +280,6 @@ pub fn run() {
                 window_manager::WindowDisplayMode::Panel,
                 None,
             );
-            window_manager::sync_platform_shell(
-                &app.handle(),
-                window_manager::WindowDisplayMode::Panel,
-            );
 
             Ok(())
         })
@@ -289,27 +296,6 @@ pub fn run() {
                     api.prevent_close();
                     let _ = window.hide();
                 }
-                WindowEvent::Resized(_) => {
-                    let app = window.app_handle();
-                    if let Ok(false) = window.is_fullscreen() {
-                        if let Some(state) = app.try_state::<window_manager::WindowRuntimeState>() {
-                            let current = *state.current_mode.lock().unwrap();
-                            if current == window_manager::WindowDisplayMode::Fullscreen {
-                                *state.current_mode.lock().unwrap() =
-                                    window_manager::WindowDisplayMode::Floating;
-                                let _ = app.emit(
-                                    "window-mode-changed",
-                                    window_manager::WindowDisplayMode::Floating,
-                                );
-                                let _ = window_manager::apply_window_mode(
-                                    app,
-                                    window_manager::WindowDisplayMode::Floating,
-                                    None,
-                                );
-                            }
-                        }
-                    }
-                }
                 _ => {}
             }
         })
@@ -318,7 +304,7 @@ pub fn run() {
             request_accessibility_permissions,
             context::get_active_window,
             context::get_clipboard_text,
-            privilege::check_command_safety,
+            privilege::check_command_safety_cmd,
             privilege::execute_elevated_command,
             hitl_token::issue_hitl_approval_token,
             path_token::issue_path_gate_token,
@@ -352,6 +338,7 @@ pub fn run() {
             agent_runtime::agent_execute_tool,
             agent_audit::append_agent_audit,
             error_log::append_error_log,
+            llm::list_ollama_models,
             llm::chat_completion_turn,
             window_manager::set_window_mode,
             window_manager::get_window_mode,
@@ -369,8 +356,10 @@ pub fn run() {
             env_config::get_cloud_api_config,
             env_config::get_env_llm_config,
             platform::get_platform_info,
+            #[cfg(target_os = "linux")]
+            linux_context::get_linux_integration_status,
             env_config::get_cloud_api_key_source,
-            env_config::has_llm_configured,
+            env_config::has_llm_configured_cmd,
             env_config::get_effective_cloud_api_key,
             llm::chat_completion,
             chat_history::get_chat_store,
@@ -386,15 +375,22 @@ pub fn run() {
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
         .run(|app, event| {
-            if let RunEvent::ExitRequested { api, .. } = event {
-                let allow_quit = app
-                    .try_state::<AppLifecycleState>()
-                    .map(|s| *s.quit_requested.lock().unwrap())
-                    .unwrap_or(false);
-                if !allow_quit {
-                    api.prevent_exit();
-                    hide_main_window(app);
+            match event {
+                RunEvent::ExitRequested { api, .. } => {
+                    let allow_quit = app
+                        .try_state::<AppLifecycleState>()
+                        .map(|s| *s.quit_requested.lock().unwrap())
+                        .unwrap_or(false);
+                    if !allow_quit {
+                        api.prevent_exit();
+                        hide_main_window(app);
+                    }
                 }
+                RunEvent::Exit => {
+                    #[cfg(target_os = "linux")]
+                    linux_context::shutdown();
+                }
+                _ => {}
             }
         });
 }

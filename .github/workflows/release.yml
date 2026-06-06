@@ -118,3 +118,58 @@ jobs:
             exit 0
           fi
           bash scripts/notarize-macos.sh
+
+  gtk-linux:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            arch: x86_64
+          - runner: ubuntu-24.04-arm
+            arch: aarch64
+
+    runs-on: ${{ matrix.runner }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            crates/gnomad-core
+            crates/gnomad-gtk
+
+      - name: Install GTK build deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgtk-4-dev libadwaita-1-dev libvte-2.91-gtk4-dev \
+            libgdk-pixbuf-2.0-dev librsvg2-dev patchelf \
+            desktop-file-utils dpkg-dev curl file
+
+      - name: Resolve release tag
+        id: tag
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "name=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "name=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build GTK .deb + AppImage
+        run: bash scripts/gtk-package-linux.sh
+
+      - name: Upload GTK assets to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.name }}
+          files: |
+            target/gtk-packages/*.deb
+            target/gtk-packages/*.AppImage
+          append_body: true

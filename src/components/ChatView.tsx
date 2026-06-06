@@ -278,8 +278,10 @@ export function ChatView({
                           {m.label}
                         </option>
                       ))
+                    ) : llmAvailability.ollamaReachable ? (
+                      <option value="">No chat models found</option>
                     ) : (
-                      <option value="">Set Ollama URL</option>
+                      <option value="">Ollama not reachable</option>
                     )}
                   </select>
                 </>

@@ -50,7 +50,7 @@ export function setStoredModel(model: string) {
 }
 
 export function getStoredLocalModel(): string {
-  return localStorage.getItem(LS_LOCAL_MODEL) || "llama3.2";
+  return localStorage.getItem(LS_LOCAL_MODEL) || "";
 }
 
 export function setStoredLocalModel(model: string) {

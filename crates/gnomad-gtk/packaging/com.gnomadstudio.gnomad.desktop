@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Gnomad
+Comment=AI desktop assistant — run gnomad --doctor to check your desktop setup
+Exec=gnomad
+Keywords=AI;assistant;chat;agent;tray;
+Icon=com.gnomadstudio.gnomad
+Terminal=false
+Categories=Utility;
+StartupNotify=true
+X-KDE-StartupNotify=true

@@ -1,27 +1,11 @@
-use keyring::Entry;
-
-const SERVICE_NAME: &str = "com.gnomadstudio.gnomad";
+pub use gnomad_core::config::keychain::{
+    delete_credential as delete_credential_inner, get_credential_value, has_credential as has_credential_inner,
+    store_credential as store_credential_inner,
+};
 
 #[tauri::command]
 pub fn store_credential(key: &str, value: &str) -> Result<(), String> {
-    let entry = Entry::new(SERVICE_NAME, key)
-        .map_err(|e| format!("Failed to initialize keyring entry: {}", e))?;
-        
-    entry.set_password(value)
-        .map_err(|e| format!("Failed to write credential to system keychain: {}", e))?;
-        
-    Ok(())
-}
-
-pub fn get_credential_value(key: &str) -> Result<String, String> {
-    let entry = Entry::new(SERVICE_NAME, key)
-        .map_err(|e| format!("Failed to initialize keyring entry: {}", e))?;
-
-    match entry.get_password() {
-        Ok(password) => Ok(password),
-        Err(keyring::Error::NoEntry) => Ok(String::new()),
-        Err(e) => Err(format!("Failed to retrieve credential from system keychain: {}", e)),
-    }
+    store_credential_inner(key, value)
 }
 
 #[tauri::command]
@@ -29,21 +13,12 @@ pub fn get_credential(key: &str) -> Result<String, String> {
     get_credential_value(key)
 }
 
-/// Whether a non-empty secret exists in the keychain (value is never returned).
 #[tauri::command]
 pub fn has_credential(key: &str) -> Result<bool, String> {
-    let value = get_credential_value(key)?;
-    Ok(!value.trim().is_empty())
+    has_credential_inner(key)
 }
 
 #[tauri::command]
 pub fn delete_credential(key: &str) -> Result<(), String> {
-    let entry = Entry::new(SERVICE_NAME, key)
-        .map_err(|e| format!("Failed to initialize keyring entry: {}", e))?;
-        
-    match entry.delete_password() {
-        Ok(_) => Ok(()),
-        Err(keyring::Error::NoEntry) => Ok(()), // Success if it didn't exist anyway
-        Err(e) => Err(format!("Failed to delete credential from system keychain: {}", e)),
-    }
+    delete_credential_inner(key)
 }

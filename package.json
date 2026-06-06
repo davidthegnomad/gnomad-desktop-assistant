@@ -27,6 +27,15 @@
     "download:gguf": "bash scripts/download-gguf-model.sh",
     "notarize:macos": "bash scripts/notarize-macos.sh",
     "tauri:build:win": "tauri build --bundles msi,nsis",
+    "gtk:build": "cargo build -p gnomad-gtk --release",
+    "gtk:run": "cargo run -p gnomad-gtk --release",
+    "gtk:doctor": "cargo run -p gnomad-gtk --release -- --doctor",
+    "gtk:preflight": "bash scripts/gtk-preflight.sh",
+    "gtk:smoke:kde": "bash scripts/gtk-smoke-kde.sh",
+    "gtk:migrate": "cargo run -p gnomad-gtk --release -- --migrate",
+    "gtk:package:rpm": "bash scripts/gtk-package-rpm.sh",
+    "gtk:package:linux": "bash scripts/gtk-package-linux.sh",
+    "gtk:release:smoke": "bash scripts/gtk-release-smoke.sh",
     "docs:export": "node scripts/export-docs.mjs"
   },
   "dependencies": {

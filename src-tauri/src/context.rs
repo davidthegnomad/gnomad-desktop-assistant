@@ -1,5 +1,8 @@
 use std::process::Command;
 
+#[cfg(target_os = "linux")]
+use crate::linux_context::LinuxContextState;
+
 #[cfg(target_os = "windows")]
 fn run_powershell(script: &str) -> Result<String, String> {
     let output = Command::new("powershell")
@@ -20,10 +23,11 @@ fn run_powershell(script: &str) -> Result<String, String> {
 }
 
 #[tauri::command]
-pub fn get_active_window() -> Result<serde_json::Value, String> {
+pub fn get_active_window(
+    #[cfg(target_os = "linux")] state: tauri::State<'_, LinuxContextState>,
+) -> Result<serde_json::Value, String> {
     #[cfg(target_os = "macos")]
     {
-        // Spawns a single unified AppleScript process to grab both app name and window title
         let script = "tell application \"System Events\"
             try
                 set frontmostProcess to first process whose frontmost is true
@@ -66,18 +70,7 @@ pub fn get_active_window() -> Result<serde_json::Value, String> {
 
     #[cfg(target_os = "linux")]
     {
-        // Try wayland/grim/compositor query or standard xdotool if available
-        let app_name = if let Ok(output) = Command::new("xdotool").args(["getactivewindow", "getwindowclassname"]).output() {
-            String::from_utf8_lossy(&output.stdout).trim().to_string()
-        } else {
-            "Active Linux App".to_string()
-        };
-
-        let window_title = if let Ok(output) = Command::new("xdotool").args(["getactivewindow", "getwindowname"]).output() {
-            String::from_utf8_lossy(&output.stdout).trim().to_string()
-        } else {
-            "Active Linux Window".to_string()
-        };
+        let (app_name, window_title) = crate::linux_context::get_active_window_cached(&state);
 
         Ok(serde_json::json!({
             "os": "linux",
@@ -147,27 +140,39 @@ pub fn get_clipboard_text() -> Result<String, String> {
         let output = Command::new("pbpaste")
             .output()
             .map_err(|e| format!("Failed to run pbpaste: {}", e))?;
-        
+
         let text = String::from_utf8_lossy(&output.stdout).to_string();
         Ok(text)
     }
 
     #[cfg(target_os = "linux")]
     {
-        // Try wl-paste first (Wayland), then fallback to xclip (X11)
-        if let Ok(output) = Command::new("wl-paste").output() {
-            let text = String::from_utf8_lossy(&output.stdout).to_string();
-            if !text.is_empty() {
-                return Ok(text);
+        let session = crate::platform::linux_session_type();
+        if session == "wayland" {
+            match Command::new("wl-paste").arg("--no-newline").output() {
+                Ok(out) if out.status.success() => {
+                    return Ok(String::from_utf8_lossy(&out.stdout).to_string());
+                }
+                Ok(_) => return Err("wl-paste failed on Wayland".to_string()),
+                Err(_) => {
+                    return Err("Install wl-clipboard for clipboard context on Wayland".to_string())
+                }
             }
         }
-        
+
+        if let Ok(output) = Command::new("wl-paste").arg("--no-newline").output() {
+            if output.status.success() {
+                return Ok(String::from_utf8_lossy(&output.stdout).to_string());
+            }
+        }
+
         let output = Command::new("xclip")
             .args(["-o", "-selection", "clipboard"])
             .output();
 
         match output {
-            Ok(out) => Ok(String::from_utf8_lossy(&out.stdout).to_string()),
+            Ok(out) if out.status.success() => Ok(String::from_utf8_lossy(&out.stdout).to_string()),
+            Ok(_) => Err("xclip failed on X11".to_string()),
             Err(_) => Err("No clipboard utility found (wl-paste or xclip)".to_string()),
         }
     }

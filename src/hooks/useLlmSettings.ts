@@ -15,7 +15,9 @@ import {
   type ProviderMode,
 } from "../lib/preferences";
 import {
+  DEFAULT_OLLAMA_URL,
   normalizeCloudModel,
+  normalizeLocalModel,
   resolveLlmAvailability,
   EMBEDDED_GGUF_MODEL,
   type LlmAvailability,
@@ -30,17 +32,20 @@ export function useLlmSettings() {
     cloudModels: [],
     localModels: [],
     cloudUsesCustomEndpoint: false,
+    ollamaReachable: false,
   });
-  const [localModel, setLocalModel] = useState("llama3.2");
-  const [ollamaUrl, setOllamaUrl] = useState("http://localhost:11434");
+  const [localModel, setLocalModel] = useState("");
+  const [ollamaUrl, setOllamaUrl] = useState(DEFAULT_OLLAMA_URL);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [prefsLoaded, setPrefsLoaded] = useState(false);
 
   const refreshLlmAvailability = useCallback(
     async (overrides?: { ollamaUrl?: string }) => {
-      const savedOllama = overrides?.ollamaUrl ?? (await loadCredential("ollama_url"));
+      const savedOllama =
+        overrides?.ollamaUrl ?? (await loadCredential("ollama_url")) ?? DEFAULT_OLLAMA_URL;
       const availability = await resolveLlmAvailability({ ollamaUrl: savedOllama });
       setLlmAvailability(availability);
+      if (savedOllama) setOllamaUrl(savedOllama);
 
       const storedModel = getStoredModel();
       const cloudModel = normalizeCloudModel(
@@ -53,6 +58,15 @@ export function useLlmSettings() {
         setStoredModel(cloudModel);
       } else {
         setSelectedModel(cloudModel);
+      }
+
+      const storedLocal = getStoredLocalModel();
+      const resolvedLocal = normalizeLocalModel(storedLocal, availability.localModels);
+      if (resolvedLocal) {
+        setLocalModel(resolvedLocal);
+        if (resolvedLocal !== storedLocal) {
+          setStoredLocalModel(resolvedLocal);
+        }
       }
 
       setApiType((current) => {
@@ -70,7 +84,7 @@ export function useLlmSettings() {
 
       if (
         availability.localModels.some((m) => m.value === EMBEDDED_GGUF_MODEL.value) &&
-        !availability.localModels.some((m) => m.value === getStoredLocalModel())
+        availability.localModels.length === 1
       ) {
         setLocalModel(EMBEDDED_GGUF_MODEL.value);
         setStoredLocalModel(EMBEDDED_GGUF_MODEL.value);
@@ -93,8 +107,8 @@ export function useLlmSettings() {
       setStoredProvider("cloud");
     }
 
-    const url = await loadCredential("ollama_url");
-    if (url) setOllamaUrl(url);
+    const url = (await loadCredential("ollama_url")) ?? DEFAULT_OLLAMA_URL;
+    setOllamaUrl(url);
 
     const availability = await resolveLlmAvailability({ ollamaUrl: url });
     setLlmAvailability(availability);
@@ -105,6 +119,12 @@ export function useLlmSettings() {
     );
     setSelectedModel(cloudModel);
     setStoredModel(cloudModel);
+
+    const resolvedLocal = normalizeLocalModel(getStoredLocalModel(), availability.localModels);
+    if (resolvedLocal) {
+      setLocalModel(resolvedLocal);
+      setStoredLocalModel(resolvedLocal);
+    }
 
     if (provider === "cloud" && !availability.cloudConfigured && availability.localConfigured) {
       setApiType("local");

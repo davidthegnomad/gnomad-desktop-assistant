@@ -214,9 +214,42 @@ body {
   background: var(--bg-panel);
 }
 
-/* Windows / Linux windowed: OS menu + caption — hide duplicate in-app toolbar */
-.app-container.native-menu-chrome.hide-integrated-titlebar .app-titlebar {
+/* Linux: native caption always — in-app bar is mode/tools only (no drag, no window buttons). */
+.app-container.platform-linux .app-titlebar {
+  min-height: 32px;
+  padding: 4px 10px;
+  justify-content: flex-end;
+}
+
+.app-container.platform-linux .titlebar-leading,
+.app-container.platform-linux .titlebar-drag-zone {
   display: none;
+}
+
+.app-container.platform-linux .titlebar-trailing {
+  margin-left: auto;
+}
+
+/* Windows windowed: native caption — slim in-app bar (mode chips only) */
+.app-container.native-menu-chrome.hide-integrated-titlebar .app-titlebar {
+  min-height: 32px;
+  padding: 4px 10px;
+  justify-content: flex-end;
+}
+
+.app-container.native-menu-chrome.hide-integrated-titlebar .titlebar-leading,
+.app-container.native-menu-chrome.hide-integrated-titlebar .titlebar-drag-zone {
+  display: none;
+}
+
+.app-container.native-menu-chrome.hide-integrated-titlebar .titlebar-trailing {
+  margin-left: auto;
+}
+
+/* Let GTK/Wayland shrink the webview vertically in windowed mode */
+.app-container.platform-linux.mode-windowed,
+.app-container.platform-windows.mode-windowed {
+  min-height: 0;
 }
 
 .app-container.platform-windows.mode-panel,
@@ -386,6 +419,12 @@ body {
   app-region: drag;
   cursor: default;
   user-select: none;
+}
+
+/* Wayland: in-app drag regions break native resize/move (GTK bug). */
+.app-container.platform-linux .titlebar-drag-zone {
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
 }
 
 .titlebar-title {
@@ -1375,21 +1414,54 @@ body {
 }
 
 .composer-select {
-  background: var(--bg-input);
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  padding: 5px 10px;
+  appearance: none;
+  -webkit-appearance: none;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--bg-panel) 88%, white 12%) 0%,
+    var(--bg-input) 45%,
+    color-mix(in srgb, var(--bg-input) 82%, black 18%) 100%
+  );
+  border: 1px solid color-mix(in srgb, var(--border-color) 70%, black 30%);
+  border-radius: 6px;
+  padding: 2px 22px 2px 8px;
   color: var(--color-text);
-  font-size: 0.78rem;
+  font-size: 0.7rem;
   font-weight: 500;
+  line-height: 1.2;
+  height: 24px;
   outline: none;
   cursor: pointer;
   font-family: inherit;
-  max-width: 160px;
+  max-width: 92px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.22),
+    0 1px 1px rgba(0, 0, 0, 0.12);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2394a3b8' d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 7px center;
+}
+
+.composer-select:hover {
+  border-color: color-mix(in srgb, var(--color-accent) 35%, var(--border-color));
+}
+
+.composer-select:focus-visible {
+  border-color: var(--color-accent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.22),
+    0 0 0 2px color-mix(in srgb, var(--color-accent) 30%, transparent);
 }
 
 .composer-select-model {
-  max-width: 180px;
+  max-width: 168px;
+}
+
+.composer-select option {
+  background: var(--bg-panel);
+  color: var(--color-text);
 }
 
 .composer-attachments {

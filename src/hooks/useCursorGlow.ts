@@ -6,7 +6,10 @@ const IDLE_CENTER = { x: 50, y: 50 };
 /**
  * Subtle cursor bloom: soft center only, gentle breathe + follow.
  */
-export function useCursorGlow(containerRef: RefObject<HTMLElement | null>) {
+export function useCursorGlow(
+  containerRef: RefObject<HTMLElement | null>,
+  enabled = true
+) {
   const target = useRef(IDLE_CENTER);
   const current = useRef(IDLE_CENTER);
   const prev = useRef(IDLE_CENTER);
@@ -14,6 +17,7 @@ export function useCursorGlow(containerRef: RefObject<HTMLElement | null>) {
   const startTime = useRef(performance.now());
 
   useEffect(() => {
+    if (!enabled) return;
     const el = containerRef.current;
     if (!el) return;
 
@@ -78,5 +82,5 @@ export function useCursorGlow(containerRef: RefObject<HTMLElement | null>) {
       el.removeEventListener("pointerleave", onPointerLeave);
       cancelAnimationFrame(rafId.current);
     };
-  }, [containerRef]);
+  }, [containerRef, enabled]);
 }

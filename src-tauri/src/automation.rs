@@ -93,15 +93,17 @@ pub fn simulate_click(x: i32, y: i32) -> Result<(), String> {
 
     #[cfg(target_os = "linux")]
     {
-        // Fallback to xdotool on X11
-        let output = Command::new("xdotool")
-            .args(["mousemove", &x.to_string(), &y.to_string(), "click", "1"])
-            .output();
+        if crate::platform::linux_session_type() == "x11" {
+            let output = Command::new("xdotool")
+                .args(["mousemove", &x.to_string(), &y.to_string(), "click", "1"])
+                .output();
 
-        match output {
-            Ok(out) if out.status.success() => Ok(()),
-            _ => Err("Enigo click failed, and Linux xdotool fallback failed".to_string()),
+            match output {
+                Ok(out) if out.status.success() => return Ok(()),
+                _ => {}
+            }
         }
+        Err("Enigo click failed; xdotool is unavailable on Wayland".to_string())
     }
 
     #[cfg(not(any(target_os = "macos", target_os = "linux")))]
@@ -148,15 +150,16 @@ pub fn simulate_typing(text: &str) -> Result<(), String> {
                 return Ok(());
             }
         }
-        
-        let output = Command::new("xdotool")
-            .args(["type", text])
-            .output();
 
-        match output {
-            Ok(out) if out.status.success() => Ok(()),
-            _ => Err("Enigo typing failed, and Linux typing fallbacks (wtype, xdotool) failed".to_string()),
+        if crate::platform::linux_session_type() == "x11" {
+            let output = Command::new("xdotool").args(["type", text]).output();
+            match output {
+                Ok(out) if out.status.success() => return Ok(()),
+                _ => {}
+            }
         }
+
+        Err("Enigo typing failed; install wtype on Wayland or use xdotool on X11".to_string())
     }
 
     #[cfg(not(any(target_os = "macos", target_os = "linux")))]

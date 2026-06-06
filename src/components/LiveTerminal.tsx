@@ -67,12 +67,19 @@ export function LiveTerminal({
       setLiveAnnouncement("Live terminal output started.");
     }
 
+    let resizeRaf = 0;
     const onResize = () => {
-      try {
-        fit.fit();
-      } catch {
-        /* hidden */
-      }
+      if (resizeRaf) cancelAnimationFrame(resizeRaf);
+      resizeRaf = requestAnimationFrame(() => {
+        resizeRaf = 0;
+        try {
+          if (containerRef.current?.offsetWidth && containerRef.current?.offsetHeight) {
+            fit.fit();
+          }
+        } catch {
+          /* hidden */
+        }
+      });
     };
     window.addEventListener("resize", onResize);
     const ro = new ResizeObserver(onResize);
@@ -101,6 +108,7 @@ export function LiveTerminal({
     }
 
     return () => {
+      if (resizeRaf) cancelAnimationFrame(resizeRaf);
       window.removeEventListener("resize", onResize);
       ro.disconnect();
       if (announceTimer) clearTimeout(announceTimer);

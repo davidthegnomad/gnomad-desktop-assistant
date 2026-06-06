@@ -64,6 +64,7 @@ export function WindowModeBar({
               const next =
                 mode === m.id && m.id === "fullscreen" ? "floating" : m.id;
               await setWindowMode(next);
+              // Rust emits window-mode-changed; update optimistically for snappy UI.
               onModeChange(next);
             } catch (err) {
               console.error("Window mode change failed:", err);
