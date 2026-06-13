@@ -43,7 +43,6 @@ import { useAppKeyboard, focusComposerInput } from "./hooks/useAppKeyboard";
 function App() {
   const { themeMode, resolved, cycleTheme } = useTheme();
   const appContainerRef = useRef<HTMLDivElement>(null);
-  useCursorGlow(appContainerRef);
   const shellOutputBufRef = useRef("");
 
   const llm = useLlmSettings();
@@ -60,6 +59,7 @@ function App() {
   const [windowMode, setWindowMode] = useState<WindowDisplayMode>("panel");
   const [platformInfo, setPlatformInfo] = useState<PlatformInfo | null>(null);
   const [suggestionChips, setSuggestionChips] = useState(() => pickRandomSuggestions());
+  useCursorGlow(appContainerRef, platformInfo?.os !== "linux");
 
   const agent = useAgentExecution({
     ollamaUrl: llm.ollamaUrl,
@@ -283,7 +283,8 @@ function App() {
     platformInfo?.os === "macos" ? "Drop down from menu bar" : "Drop down near system tray";
 
   const hideIntegratedTitlebar =
-    platformInfo?.hideInAppTitlebarWhenWindowed && windowMode === "windowed";
+    platformInfo?.os === "linux" ||
+    (platformInfo?.hideInAppTitlebarWhenWindowed && windowMode === "windowed");
 
   if (!llm.prefsLoaded) {
     return (

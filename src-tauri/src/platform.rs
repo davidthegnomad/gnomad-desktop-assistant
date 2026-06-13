@@ -23,6 +23,8 @@ pub struct PlatformInfo {
     pub linux_session_type: Option<String>,
     /// When true, left-click on tray opens menu (Wayland-friendly).
     pub tray_left_click_opens_menu: bool,
+    /// Linux: view modes change layout only; native window chrome stays fixed.
+    pub linux_layout_only_window_modes: bool,
 }
 
 #[cfg(target_os = "linux")]
@@ -60,6 +62,7 @@ pub fn get_platform_info() -> PlatformInfo {
             supports_accessibility_settings: true,
             linux_session_type: None,
             tray_left_click_opens_menu: false,
+            linux_layout_only_window_modes: false,
         };
     }
 
@@ -78,6 +81,7 @@ pub fn get_platform_info() -> PlatformInfo {
             supports_accessibility_settings: false,
             linux_session_type: None,
             tray_left_click_opens_menu: false,
+            linux_layout_only_window_modes: false,
         };
     }
 
@@ -91,17 +95,18 @@ pub fn get_platform_info() -> PlatformInfo {
             panel_mode_menu_label: "System Tray Panel".into(),
             hide_to_tray_label: "Hide to System Tray".into(),
             tray_tooltip: if wayland {
-                "Gnomad — left-click tray icon for menu (Wayland)".into()
+                "Gnomad — left-click tray for menu, right-click to toggle (Wayland)".into()
             } else {
-                "Gnomad — click to open from the system tray".into()
+                "Gnomad — left-click to toggle panel, right-click for menu".into()
             },
             uses_overlay_titlebar: false,
             hide_in_app_titlebar_when_windowed: true,
-            supports_active_window_context: true,
-            supports_clipboard_context: true,
+            supports_active_window_context: crate::linux_context::supports_active_window_context(),
+            supports_clipboard_context: crate::linux_context::supports_clipboard_context(),
             supports_accessibility_settings: false,
             linux_session_type: Some(session),
             tray_left_click_opens_menu: wayland,
+            linux_layout_only_window_modes: true,
         };
     }
 
@@ -120,6 +125,7 @@ pub fn get_platform_info() -> PlatformInfo {
             supports_accessibility_settings: false,
             linux_session_type: None,
             tray_left_click_opens_menu: false,
+            linux_layout_only_window_modes: false,
         }
     }
 }

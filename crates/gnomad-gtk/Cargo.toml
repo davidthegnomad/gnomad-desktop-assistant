@@ -1,0 +1,29 @@
+[package]
+name = "gnomad-gtk"
+version = "0.2.0"
+description = "Gnomad Linux-native GTK shell"
+edition.workspace = true
+authors.workspace = true
+
+[[bin]]
+name = "gnomad"
+path = "src/main.rs"
+
+[features]
+default = ["vte", "x11-above"]
+# Disable with: cargo build -p gnomad-gtk --no-default-features
+vte = ["dep:vte4"]
+x11-above = ["dep:gdk4-x11"]
+
+[dependencies]
+gnomad-core = { path = "../gnomad-core" }
+vte4 = { version = "0.9", optional = true, features = ["v0_78"] }
+gtk4 = { package = "gtk4", version = "0.10", features = ["v4_16"] }
+libadwaita = { version = "0.8", features = ["v1_6"] }
+glib = "0.21"
+gdk4 = { version = "0.10", features = ["v4_16"] }
+gdk4-x11 = { version = "0.10", optional = true, features = ["v4_16"] }
+ksni = { version = "0.3", features = ["blocking"] }
+global-hotkey = "0.7"
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+image = { version = "0.25", default-features = false, features = ["png"] }

@@ -13,6 +13,7 @@ docs/HUMAN.txt
 # Dependencies & build
 node_modules/
 dist/
+target/
 src-tauri/target/
 
 # OS / IDE

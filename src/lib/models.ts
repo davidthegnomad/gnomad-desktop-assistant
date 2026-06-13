@@ -1,3 +1,4 @@
+import { invoke } from "@tauri-apps/api/core";
 import { getEnvLlmConfig } from "./envConfig";
 import { getCloudApiConfig } from "./cloudApi";
 import { getAgentSettings } from "./agentSettings";
@@ -9,18 +10,12 @@ export interface ModelOption {
   label: string;
 }
 
+export const DEFAULT_OLLAMA_URL = "http://localhost:11434";
+
 /** Models served via DeepSeek API (requires DeepSeek API key). */
 export const DEEPSEEK_MODELS: ModelOption[] = [
   { value: "deepseek-chat", label: "DeepSeek Chat" },
   { value: "deepseek-reasoner", label: "DeepSeek Reasoner" },
-];
-
-/** Common Ollama model tags (requires Ollama server URL). */
-export const OLLAMA_MODELS: ModelOption[] = [
-  { value: "llama3.2", label: "llama3.2" },
-  { value: "llama3", label: "llama3" },
-  { value: "mistral", label: "mistral" },
-  { value: "qwen2.5-coder", label: "qwen2.5-coder" },
 ];
 
 export const EMBEDDED_GGUF_MODEL: ModelOption = {
@@ -41,6 +36,7 @@ export interface LlmAvailability {
   cloudModels: ModelOption[];
   localModels: ModelOption[];
   cloudUsesCustomEndpoint: boolean;
+  ollamaReachable: boolean;
 }
 
 export function isCloudModelValue(value: string, models: ModelOption[]): boolean {
@@ -49,6 +45,15 @@ export function isCloudModelValue(value: string, models: ModelOption[]): boolean
 
 export function pickDefaultCloudModel(models: ModelOption[]): string {
   return models[0]?.value ?? "deepseek-chat";
+}
+
+export function pickDefaultLocalModel(models: ModelOption[]): string {
+  if (models.length === 0) return "";
+  const preferCoder = models.find((m) => m.value.toLowerCase().includes("coder"));
+  if (preferCoder) return preferCoder.value;
+  const preferInstruct = models.find((m) => m.value.toLowerCase().includes("instruct"));
+  if (preferInstruct) return preferInstruct.value;
+  return models[0].value;
 }
 
 export function normalizeCloudModel(
@@ -62,7 +67,20 @@ export function normalizeCloudModel(
   return pickDefaultCloudModel(available);
 }
 
-/** Resolve which providers/models are usable from env and keychain (never reads key values in UI). */
+export function normalizeLocalModel(stored: string, available: ModelOption[]): string {
+  if (stored.trim() && available.some((m) => m.value === stored)) {
+    return stored;
+  }
+  return pickDefaultLocalModel(available);
+}
+
+/** Query Ollama for installed chat models (excludes embedding models). */
+export async function fetchOllamaModels(ollamaUrl: string): Promise<ModelOption[]> {
+  const url = ollamaUrl.trim() || DEFAULT_OLLAMA_URL;
+  return invoke<ModelOption[]>("list_ollama_models", { ollamaUrl: url });
+}
+
+/** Resolve which providers/models are usable from env, keychain, and live Ollama. */
 export async function resolveLlmAvailability(options?: {
   ollamaUrl?: string;
 }): Promise<LlmAvailability> {
@@ -72,8 +90,7 @@ export async function resolveLlmAvailability(options?: {
   const cloudConfigured = env.deepseek_configured || keychainKeySet;
 
   const keychainOllama = await loadCredential("ollama_url");
-  const ollamaUrl = (options?.ollamaUrl ?? keychainOllama).trim();
-  const ollamaConfigured = ollamaUrl.length > 0;
+  const ollamaUrl = (options?.ollamaUrl ?? keychainOllama ?? DEFAULT_OLLAMA_URL).trim();
 
   let ggufConfigured = false;
   try {
@@ -87,14 +104,23 @@ export async function resolveLlmAvailability(options?: {
     ggufConfigured = false;
   }
 
-  const localConfigured = ollamaConfigured || ggufConfigured;
+  let ollamaReachable = false;
+  let ollamaModels: ModelOption[] = [];
+  try {
+    ollamaModels = await fetchOllamaModels(ollamaUrl);
+    ollamaReachable = true;
+  } catch {
+    ollamaReachable = false;
+    ollamaModels = [];
+  }
+
   const localModels: ModelOption[] = [];
   if (ggufConfigured) {
     localModels.push(EMBEDDED_GGUF_MODEL);
   }
-  if (ollamaConfigured) {
-    localModels.push(...OLLAMA_MODELS);
-  }
+  localModels.push(...ollamaModels);
+
+  const localConfigured = (ollamaReachable && ollamaModels.length > 0) || ggufConfigured;
 
   const cloudUsesCustomEndpoint = cloudConfigured && !cloudConfig.isDefaultDeepseek;
   const cloudModels: ModelOption[] = cloudConfigured
@@ -109,5 +135,6 @@ export async function resolveLlmAvailability(options?: {
     cloudModels,
     localModels,
     cloudUsesCustomEndpoint,
+    ollamaReachable,
   };
 }

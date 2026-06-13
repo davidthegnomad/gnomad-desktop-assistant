@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::Mutex;
 use tauri::{
     tray::{MouseButton, MouseButtonState, TrayIconEvent},
@@ -25,6 +26,8 @@ const SIZE_PADDING_H: u32 = 12;
 pub struct WindowRuntimeState {
     pub user_resized: Mutex<bool>,
     pub current_mode: Mutex<WindowDisplayMode>,
+    /// Skip resize tracking for programmatic set_size calls (mode switches).
+    pub ignore_resize_events: AtomicU32,
 }
 
 impl Default for WindowRuntimeState {
@@ -32,8 +35,41 @@ impl Default for WindowRuntimeState {
         Self {
             user_resized: Mutex::new(false),
             current_mode: Mutex::new(WindowDisplayMode::Panel),
+            ignore_resize_events: AtomicU32::new(0),
         }
     }
+}
+
+fn begin_programmatic_resize<R: Runtime>(app: &tauri::AppHandle<R>) {
+    if let Some(state) = app.try_state::<WindowRuntimeState>() {
+        // Wayland may emit several Resized events per set_size call.
+        state
+            .ignore_resize_events
+            .fetch_add(8, Ordering::Relaxed);
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn apply_runtime_size_limits<R: Runtime>(window: &WebviewWindow<R>) -> tauri::Result<()> {
+    let _ = window;
+    // tauri.conf min/max only — runtime set_min_size fights KWin mid-resize and can crash WebKit.
+    Ok(())
+}
+
+#[cfg(not(target_os = "linux"))]
+fn apply_runtime_size_limits<R: Runtime>(window: &WebviewWindow<R>) -> tauri::Result<()> {
+    apply_min_max_size(window)
+}
+
+#[cfg(target_os = "linux")]
+fn linux_mode_resizable(mode: WindowDisplayMode) -> bool {
+    !matches!(mode, WindowDisplayMode::Panel)
+}
+
+#[cfg(not(target_os = "linux"))]
+fn linux_mode_resizable(mode: WindowDisplayMode) -> bool {
+    let _ = mode;
+    true
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
@@ -192,6 +228,44 @@ fn apply_min_max_size<R: Runtime>(window: &WebviewWindow<R>) -> tauri::Result<()
     Ok(())
 }
 
+/// Clear stale GTK/Wayland max-size after leaving fullscreen (never call from Resized handler).
+fn reset_window_size_constraints<R: Runtime>(window: &WebviewWindow<R>) {
+    let _ = window.set_max_size(None::<PhysicalSize<u32>>);
+    let _ = apply_min_max_size(window);
+}
+
+/// Win/Linux: borderless panel/pop-out caused WebKit crashes while resizing on Wayland.
+fn use_native_window_decorations(mode: WindowDisplayMode) -> bool {
+    #[cfg(target_os = "macos")]
+    {
+        let _ = mode;
+        true
+    }
+    #[cfg(target_os = "linux")]
+    {
+        let _ = mode;
+        true
+    }
+    #[cfg(target_os = "windows")]
+    {
+        matches!(
+            mode,
+            WindowDisplayMode::Windowed | WindowDisplayMode::Fullscreen
+        )
+    }
+    #[cfg(not(any(target_os = "macos", target_os = "linux", target_os = "windows")))]
+    {
+        let _ = mode;
+        true
+    }
+}
+
+fn clear_maximized<R: Runtime>(window: &WebviewWindow<R>) {
+    if window.is_maximized().unwrap_or(false) {
+        let _ = window.unmaximize();
+    }
+}
+
 #[cfg(target_os = "macos")]
 fn configure_title_bar<R: Runtime>(window: &WebviewWindow<R>, mode: WindowDisplayMode) {
     use tauri::TitleBarStyle;
@@ -237,6 +311,11 @@ pub fn apply_window_mode<R: Runtime>(
     mode: WindowDisplayMode,
     anchor: Option<&TrayAnchor>,
 ) -> tauri::Result<WindowDisplayMode> {
+    #[cfg(target_os = "linux")]
+    {
+        return crate::linux_window::apply_mode(app, mode, anchor);
+    }
+
     let Some(window) = main_window(app) else {
         return Ok(mode);
     };
@@ -246,26 +325,29 @@ pub fn apply_window_mode<R: Runtime>(
         *state.current_mode.lock().unwrap() = mode;
     }
 
-    if window.is_fullscreen()? {
+    let leaving_fullscreen = window.is_fullscreen().unwrap_or(false);
+    if leaving_fullscreen {
         window.set_fullscreen(false)?;
     }
+    clear_maximized(&window);
 
     configure_title_bar(&window, mode);
 
+    begin_programmatic_resize(app);
     match mode {
         WindowDisplayMode::Panel => {
-            window.set_decorations(true)?;
-            window.set_resizable(true)?;
+            window.set_decorations(use_native_window_decorations(mode))?;
+            window.set_resizable(linux_mode_resizable(mode))?;
             window.set_always_on_top(true)?;
-            apply_min_max_size(&window)?;
+            apply_runtime_size_limits(&window)?;
             window.set_size(PhysicalSize::new(PANEL_WIDTH, PANEL_HEIGHT))?;
             position_panel(&window, anchor)?;
         }
         WindowDisplayMode::Floating => {
-            window.set_decorations(true)?;
-            window.set_resizable(true)?;
+            window.set_decorations(use_native_window_decorations(mode))?;
+            window.set_resizable(linux_mode_resizable(mode))?;
             window.set_always_on_top(true)?;
-            apply_min_max_size(&window)?;
+            apply_runtime_size_limits(&window)?;
             window.set_size(PhysicalSize::new(EXPANDED_WIDTH, EXPANDED_HEIGHT))?;
             if anchor.is_some_and(|a| a.x > 1.0 || a.y > 1.0) {
                 position_panel_near_tray(&window, anchor)?;
@@ -274,20 +356,25 @@ pub fn apply_window_mode<R: Runtime>(
             }
         }
         WindowDisplayMode::Windowed => {
-            window.set_decorations(true)?;
-            window.set_resizable(true)?;
+            window.set_decorations(use_native_window_decorations(mode))?;
+            window.set_resizable(linux_mode_resizable(mode))?;
             window.set_always_on_top(false)?;
-            apply_min_max_size(&window)?;
+            apply_runtime_size_limits(&window)?;
             window.set_size(PhysicalSize::new(EXPANDED_WIDTH, EXPANDED_HEIGHT))?;
             window.center()?;
         }
         WindowDisplayMode::Fullscreen => {
             window.set_always_on_top(false)?;
             window.set_max_size(None::<PhysicalSize<u32>>)?;
-            window.set_decorations(true)?;
+            window.set_decorations(use_native_window_decorations(mode))?;
             window.set_resizable(true)?;
             window.set_fullscreen(true)?;
         }
+    }
+
+    #[cfg(not(target_os = "linux"))]
+    if leaving_fullscreen && mode != WindowDisplayMode::Fullscreen {
+        reset_window_size_constraints(&window);
     }
 
     sync_platform_shell(app, mode);
@@ -302,6 +389,12 @@ pub fn apply_fit_window_to_content<R: Runtime>(
     content_height: u32,
     force: bool,
 ) -> tauri::Result<()> {
+    #[cfg(target_os = "linux")]
+    {
+        let _ = (app, content_width, content_height, force);
+        return Ok(());
+    }
+
     let Some(window) = main_window(app) else {
         return Ok(());
     };
@@ -320,8 +413,12 @@ pub fn apply_fit_window_to_content<R: Runtime>(
     }
 
     let mut outer_w = content_width.saturating_add(SIZE_PADDING_W).clamp(MIN_WIDTH, MAX_WIDTH);
+    #[cfg(target_os = "macos")]
+    let title_bar_h = TITLE_BAR_HEIGHT;
+    #[cfg(not(target_os = "macos"))]
+    let title_bar_h = 0u32;
     let mut outer_h = content_height
-        .saturating_add(TITLE_BAR_HEIGHT)
+        .saturating_add(title_bar_h)
         .saturating_add(SIZE_PADDING_H)
         .clamp(MIN_HEIGHT, MAX_HEIGHT);
 
@@ -349,25 +446,18 @@ pub fn show_gnomad<R: Runtime>(
     mode: Option<WindowDisplayMode>,
     anchor: Option<&TrayAnchor>,
 ) {
+    #[cfg(target_os = "linux")]
+    {
+        crate::linux_window::show(app, mode, anchor);
+        return;
+    }
+
     let Some(window) = main_window(app) else {
         return;
     };
 
     let target = mode.unwrap_or(WindowDisplayMode::Panel);
     let _ = apply_window_mode(app, target, anchor);
-    // Ensure size matches mode (avoids stale dimensions after tray ↔ pop-out).
-    let want = match target {
-        WindowDisplayMode::Panel => Some(PhysicalSize::new(PANEL_WIDTH, PANEL_HEIGHT)),
-        WindowDisplayMode::Floating | WindowDisplayMode::Windowed => {
-            Some(PhysicalSize::new(EXPANDED_WIDTH, EXPANDED_HEIGHT))
-        }
-        WindowDisplayMode::Fullscreen => None,
-    };
-    if let (Some(want), Ok(size)) = (want, window.outer_size()) {
-        if size.width != want.width || size.height != want.height {
-            let _ = window.set_size(want);
-        }
-    }
     let _ = window.show();
     let _ = window.set_focus();
     let _ = app.emit("window-fit-requested", true);
@@ -415,7 +505,21 @@ pub fn handle_tray_click<R: Runtime>(app: &tauri::AppHandle<R>, event: &TrayIcon
         ..
     } = event
     {
-        if *button == MouseButton::Left && *button_state == MouseButtonState::Up {
+        if *button_state != MouseButtonState::Up {
+            return;
+        }
+
+        // Wayland tray menus use left-click; right-click toggles the panel instead.
+        #[cfg(target_os = "linux")]
+        let toggle_button = if crate::platform::linux_session_type() == "wayland" {
+            MouseButton::Right
+        } else {
+            MouseButton::Left
+        };
+        #[cfg(not(target_os = "linux"))]
+        let toggle_button = MouseButton::Left;
+
+        if *button == toggle_button {
             let anchor = tray_anchor_from_event(event);
             toggle_gnomad(app, anchor.as_ref());
         }

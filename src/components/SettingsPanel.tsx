@@ -10,6 +10,7 @@ import { CloudApiSettings } from "./CloudApiSettings";
 import { PrivacySettings } from "./PrivacySettings";
 import { UpdateSettings } from "./UpdateSettings";
 import { StudioLink } from "./StudioLink";
+import { LinuxIntegrationSettings } from "./LinuxIntegrationSettings";
 import { APP_NAME, MUSHROOM, VERSION } from "../lib/brand";
 import { resetShellSession } from "../lib/shellSession";
 import type { PlatformInfo } from "../lib/platform";
@@ -144,12 +145,31 @@ export function SettingsPanel({
                 />
               </div>
               <div className="settings-row">
-                <span className="settings-label">Model name</span>
-                <input
-                  className="settings-input"
-                  value={localModel}
-                  onChange={(e) => onModelChange(e.target.value)}
-                />
+                <span className="settings-label">Model</span>
+                {llmAvailability.localModels.length > 0 ? (
+                  <select
+                    className="settings-select"
+                    value={headerModelValue}
+                    onChange={(e) => onModelChange(e.target.value)}
+                  >
+                    {llmAvailability.localModels.map((m) => (
+                      <option key={m.value} value={m.value}>
+                        {m.label}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    className="settings-input"
+                    value={localModel}
+                    onChange={(e) => onModelChange(e.target.value)}
+                    placeholder={
+                      llmAvailability.ollamaReachable
+                        ? "No chat models installed"
+                        : "http://localhost:11434 unreachable"
+                    }
+                  />
+                )}
               </div>
             </>
           )}
@@ -204,9 +224,11 @@ export function SettingsPanel({
             <ShieldAlert size={16} style={{ color: "var(--color-purple)" }} />
             Permissions
           </h4>
+          {platformInfo?.os === "linux" && <LinuxIntegrationSettings />}
           {platformInfo?.linuxSessionType === "wayland" && (
             <p className="knowledge-muted platform-wayland-hint">
-              Wayland detected — use <strong>left-click</strong> on the tray icon to open the menu.
+              Wayland detected — <strong>left-click</strong> tray for menu,{" "}
+              <strong>right-click</strong> to toggle the panel.
             </p>
           )}
           {platformInfo?.supportsAccessibilitySettings ? (

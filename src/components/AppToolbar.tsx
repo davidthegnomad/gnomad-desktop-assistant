@@ -50,7 +50,10 @@ export function AppToolbar({
   return (
     <header className="app-titlebar" aria-label="Window toolbar">
       <TitleBarLeading platform={platform} />
-      <div className="titlebar-drag-zone" data-tauri-drag-region>
+      <div
+        className="titlebar-drag-zone"
+        {...(platform === "macos" ? { "data-tauri-drag-region": true } : {})}
+      >
         <span className="titlebar-title">{APP_NAME}</span>
       </div>
 

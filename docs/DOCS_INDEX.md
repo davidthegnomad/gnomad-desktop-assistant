@@ -18,6 +18,17 @@ npm run docs:export
 
 ---
 
+## Workspace (ORGANIZATION meta repo)
+
+| Resource | Link |
+|----------|------|
+| ORG_Docs index | [ORG_Docs/README.md](../../../ORG_Docs/README.md) |
+| Workspace map | [WORKSPACE.md](../../../ORG_Docs/maps/WORKSPACE.md) |
+| Project catalog | [PROJECT_CATALOG.md](../../../ORG_Docs/maps/PROJECT_CATALOG.md) |
+| This project's links | [WORKSPACE_LINKS.md](../WORKSPACE_LINKS.md) |
+
+---
+
 ## Start here
 
 | Document | MD | HTML | TXT |

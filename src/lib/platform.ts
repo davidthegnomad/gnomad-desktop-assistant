@@ -15,6 +15,8 @@ export interface PlatformInfo {
   supportsAccessibilitySettings: boolean;
   linuxSessionType?: string | null;
   trayLeftClickOpensMenu: boolean;
+  /** Linux: Panel/Pop out/Window switch UI layout; native chrome stays fixed. */
+  linuxLayoutOnlyWindowModes: boolean;
 }
 
 export async function getPlatformInfo(): Promise<PlatformInfo> {

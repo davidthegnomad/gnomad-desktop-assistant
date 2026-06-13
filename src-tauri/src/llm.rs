@@ -493,6 +493,21 @@ fn cloud_api_error(status: u16, body: &str) -> String {
     )
 }
 
+fn is_likely_chat_model(name: &str) -> bool {
+    let lower = name.to_lowercase();
+    !(lower.contains("embed")
+        || lower.contains("bge-")
+        || lower.contains("mxbai-embed")
+        || lower.ends_with("-embed"))
+}
+
+pub use gnomad_core::llm::OllamaModelOption;
+
+#[tauri::command]
+pub async fn list_ollama_models(ollama_url: Option<String>) -> Result<Vec<OllamaModelOption>, String> {
+    gnomad_core::llm::list_ollama_models(ollama_url).await
+}
+
 #[tauri::command]
 pub async fn chat_completion(
     settings_state: State<'_, AgentSettingsState>,

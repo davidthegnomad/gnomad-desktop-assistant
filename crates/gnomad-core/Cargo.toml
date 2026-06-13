@@ -1,0 +1,26 @@
+[package]
+name = "gnomad-core"
+version = "0.1.0"
+description = "Gnomad desktop assistant — platform-agnostic core"
+edition.workspace = true
+authors.workspace = true
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+reqwest = { workspace = true }
+keyring = "2.1"
+dotenvy = "0.15"
+hmac = "0.12"
+sha2 = "0.10"
+hex = "0.4"
+getrandom = "0.2"
+base64 = "0.22"
+xdg = "2.5"
+aes-gcm = "0.10"
+portable-pty = "0.9"
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }

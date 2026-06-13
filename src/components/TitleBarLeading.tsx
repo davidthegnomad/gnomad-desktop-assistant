@@ -12,7 +12,12 @@ export function TitleBarLeading({ platform }: TitleBarLeadingProps) {
     return <div className="titlebar-leading titlebar-leading-macos" aria-hidden />;
   }
 
-  if (platform !== "windows" && platform !== "linux") {
+  // Linux uses native KDE/GTK window controls — duplicate buttons crash/conflict with Wayland.
+  if (platform === "linux") {
+    return null;
+  }
+
+  if (platform !== "windows") {
     return null;
   }
 

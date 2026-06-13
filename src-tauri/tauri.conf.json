@@ -28,7 +28,7 @@
         },
         "hiddenTitle": true,
         "transparent": false,
-        "alwaysOnTop": true,
+        "alwaysOnTop": false,
         "visible": false,
         "resizable": true,
         "fullscreen": false,
@@ -69,6 +69,10 @@
           "libwebkit2gtk-4.1-0",
           "libgtk-3-0",
           "libayatana-appindicator3-1 | libappindicator3-1"
+        ],
+        "recommends": [
+          "wl-clipboard",
+          "bubblewrap"
         ],
         "files": {
           "/usr/share/doc/gnomad/README.md": "../README.md"
