@@ -1,5 +1,7 @@
 # Privacy Policy — Gnomad Desktop Assistant (Alpha)
 
+**Canonical URL:** https://gnomadstudio.org/desktop-assistant-privacy
+
 **Effective:** June 2026  
 **Applies to:** Gnomad Desktop Assistant v0.1.0-alpha and subsequent alpha releases until replaced  
 **Operator:** Gnomad Studio — https://gnomadstudio.org
